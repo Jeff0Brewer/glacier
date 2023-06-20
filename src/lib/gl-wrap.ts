@@ -1,5 +1,5 @@
 // fetch shader from file, compile and return valid shader
-const loadShader = async (
+const initShader = async (
     gl: WebGLRenderingContext,
     type: number,
     file: string
@@ -22,14 +22,14 @@ const loadShader = async (
 }
 
 // fetch shaders from files, compile, link, and return valid program
-const loadProgram = async (
+const initProgram = async (
     gl: WebGLRenderingContext,
     vertFile: string,
     fragFile: string
 ): Promise<WebGLProgram> => {
     const [vertShader, fragShader] = await Promise.all([
-        loadShader(gl, gl.VERTEX_SHADER, vertFile),
-        loadShader(gl, gl.FRAGMENT_SHADER, fragFile)
+        initShader(gl, gl.VERTEX_SHADER, vertFile),
+        initShader(gl, gl.FRAGMENT_SHADER, fragFile)
     ])
     const program = gl.createProgram()
     if (!program) {
@@ -44,6 +44,8 @@ const loadProgram = async (
         const log = gl.getProgramInfoLog(program)
         throw new Error(`Program linking failed: ${log}`)
     }
+
+    gl.useProgram(program)
     return program
 }
 
@@ -94,6 +96,7 @@ const initAttribute = (
 }
 
 export {
-    loadProgram,
-    initBuffer
+    initProgram,
+    initBuffer,
+    initAttribute
 }
