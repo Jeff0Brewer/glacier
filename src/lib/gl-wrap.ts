@@ -1,16 +1,20 @@
-// fetch shader from file, compile and return valid shader
-const initShader = async (
+const initGl = (canvas: HTMLCanvasElement): WebGLRenderingContext => {
+    const gl = canvas.getContext('webgl')
+    if (!gl) {
+        throw new Error('WebGL context creation failed')
+    }
+    return gl
+}
+
+const initShader = (
     gl: WebGLRenderingContext,
     type: number,
-    file: string
-): Promise<WebGLShader> => {
-    const res = await fetch(file)
-    const source = await res.text()
+    source: string
+): WebGLShader => {
     const shader = gl.createShader(type)
     if (!shader) {
         throw new Error('Shader creation failed')
     }
-
     gl.shaderSource(shader, source)
     gl.compileShader(shader)
     const compileSuccess = gl.getShaderParameter(shader, gl.COMPILE_STATUS)
@@ -21,23 +25,19 @@ const initShader = async (
     return shader
 }
 
-// fetch shaders from files, compile, link, and return valid program
-const initProgram = async (
+const initProgram = (
     gl: WebGLRenderingContext,
-    vertFile: string,
-    fragFile: string
-): Promise<WebGLProgram> => {
-    const [vertShader, fragShader] = await Promise.all([
-        initShader(gl, gl.VERTEX_SHADER, vertFile),
-        initShader(gl, gl.FRAGMENT_SHADER, fragFile)
-    ])
+    vertSource: string,
+    fragSource: string
+): WebGLProgram => {
+    const vert = initShader(gl, gl.VERTEX_SHADER, vertSource)
+    const frag = initShader(gl, gl.FRAGMENT_SHADER, fragSource)
     const program = gl.createProgram()
     if (!program) {
         throw new Error('Program creation failed')
     }
-
-    gl.attachShader(program, vertShader)
-    gl.attachShader(program, fragShader)
+    gl.attachShader(program, vert)
+    gl.attachShader(program, frag)
     gl.linkProgram(program)
     const linkSuccess = gl.getProgramParameter(program, gl.LINK_STATUS)
     if (!linkSuccess) {
@@ -49,7 +49,6 @@ const initProgram = async (
     return program
 }
 
-// create buffer and set initial data
 const initBuffer = (
     gl: WebGLRenderingContext,
     data: Float32Array,
@@ -64,7 +63,6 @@ const initBuffer = (
     return buffer
 }
 
-// initialize and enable attribute, return closure for binding attribute
 const initAttribute = (
     gl: WebGLRenderingContext,
     program: WebGLProgram,
@@ -96,6 +94,7 @@ const initAttribute = (
 }
 
 export {
+    initGl,
     initProgram,
     initBuffer,
     initAttribute
