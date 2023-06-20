@@ -1,5 +1,9 @@
 // fetch shader from file, compile and return valid shader
-const loadShader = async (gl: WebGLRenderingContext, type: number, file: string): Promise<WebGLShader> => {
+const loadShader = async (
+    gl: WebGLRenderingContext,
+    type: number,
+    file: string
+): Promise<WebGLShader> => {
     const res = await fetch(file)
     const source = await res.text()
     const shader = gl.createShader(type)
@@ -18,7 +22,11 @@ const loadShader = async (gl: WebGLRenderingContext, type: number, file: string)
 }
 
 // fetch shaders from files, compile, link, and return valid program
-const loadProgram = async (gl: WebGLRenderingContext, vertFile: string, fragFile: string): Promise<WebGLProgram> => {
+const loadProgram = async (
+    gl: WebGLRenderingContext,
+    vertFile: string,
+    fragFile: string
+): Promise<WebGLProgram> => {
     const [vertShader, fragShader] = await Promise.all([
         loadShader(gl, gl.VERTEX_SHADER, vertFile),
         loadShader(gl, gl.FRAGMENT_SHADER, fragFile)
@@ -40,7 +48,11 @@ const loadProgram = async (gl: WebGLRenderingContext, vertFile: string, fragFile
 }
 
 // create buffer and set initial data
-const initBuffer = (gl: WebGLRenderingContext, data: Float32Array, drawType: number): WebGLBuffer => {
+const initBuffer = (
+    gl: WebGLRenderingContext,
+    data: Float32Array,
+    drawType: number
+): WebGLBuffer => {
     const buffer = gl.createBuffer()
     if (!buffer) {
         throw new Error('Buffer creation failed')
@@ -48,6 +60,37 @@ const initBuffer = (gl: WebGLRenderingContext, data: Float32Array, drawType: num
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, drawType)
     return buffer
+}
+
+// initialize and enable attribute, return closure for binding attribute
+const initAttribute = (
+    gl: WebGLRenderingContext,
+    program: WebGLProgram,
+    name: string,
+    size: number,
+    stride: number,
+    offset: number
+): (() => void) => {
+    const location = gl.getAttribLocation(program, name)
+    if (location === -1) {
+        throw new Error(`Attribute ${name} not found in program`)
+    }
+
+    // store vertex attrib pointer call in closure for future binding
+    const bindAttrib = (): void => {
+        gl.vertexAttribPointer(
+            location,
+            size,
+            gl.FLOAT,
+            false,
+            stride * Float32Array.BYTES_PER_ELEMENT,
+            offset * Float32Array.BYTES_PER_ELEMENT
+        )
+    }
+    bindAttrib()
+
+    gl.enableVertexAttribArray(location)
+    return bindAttrib
 }
 
 export {
