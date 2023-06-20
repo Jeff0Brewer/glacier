@@ -14,16 +14,16 @@ class VisRenderer {
         this.model = mat4.create()
         this.view = mat4.lookAt(
             mat4.create(),
-            [10, 10, 10],
+            [1, 1, 1],
             [0, 0, 0],
             [0, 0, 1]
         )
         this.proj = mat4.perspective(
             mat4.create(),
-            1.5,
+            1,
             window.innerWidth / window.innerHeight,
             0.1,
-            50
+            100
         )
         this.glacier = new Glacier(this.gl)
         this.glacier.setModelMatrix(this.model)
