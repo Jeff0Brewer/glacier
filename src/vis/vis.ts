@@ -29,6 +29,7 @@ class VisRenderer {
         this.glacier.setModelMatrix(this.model)
         this.glacier.setViewMatrix(this.view)
         this.glacier.setProjMatrix(this.proj)
+        this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford.png')
     }
 
     draw (): void {

@@ -49,17 +49,12 @@ const initProgram = (
     return program
 }
 
-const initBuffer = (
-    gl: WebGLRenderingContext,
-    data: Float32Array,
-    drawType: number
-): WebGLBuffer => {
+const initBuffer = (gl: WebGLRenderingContext): WebGLBuffer => {
     const buffer = gl.createBuffer()
     if (!buffer) {
         throw new Error('Buffer creation failed')
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data, drawType)
     return buffer
 }
 
@@ -93,10 +88,7 @@ const initAttribute = (
     return bindAttrib
 }
 
-const initTexture = (
-    gl: WebGLRenderingContext,
-    imageSource: string
-): WebGLTexture => {
+const initTexture = (gl: WebGLRenderingContext): WebGLTexture => {
     const texture = gl.createTexture()
     if (!texture) {
         throw new Error('Texture creation failed')
@@ -113,24 +105,9 @@ const initTexture = (
         gl.UNSIGNED_BYTE,
         new Uint8Array([0, 0, 0, 255])
     )
-
-    const image = new Image()
-    image.src = imageSource
-    image.addEventListener('load', (): void => {
-        gl.bindTexture(gl.TEXTURE_2D, texture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            image
-        )
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    })
-
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
     return texture
 }
 

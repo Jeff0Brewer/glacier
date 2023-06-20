@@ -19,16 +19,12 @@ class Glacier {
     setProjMatrix: (mat: mat4) => void
 
     constructor (gl: WebGLRenderingContext) {
-        const plane = getPlaneVerts(1027, 1820)
-        this.numVertex = plane.length / ALL_FPV
-        this.buffer = initBuffer(gl, plane, gl.STATIC_DRAW)
-
-        this.texture = initTexture(gl, './data/bedmap2_surface_rutford.png')
-
         this.program = initProgram(gl, vertSource, fragSource)
-
+        this.buffer = initBuffer(gl)
+        this.texture = initTexture(gl)
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         this.bindTexCoord = initAttribute(gl, this.program, 'texCoord', TEX_FPV, ALL_FPV, POS_FPV)
+        this.numVertex = 0
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
@@ -44,6 +40,25 @@ class Glacier {
         }
     }
 
+    async setSurface (gl: WebGLRenderingContext, imageSource: string): Promise<void> {
+        const image = await loadImageAsync(imageSource)
+        // set texture from image data
+        gl.bindTexture(gl.TEXTURE_2D, this.texture)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            image
+        )
+        // set vertices from image size
+        const plane = getPlaneVerts(image.width, image.height)
+        this.numVertex = plane.length / ALL_FPV
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, plane, gl.STATIC_DRAW)
+    }
+
     draw (gl: WebGLRenderingContext): void {
         gl.useProgram(this.program)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
@@ -54,6 +69,7 @@ class Glacier {
     }
 }
 
+// from width and height, create plane triangle strip with position and tex coordinate attributes
 const getPlaneVerts = (width: number, height: number): Float32Array => {
     const VERT_PER_POS = 2
     const verts = new Float32Array((width - 1) * height * VERT_PER_POS * ALL_FPV)
@@ -93,6 +109,20 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
     }
 
     return verts
+}
+
+// wrap image load event in promise for async use
+const loadImageAsync = async (source: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+        const image = new Image()
+        image.src = source
+        image.addEventListener('load', (): void => {
+            resolve(image)
+        })
+        image.addEventListener('error', (): void => {
+            reject(new Error(`Failed to load image ${source}`))
+        })
+    })
 }
 
 export default Glacier
