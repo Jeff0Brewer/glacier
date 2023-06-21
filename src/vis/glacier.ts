@@ -71,7 +71,11 @@ class Glacier {
 
 // from width and height, create plane triangle strip with position and tex coordinate attributes
 const getPlaneVerts = (width: number, height: number): Float32Array => {
-    const VERT_PER_POS = 2
+    // scale down dimensions, don't need a vertex at every image pixel
+    width = Math.ceil(width / 4)
+    height = Math.ceil(height / 4)
+
+    const VERT_PER_POS = 2 // since drawing as triangle strip
     const verts = new Float32Array((width - 1) * height * VERT_PER_POS * ALL_FPV)
 
     let ind = 0
@@ -83,8 +87,10 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
 
     // helper to set swizzled attribs from xy position
     const setVert = (x: number, y: number): void => {
+        // position in range (-0.5, 0.5)
         verts[ind++] = (x + posOffset) * posScale
         verts[ind++] = (y + posOffset) * posScale
+        // tex coords in range (0, 1)
         verts[ind++] = x * texScaleX
         verts[ind++] = y * texScaleY
     }
