@@ -79,12 +79,11 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
     const verts = new Float32Array((width - 1) * height * VERT_PER_POS * ALL_FPV)
 
     let ind = 0
-    const texScaleX = 1 / (width - 1)
-    const texScaleY = 1 / (height - 1)
-    const avgDim = (width + height) / 2
-    const posScale = 1 / (avgDim)
+    const posScale = 1 / ((width + height) / 2)
     const posOffsetX = -width / 2
     const posOffsetY = -height / 2
+    const texScaleX = 1 / (width - 1)
+    const texScaleY = 1 / (height - 1)
 
     // helper to set swizzled attribs from xy position
     const setVert = (x: number, y: number): void => {
