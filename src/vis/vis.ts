@@ -2,10 +2,8 @@ import { mat4, vec3 } from 'gl-matrix'
 import Glacier from '../vis/glacier'
 import { initGl } from '../lib/gl-wrap'
 
-const CAM_EYE = vec3.fromValues(1, 1, 1)
-const CAM_FOCUS = vec3.fromValues(0, 0, 0)
-const CAM_UP = vec3.fromValues(0, 0, 1)
 const ROTATE_SPEED = 0.007
+const ZOOM_SPEED = 0.001
 
 class Camera {
     matrix: mat4 // matrix to apply camera transformations to
@@ -28,6 +26,9 @@ class Camera {
                 this.mouseRotate(e.movementX, e.movementY)
             }
         })
+        element.addEventListener('wheel', (e: WheelEvent): void => {
+            this.scrollZoom(e.deltaY)
+        })
     }
 
     mouseRotate (dx: number, dy: number): void {
@@ -42,6 +43,11 @@ class Camera {
         )
         mat4.rotate(this.matrix, this.matrix, rotationX, this.axis)
     }
+
+    scrollZoom (delta: number): void {
+        const scale = 1.0 + delta * ZOOM_SPEED
+        mat4.scale(this.matrix, this.matrix, [scale, scale, scale])
+    }
 }
 
 class VisRenderer {
@@ -55,27 +61,24 @@ class VisRenderer {
     constructor (canvas: HTMLCanvasElement) {
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
+
         this.model = mat4.create()
-        this.view = mat4.lookAt(
-            mat4.create(),
-            CAM_EYE,
-            CAM_FOCUS,
-            CAM_UP
-        )
-        this.proj = mat4.perspective(
-            mat4.create(),
-            1,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            100
-        )
+
+        const eye = vec3.fromValues(1, 1, 1)
+        const focus = vec3.fromValues(0, 0, 0)
+        const up = vec3.fromValues(0, 0, 1)
+        this.view = mat4.lookAt(mat4.create(), eye, focus, up)
+
+        const aspect = canvas.width / canvas.height
+        this.proj = mat4.perspective(mat4.create(), 1, aspect, 0.1, 100)
+
+        this.camera = new Camera(canvas, this.model, eye, focus, up)
+
         this.glacier = new Glacier(this.gl)
         this.glacier.setModelMatrix(this.model)
         this.glacier.setViewMatrix(this.view)
         this.glacier.setProjMatrix(this.proj)
         this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford.png')
-
-        this.camera = new Camera(canvas, this.model, CAM_EYE, CAM_FOCUS, CAM_UP)
     }
 
     draw (): void {
