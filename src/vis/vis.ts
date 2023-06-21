@@ -8,8 +8,8 @@ class VisRenderer {
     model: mat4
     view: mat4
     proj: mat4
-    glacier: Glacier
     camera: Camera
+    glacier: Glacier
 
     constructor (canvas: HTMLCanvasElement) {
         this.gl = initGl(canvas)
@@ -22,8 +22,11 @@ class VisRenderer {
         const up = vec3.fromValues(0, 0, 1)
         this.view = mat4.lookAt(mat4.create(), eye, focus, up)
 
+        const fov = 1
         const aspect = canvas.width / canvas.height
-        this.proj = mat4.perspective(mat4.create(), 1, aspect, 0.1, 100)
+        const near = 0.1
+        const far = 50
+        this.proj = mat4.perspective(mat4.create(), fov, aspect, near, far)
 
         this.camera = new Camera(canvas, this.model, eye, focus, up)
 
@@ -32,6 +35,14 @@ class VisRenderer {
         this.glacier.setViewMatrix(this.view)
         this.glacier.setProjMatrix(this.proj)
         this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford.png')
+
+        window.addEventListener('resize', (): void => {
+            const aspect = canvas.width / canvas.height
+            mat4.perspective(this.proj, fov, aspect, near, far)
+            this.gl.useProgram(this.glacier.program)
+            this.glacier.setProjMatrix(this.proj)
+            this.gl.viewport(0, 0, canvas.width, canvas.height)
+        })
     }
 
     draw (): void {
