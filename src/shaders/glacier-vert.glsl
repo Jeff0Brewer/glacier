@@ -21,7 +21,7 @@ vec3 get3DPos(sampler2D map, vec2 coord) {
 }
 
 vec3 getNormal(sampler2D map, vec2 coord) {
-    float delta = 0.005;
+    float delta = 0.002;
     vec3 px = get3DPos(map, coord + vec2(delta, 0.0));
     vec3 nx = get3DPos(map, coord + vec2(-delta, 0.0));
     vec3 py = get3DPos(map, coord + vec2(0.0, delta));

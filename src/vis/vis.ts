@@ -34,7 +34,7 @@ class VisRenderer {
         this.glacier.setModelMatrix(this.model)
         this.glacier.setViewMatrix(this.view)
         this.glacier.setProjMatrix(this.proj)
-        this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford.png')
+        this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford_5px.png')
 
         window.addEventListener('resize', (): void => {
             const aspect = canvas.width / canvas.height
