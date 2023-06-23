@@ -91,7 +91,7 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
         verts[ind++] = (x + posOffsetX) * posScale
         verts[ind++] = (y + posOffsetY) * posScale
         // tex coords in range (0, 1)
-        verts[ind++] = x * texScaleX
+        verts[ind++] = 1 - x * texScaleX
         verts[ind++] = y * texScaleY
     }
 
