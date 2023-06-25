@@ -27,27 +27,6 @@ const getUtmData = async (
     return new Float32Array2D(arr, width, height)
 }
 
-type ModelData = {
-    [component: string]: Float32Array2D
-}
-
-const loadDataset = async (): Promise<ModelData> => {
-    // read data from files
-    const dataPromises = []
-    for (const file of Object.values(MODEL_FILES)) {
-        dataPromises.push(getUtmData(MODEL_DIR + file, LINES, SAMPLES))
-    }
-    const data = await Promise.all(dataPromises)
-
-    // construct object with original component keys and loaded data
-    const components = Object.keys(MODEL_FILES)
-    const dataset: ModelData = {}
-    for (let i = 0; i < data.length; i++) {
-        dataset[components[i]] = data[i]
-    }
-    return dataset
-}
-
 // sample dataset
 const SAMPLES = 1027
 const LINES = 1820
@@ -76,6 +55,27 @@ const MODEL_FILES = {
     PHZ3N: 'sinphz3.north.utm',
     PHZ3E: 'sinphz3.east.utm',
     PHZ3U: 'sinphz3.up.utm'
+}
+
+type ModelData = {
+    [component: string]: Float32Array2D
+}
+
+const loadDataset = async (): Promise<ModelData> => {
+    // read data from files
+    const dataPromises = []
+    for (const file of Object.values(MODEL_FILES)) {
+        dataPromises.push(getUtmData(MODEL_DIR + file, LINES, SAMPLES))
+    }
+    const data = await Promise.all(dataPromises)
+
+    // construct object with original component keys and loaded data
+    const components = Object.keys(MODEL_FILES)
+    const dataset: ModelData = {}
+    for (let i = 0; i < data.length; i++) {
+        dataset[components[i]] = data[i]
+    }
+    return dataset
 }
 
 export {
