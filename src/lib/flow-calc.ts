@@ -13,7 +13,7 @@ type FlowOptions = {
     p3: boolean
 }
 
-const calcVel = (amp: number, phase: number, period: number, t: number): number => {
+const calcSinComp = (amp: number, phase: number, period: number, t: number): number => {
     return amp * Math.sin((Math.PI * 2 / period) * t + phase)
 }
 
@@ -23,6 +23,10 @@ const calcFlowVelocity = (data: ModelData, enabled: FlowOptions, x: number, y: n
     let n = 0 // north
     let u = 0 // up
 
+    // round coords to whole values for 2D array indexing
+    x = Math.round(x)
+    y = Math.round(y)
+
     if (enabled.vel) {
         const { velE, velN, velU } = data
         e += velE.get(x, y)
@@ -31,21 +35,21 @@ const calcFlowVelocity = (data: ModelData, enabled: FlowOptions, x: number, y: n
     }
     if (enabled.p1) {
         const { amp1E, amp1N, amp1U, phz1E, phz1N, phz1U } = data
-        e += calcVel(amp1E.get(x, y), phz1E.get(x, y), PERIOD_1, t)
-        n += calcVel(amp1N.get(x, y), phz1N.get(x, y), PERIOD_1, t)
-        u += calcVel(amp1U.get(x, y), phz1U.get(x, y), PERIOD_1, t)
+        e += calcSinComp(amp1E.get(x, y), phz1E.get(x, y), PERIOD_1, t)
+        n += calcSinComp(amp1N.get(x, y), phz1N.get(x, y), PERIOD_1, t)
+        u += calcSinComp(amp1U.get(x, y), phz1U.get(x, y), PERIOD_1, t)
     }
     if (enabled.p2) {
         const { amp2E, amp2N, amp2U, phz2E, phz2N, phz2U } = data
-        e += calcVel(amp2E.get(x, y), phz2E.get(x, y), PERIOD_2, t)
-        n += calcVel(amp2N.get(x, y), phz2N.get(x, y), PERIOD_2, t)
-        u += calcVel(amp2U.get(x, y), phz2U.get(x, y), PERIOD_2, t)
+        e += calcSinComp(amp2E.get(x, y), phz2E.get(x, y), PERIOD_2, t)
+        n += calcSinComp(amp2N.get(x, y), phz2N.get(x, y), PERIOD_2, t)
+        u += calcSinComp(amp2U.get(x, y), phz2U.get(x, y), PERIOD_2, t)
     }
     if (enabled.p3) {
         const { amp3E, amp3N, amp3U, phz3E, phz3N, phz3U } = data
-        e += calcVel(amp3E.get(x, y), phz3E.get(x, y), PERIOD_3, t)
-        n += calcVel(amp3N.get(x, y), phz3N.get(x, y), PERIOD_3, t)
-        u += calcVel(amp3U.get(x, y), phz3U.get(x, y), PERIOD_3, t)
+        e += calcSinComp(amp3E.get(x, y), phz3E.get(x, y), PERIOD_3, t)
+        n += calcSinComp(amp3N.get(x, y), phz3N.get(x, y), PERIOD_3, t)
+        u += calcSinComp(amp3U.get(x, y), phz3U.get(x, y), PERIOD_3, t)
     }
 
     return vec3.fromValues(e, n, u)
@@ -53,4 +57,8 @@ const calcFlowVelocity = (data: ModelData, enabled: FlowOptions, x: number, y: n
 
 export {
     calcFlowVelocity
+}
+
+export type {
+    FlowOptions
 }
