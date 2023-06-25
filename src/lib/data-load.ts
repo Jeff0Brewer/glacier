@@ -23,7 +23,9 @@ const getUtmData = async (
     const res = await fetch(filePath)
     const blob = await res.blob()
     const buffer = await blob.arrayBuffer()
-    const arr = new Float32Array(buffer)
+    let arr = new Float32Array(buffer)
+    // convert NaN values to 0 (many NaN in dataset)
+    arr = arr.map(v => v || 0)
     return new Float32Array2D(arr, width, height)
 }
 
