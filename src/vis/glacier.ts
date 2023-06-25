@@ -3,6 +3,7 @@ import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-w
 import vertSource from '../shaders/glacier-vert.glsl?raw'
 import fragSource from '../shaders/glacier-frag.glsl?raw'
 
+// floats per vertex for attribs
 const POS_FPV = 2
 const TEX_FPV = 2
 const ALL_FPV = POS_FPV + TEX_FPV
