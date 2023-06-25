@@ -81,3 +81,7 @@ const loadDataset = async (): Promise<ModelData> => {
 export {
     loadDataset
 }
+
+export type {
+    ModelData
+}
