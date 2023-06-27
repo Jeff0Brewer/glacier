@@ -12,6 +12,7 @@ class VisRenderer {
     model: mat4
     view: mat4
     proj: mat4
+    scale: mat4
     camera: Camera
     glacier: Glacier
     worms: Worms
@@ -22,17 +23,20 @@ class VisRenderer {
         this.gl.enable(this.gl.DEPTH_TEST)
 
         this.model = mat4.create()
-
         const eye = vec3.fromValues(1, 1, 1)
         const focus = vec3.fromValues(0, 0, 0)
         const up = vec3.fromValues(0, 0, 1)
         this.view = mat4.lookAt(mat4.create(), eye, focus, up)
-
         const fov = 1
         const aspect = canvas.width / canvas.height
         const near = 0.1
         const far = 50
         this.proj = mat4.perspective(mat4.create(), fov, aspect, near, far)
+        const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
+        this.scale = mat4.fromScaling(
+            mat4.create(),
+            [scaleValue, scaleValue, 1]
+        )
 
         this.camera = new Camera(canvas, this.model, eye, focus, up)
 
@@ -41,6 +45,7 @@ class VisRenderer {
         this.glacier.setModelMatrix(this.model)
         this.glacier.setViewMatrix(this.view)
         this.glacier.setProjMatrix(this.proj)
+        this.glacier.setScaleMatrix(this.scale)
         this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford_5px.png')
 
         this.worms = new Worms(this.gl, HEIGHT, WIDTH, 0.05, 10)

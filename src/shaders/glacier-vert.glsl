@@ -4,6 +4,7 @@ attribute vec2 texCoord;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
+uniform mat4 scaleMatrix;
 uniform sampler2D surfaceMap;
 
 varying vec3 normal;
@@ -34,6 +35,6 @@ vec3 getNormal(sampler2D map, vec2 coord) {
 
 void main() {
     float height = heightMap(surfaceMap, texCoord);
-    gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(position, height, 1.0);
+    gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(position, height, 1.0);
     normal = getNormal(surfaceMap, texCoord);
 }

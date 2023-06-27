@@ -18,6 +18,7 @@ class Glacier {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
+    setScaleMatrix: (mat: mat4) => void
 
     constructor (gl: WebGLRenderingContext) {
         this.program = initProgram(gl, vertSource, fragSource)
@@ -38,6 +39,10 @@ class Glacier {
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
         this.setProjMatrix = (mat: mat4): void => {
             gl.uniformMatrix4fv(uProjMatrix, false, mat)
+        }
+        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
+        this.setScaleMatrix = (mat: mat4): void => {
+            gl.uniformMatrix4fv(uScaleMatrix, false, mat)
         }
     }
 
@@ -74,14 +79,14 @@ class Glacier {
 // from width and height, create plane triangle strip with position and tex coordinate attributes
 const getPlaneVerts = (width: number, height: number): Float32Array => {
     // scale down dimensions, don't need a vertex at every image pixel
-    width = Math.ceil(width / 4)
-    height = Math.ceil(height / 4)
+    const DOWNSAMPLE = 4
+    width = Math.ceil(width / DOWNSAMPLE)
+    height = Math.ceil(height / DOWNSAMPLE)
 
     const VERT_PER_POS = 2 // since drawing as triangle strip
     const verts = new Float32Array((width - 1) * height * VERT_PER_POS * ALL_FPV)
 
     let ind = 0
-    const posScale = 1 / ((width + height) / 2)
     const posOffsetX = -width / 2
     const posOffsetY = -height / 2
     const texScaleX = 1 / (width - 1)
@@ -90,8 +95,8 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
     // helper to set swizzled attribs from xy position
     const setVert = (x: number, y: number): void => {
         // position in range (-0.5, 0.5)
-        verts[ind++] = (x + posOffsetX) * posScale
-        verts[ind++] = (y + posOffsetY) * posScale
+        verts[ind++] = (x + posOffsetX) * DOWNSAMPLE
+        verts[ind++] = (y + posOffsetY) * DOWNSAMPLE
         // tex coords in range (0, 1)
         verts[ind++] = 1 - x * texScaleX
         verts[ind++] = y * texScaleY
