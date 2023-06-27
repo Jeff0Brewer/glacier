@@ -15,15 +15,26 @@ class Worm {
     x: number
     y: number
     z: number
+    width: number
+    height: number
     time: number
     numVertex: number
     buffer: WebGLBuffer
     verts: Float32Array
 
-    constructor (gl: WebGLRenderingContext, x: number, y: number, history: number) {
+    constructor (
+        gl: WebGLRenderingContext,
+        x: number,
+        y: number,
+        history: number,
+        width: number,
+        height: number
+    ) {
         this.x = x
         this.y = y
-        this.z = 0
+        this.z = 200
+        this.width = width
+        this.height = height
         this.time = 0
         this.numVertex = history * 2
         this.verts = new Float32Array(this.numVertex * POS_FPV)
@@ -32,16 +43,19 @@ class Worm {
     }
 
     update (data: ModelData, options: FlowOptions, time: number): void {
-        const deltaTime = (time - this.time)
+        const posScale = 1 / ((this.width + this.height) / 2)
+        const posOffsetX = -this.width / 2
+        const posOffsetY = -this.height / 2
         this.time = time
-        const velocity = calcFlowVelocity(data, options, this.x, this.y, time * MS_TO_HR)
+        const velocity = calcFlowVelocity(data, options, this.x, this.height - this.y, time / 1000)
+        const velScale = 20
         this.verts.set([
-            this.y,
-            this.x,
-            this.z,
-            this.y + velocity[0] * deltaTime,
-            this.x + velocity[1] * deltaTime,
-            this.z + velocity[2] * deltaTime
+            (this.y + posOffsetY) * posScale,
+            (this.x + posOffsetX) * posScale,
+            this.z * posScale,
+            (this.y + velocity[0] * velScale + posOffsetY) * posScale,
+            (this.x + velocity[1] * velScale + posOffsetX) * posScale,
+            (this.z + velocity[2] * velScale) * posScale
         ])
     }
 
@@ -71,7 +85,7 @@ class Worms {
         this.worms = []
         for (let x = 0; x < width; x += 1 / density) {
             for (let y = 0; y < height; y += 1 / density) {
-                this.worms.push(new Worm(gl, x, y, history))
+                this.worms.push(new Worm(gl, x, y, history, width, height))
             }
         }
 
