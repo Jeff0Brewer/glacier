@@ -40,6 +40,7 @@ class Camera {
             this.axis,
             mat4.fromZRotation(mat4.create(), -rotationZ)
         )
+        vec3.normalize(this.axis, this.axis)
         mat4.rotate(this.matrix, this.matrix, rotationX, this.axis)
     }
 
