@@ -12,10 +12,11 @@ const App: FC = () => {
 
         if (canvasRef.current) {
             visRef.current = new VisRenderer(canvasRef.current)
+            visRef.current.getData()
         }
-        const draw = (): void => {
+        const draw = (time: number): void => {
             if (!visRef.current) { return }
-            visRef.current.draw()
+            visRef.current.draw(time)
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
