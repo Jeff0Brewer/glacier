@@ -1,7 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initGl } from '../lib/gl-wrap'
 import type { ModelData } from '../lib/data-load'
-import { loadDataset, SAMPLES, LINES } from '../lib/data-load'
+import { loadDataset, WIDTH, HEIGHT } from '../lib/data-load'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
@@ -43,7 +43,7 @@ class VisRenderer {
         this.glacier.setProjMatrix(this.proj)
         this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford_5px.png')
 
-        this.worms = new Worms(this.gl, LINES, SAMPLES, 0.05, 10)
+        this.worms = new Worms(this.gl, HEIGHT, WIDTH, 0.05, 10)
         this.gl.useProgram(this.worms.program)
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)

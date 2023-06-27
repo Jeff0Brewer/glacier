@@ -30,8 +30,8 @@ const getUtmData = async (
 }
 
 // sample dataset
-const SAMPLES = 1027
-const LINES = 1820
+const WIDTH = 1027
+const HEIGHT = 1820
 const MODEL_DIR = './data/model/'
 const MODEL_FILES = {
     mag: 'mag.utm',
@@ -67,7 +67,7 @@ const loadDataset = async (): Promise<ModelData> => {
     // read data from files
     const dataPromises = []
     for (const file of Object.values(MODEL_FILES)) {
-        dataPromises.push(getUtmData(MODEL_DIR + file, SAMPLES, LINES))
+        dataPromises.push(getUtmData(MODEL_DIR + file, WIDTH, HEIGHT))
     }
     const data = await Promise.all(dataPromises)
 
@@ -82,8 +82,8 @@ const loadDataset = async (): Promise<ModelData> => {
 
 export {
     loadDataset,
-    SAMPLES,
-    LINES
+    WIDTH,
+    HEIGHT
 }
 
 export type {
