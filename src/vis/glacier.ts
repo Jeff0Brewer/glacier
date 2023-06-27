@@ -60,12 +60,13 @@ class Glacier {
         gl.bufferData(gl.ARRAY_BUFFER, plane, gl.STATIC_DRAW)
     }
 
-    draw (gl: WebGLRenderingContext): void {
+    draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
         gl.useProgram(this.program)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.bindPosition()
         this.bindTexCoord()
+        this.setModelMatrix(modelMatrix)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
     }
 }
