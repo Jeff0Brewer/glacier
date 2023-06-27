@@ -33,9 +33,13 @@ class VisRenderer {
         const far = 50
         this.proj = mat4.perspective(mat4.create(), fov, aspect, near, far)
         const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
-        this.scale = mat4.fromScaling(
+        this.scale = mat4.translate(
             mat4.create(),
-            [scaleValue, scaleValue, 1]
+            mat4.fromScaling(
+                mat4.create(),
+                [scaleValue, scaleValue, 1]
+            ),
+            [-WIDTH * 0.5, -HEIGHT * 0.5, 0]
         )
 
         this.camera = new Camera(canvas, this.model, eye, focus, up)
