@@ -67,7 +67,7 @@ const loadDataset = async (): Promise<ModelData> => {
     // read data from files
     const dataPromises = []
     for (const file of Object.values(MODEL_FILES)) {
-        dataPromises.push(getUtmData(MODEL_DIR + file, LINES, SAMPLES))
+        dataPromises.push(getUtmData(MODEL_DIR + file, SAMPLES, LINES))
     }
     const data = await Promise.all(dataPromises)
 
