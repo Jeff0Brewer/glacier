@@ -9,8 +9,6 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 // floats per vertex for attribs
 const POS_FPV = 3
 
-const MS_TO_HR = 1 / (1000 * 60 * 60)
-
 class Worm {
     x: number
     y: number
@@ -32,7 +30,7 @@ class Worm {
     ) {
         this.x = x
         this.y = y
-        this.z = 200
+        this.z = 0.15
         this.width = width
         this.height = height
         this.time = 0
@@ -43,19 +41,16 @@ class Worm {
     }
 
     update (data: ModelData, options: FlowOptions, time: number): void {
-        const posScale = 1 / ((this.width + this.height) / 2)
-        const posOffsetX = -this.width / 2
-        const posOffsetY = -this.height / 2
         this.time = time
         const velocity = calcFlowVelocity(data, options, this.x, this.height - this.y, time / 1000)
         const velScale = 20
         this.verts.set([
-            (this.y + posOffsetY) * posScale,
-            (this.x + posOffsetX) * posScale,
-            this.z * posScale,
-            (this.y + velocity[0] * velScale + posOffsetY) * posScale,
-            (this.x + velocity[1] * velScale + posOffsetX) * posScale,
-            (this.z + velocity[2] * velScale) * posScale
+            this.y,
+            this.x,
+            this.z,
+            this.y + velocity[0] * velScale,
+            this.x + velocity[1] * velScale,
+            this.z + velocity[2] * 0.01
         ])
     }
 
@@ -74,6 +69,7 @@ class Worms {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
+    setScaleMatrix: (mat: mat4) => void
 
     constructor (
         gl: WebGLRenderingContext,
@@ -102,6 +98,10 @@ class Worms {
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
         this.setProjMatrix = (mat: mat4): void => {
             gl.uniformMatrix4fv(uProjMatrix, false, mat)
+        }
+        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
+        this.setScaleMatrix = (mat: mat4): void => {
+            gl.uniformMatrix4fv(uScaleMatrix, false, mat)
         }
     }
 

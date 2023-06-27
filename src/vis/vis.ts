@@ -57,6 +57,7 @@ class VisRenderer {
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)
         this.worms.setProjMatrix(this.proj)
+        this.worms.setScaleMatrix(this.scale)
 
         window.addEventListener('resize', (): void => {
             const aspect = canvas.width / canvas.height
