@@ -56,7 +56,7 @@ class Worm {
     ) {
         this.x = x
         this.y = y
-        this.z = 100
+        this.z = 50
         this.time = 0
         this.numVertex = history * 2
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * POS_FPV)
@@ -66,13 +66,15 @@ class Worm {
         time /= 1000
         const deltaTime = time - this.time
         this.time = time
+
         // prevent updates after freezes
         if (deltaTime > 1) { return }
+
         const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
         const lastX = this.x
         const lastY = this.y
         const lastZ = this.z
-        this.x -= velocity[0] * deltaTime * WORM_SPEED
+        this.x += velocity[0] * deltaTime * WORM_SPEED
         this.y -= velocity[1] * deltaTime * WORM_SPEED
         this.z -= velocity[2] * deltaTime * WORM_SPEED
         const line = new Float32Array([
@@ -83,6 +85,7 @@ class Worm {
             this.y,
             this.z
         ])
+
         this.ringBuffer.set(gl, line)
     }
 
