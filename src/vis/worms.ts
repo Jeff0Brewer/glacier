@@ -6,27 +6,31 @@ import type { ModelData } from '../lib/data-load'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
+// ring buffer for drawing trails
 class RingSubBuffer {
-    start: number
-    end: number
+    length: number
     curr: number
+    buffer: WebGLBuffer
 
-    constructor (start: number, end: number) {
-        this.start = start
-        this.end = end
-        this.curr = start
+    constructor (gl: WebGLRenderingContext, length: number) {
+        this.length = length
+        this.curr = 0
+        this.buffer = initBuffer(gl)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(length), gl.DYNAMIC_DRAW)
     }
 
-    set (gl: WebGLRenderingContext, buffer: WebGLBuffer, vals: Float32Array): void {
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-        if (this.end - this.curr > vals.length) {
+    // update buffer at current offset, wrap back to start if more vals than remaining length
+    set (gl: WebGLRenderingContext, vals: Float32Array): void {
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+        const wrapLength = this.length - this.curr
+        if (vals.length < wrapLength) {
             gl.bufferSubData(gl.ARRAY_BUFFER, this.curr * vals.BYTES_PER_ELEMENT, vals)
             this.curr += vals.length
         } else {
-            const wrap = vals.slice(0, this.end - this.start)
+            const wrap = vals.slice(0, wrapLength)
             gl.bufferSubData(gl.ARRAY_BUFFER, this.curr * vals.BYTES_PER_ELEMENT, wrap)
-            this.curr = this.start
-            this.set(gl, buffer, vals.slice(this.end - this.start))
+            this.curr = 0
+            this.set(gl, vals.slice(wrapLength))
         }
     }
 }
@@ -42,7 +46,6 @@ class Worm {
     z: number
     time: number
     numVertex: number
-    buffer: WebGLBuffer
     ringBuffer: RingSubBuffer
 
     constructor (
@@ -56,9 +59,7 @@ class Worm {
         this.z = 100
         this.time = 0
         this.numVertex = history * 2
-        this.buffer = initBuffer(gl)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.numVertex * POS_FPV), gl.DYNAMIC_DRAW)
-        this.ringBuffer = new RingSubBuffer(0, this.numVertex * POS_FPV)
+        this.ringBuffer = new RingSubBuffer(gl, this.numVertex * POS_FPV)
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
@@ -82,11 +83,11 @@ class Worm {
             this.y,
             this.z
         ])
-        this.ringBuffer.set(gl, this.buffer, line)
+        this.ringBuffer.set(gl, line)
     }
 
     draw (gl: WebGLRenderingContext, bindPosition: () => void): void {
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.ringBuffer.buffer)
         bindPosition()
         gl.drawArrays(gl.LINES, 0, this.numVertex)
     }
