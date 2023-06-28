@@ -4,7 +4,7 @@ import type { ModelData } from '../lib/data-load'
 import { WIDTH, HEIGHT } from '../lib/data-load'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
-import Worms from '../vis/worms'
+import FlowLines from '../vis/flow'
 
 const HEIGHT_SCALE = 100
 
@@ -17,7 +17,7 @@ class VisRenderer {
     scale: mat4
     camera: Camera
     glacier: Glacier
-    worms: Worms
+    flow: FlowLines
 
     constructor (canvas: HTMLCanvasElement, data: ModelData, surface: HTMLImageElement) {
         this.data = data
@@ -57,32 +57,36 @@ class VisRenderer {
         this.glacier.setDimensions(WIDTH, HEIGHT)
         this.glacier.setHeightScale(HEIGHT_SCALE)
 
-        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 1000)
-        this.gl.useProgram(this.worms.program)
-        this.worms.setModelMatrix(this.model)
-        this.worms.setViewMatrix(this.view)
-        this.worms.setProjMatrix(this.proj)
-        this.worms.setScaleMatrix(this.scale)
-        this.worms.setDimensions(WIDTH, HEIGHT)
-        this.worms.setHeightScale(HEIGHT_SCALE)
+        const options = {
+            vel: true,
+            p1: true,
+            p2: true,
+            p3: true
+        }
+        this.flow = new FlowLines(this.gl, data, options, surface, WIDTH, HEIGHT, 0.05, 100)
+        this.gl.useProgram(this.flow.program)
+        this.flow.setModelMatrix(this.model)
+        this.flow.setViewMatrix(this.view)
+        this.flow.setProjMatrix(this.proj)
+        this.flow.setScaleMatrix(this.scale)
+        this.flow.setDimensions(WIDTH, HEIGHT)
+        this.flow.setHeightScale(HEIGHT_SCALE)
 
         window.addEventListener('resize', (): void => {
             const aspect = canvas.width / canvas.height
             mat4.perspective(this.proj, fov, aspect, near, far)
             this.gl.useProgram(this.glacier.program)
             this.glacier.setProjMatrix(this.proj)
-            this.gl.useProgram(this.worms.program)
-            this.worms.setProjMatrix(this.proj)
+            this.gl.useProgram(this.flow.program)
+            this.flow.setProjMatrix(this.proj)
             this.gl.viewport(0, 0, canvas.width, canvas.height)
         })
     }
 
-    draw (time: number): void {
-        time /= 1000
+    draw (): void {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
-        this.worms.update(this.gl, this.data, { vel: true, p1: true, p2: true, p3: true }, time)
-        this.worms.draw(this.gl, this.model)
+        this.flow.draw(this.gl, this.model)
     }
 }
 
