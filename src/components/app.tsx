@@ -1,22 +1,36 @@
-import { useRef, useEffect, FC } from 'react'
+import { useState, useRef, useEffect, FC } from 'react'
+import { loadDataset, loadImageAsync } from '../lib/data-load'
 import VisRenderer from '../vis/vis'
+
+const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
 
 const App: FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const frameIdRef = useRef<number>(-1)
-    const visRef = useRef<VisRenderer | null>(null)
+    const [vis, setVis] = useState<VisRenderer | null>(null)
+
+    const initVis = async (canvas: HTMLCanvasElement): Promise<void> => {
+        const [data, surface] = await Promise.all([
+            loadDataset(),
+            loadImageAsync(SURFACE_SRC)
+        ])
+        setVis(new VisRenderer(canvas, data, surface))
+    }
 
     useEffect(() => {
+        if (!canvasRef.current) {
+            throw new Error('No reference to visualization canvas')
+        }
+        initVis(canvasRef.current)
+
         resizeCanvas()
         window.addEventListener('resize', resizeCanvas)
+    }, [])
 
-        if (canvasRef.current) {
-            visRef.current = new VisRenderer(canvasRef.current)
-            visRef.current.getData()
-        }
+    useEffect(() => {
         const draw = (time: number): void => {
-            if (!visRef.current) { return }
-            visRef.current.draw(time)
+            if (!vis) { return }
+            vis.draw(time)
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
@@ -24,7 +38,7 @@ const App: FC = () => {
         return () => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
-    }, [])
+    }, [vis])
 
     const resizeCanvas = (): void => {
         if (!canvasRef.current) { return }

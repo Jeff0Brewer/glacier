@@ -110,6 +110,8 @@ class Worms {
 
     constructor (
         gl: WebGLRenderingContext,
+        data: ModelData,
+        surface: HTMLImageElement,
         width: number,
         height: number,
         density: number,
@@ -123,8 +125,19 @@ class Worms {
         }
 
         this.program = initProgram(gl, vertSource, fragSource)
+        // set height map from image data
         this.texture = initTexture(gl)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            surface
+        )
+
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
+
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
             gl.uniformMatrix4fv(uModelMatrix, false, mat)
@@ -149,18 +162,6 @@ class Worms {
         this.setHeightScale = (scale: number): void => {
             gl.uniform1f(uHeightScale, scale)
         }
-    }
-
-    setSurface (gl: WebGLRenderingContext, image: HTMLImageElement): void {
-        gl.bindTexture(gl.TEXTURE_2D, this.texture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            image
-        )
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {

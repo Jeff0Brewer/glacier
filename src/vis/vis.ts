@@ -1,12 +1,11 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initGl } from '../lib/gl-wrap'
 import type { ModelData } from '../lib/data-load'
-import { loadDataset, loadImageAsync, WIDTH, HEIGHT } from '../lib/data-load'
+import { WIDTH, HEIGHT } from '../lib/data-load'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
 
-const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
 const HEIGHT_SCALE = 100
 
 class VisRenderer {
@@ -20,8 +19,8 @@ class VisRenderer {
     glacier: Glacier
     worms: Worms
 
-    constructor (canvas: HTMLCanvasElement) {
-        this.data = null
+    constructor (canvas: HTMLCanvasElement, data: ModelData, surface: HTMLImageElement) {
+        this.data = data
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
 
@@ -47,7 +46,7 @@ class VisRenderer {
 
         this.camera = new Camera(canvas, this.model, eye, focus, up)
 
-        this.glacier = new Glacier(this.gl)
+        this.glacier = new Glacier(this.gl, surface)
         this.gl.useProgram(this.glacier.program)
         this.glacier.setModelMatrix(this.model)
         this.glacier.setViewMatrix(this.view)
@@ -56,7 +55,7 @@ class VisRenderer {
         this.glacier.setDimensions(WIDTH, HEIGHT)
         this.glacier.setHeightScale(HEIGHT_SCALE)
 
-        this.worms = new Worms(this.gl, WIDTH, HEIGHT, 0.05, 100)
+        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 100)
         this.gl.useProgram(this.worms.program)
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)
@@ -74,16 +73,6 @@ class VisRenderer {
             this.worms.setProjMatrix(this.proj)
             this.gl.viewport(0, 0, canvas.width, canvas.height)
         })
-    }
-
-    async getData (): Promise<void> {
-        const [data, surface] = await Promise.all([
-            loadDataset(),
-            loadImageAsync(SURFACE_SRC)
-        ])
-        this.data = data
-        this.glacier.setSurface(this.gl, surface)
-        this.worms.setSurface(this.gl, surface)
     }
 
     draw (time: number): void {

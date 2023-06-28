@@ -19,12 +19,27 @@ class Glacier {
     setDimensions: (width: number, height: number) => void
     setHeightScale: (scale: number) => void
 
-    constructor (gl: WebGLRenderingContext) {
+    constructor (gl: WebGLRenderingContext, surface: HTMLImageElement) {
         this.program = initProgram(gl, vertSource, fragSource)
+
+        // buffer plane verts from image size
         this.buffer = initBuffer(gl)
+        const plane = getPlaneVerts(surface.width, surface.height)
+        this.numVertex = plane.length / POS_FPV
+        gl.bufferData(gl.ARRAY_BUFFER, plane, gl.STATIC_DRAW)
+
+        // set height map from image data
         this.texture = initTexture(gl)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            surface
+        )
+
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
-        this.numVertex = 0
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
@@ -50,24 +65,6 @@ class Glacier {
         this.setHeightScale = (scale: number): void => {
             gl.uniform1f(uHeightScale, scale)
         }
-    }
-
-    setSurface (gl: WebGLRenderingContext, image: HTMLImageElement): void {
-        // set texture from image data
-        gl.bindTexture(gl.TEXTURE_2D, this.texture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            image
-        )
-        // set vertices from image size
-        const plane = getPlaneVerts(image.width, image.height)
-        this.numVertex = plane.length / POS_FPV
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, plane, gl.STATIC_DRAW)
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
