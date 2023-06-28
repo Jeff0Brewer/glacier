@@ -79,7 +79,7 @@ class VisRenderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         if (this.data) {
-            this.worms.update(this.data, { vel: true, p1: true, p2: true, p3: true }, time)
+            this.worms.update(this.gl, this.data, { vel: true, p1: true, p2: true, p3: true }, time)
             this.worms.draw(this.gl, this.model)
         }
     }

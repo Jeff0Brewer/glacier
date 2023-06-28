@@ -6,6 +6,31 @@ import type { ModelData } from '../lib/data-load'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
+class RingSubBuffer {
+    start: number
+    end: number
+    curr: number
+
+    constructor (start: number, end: number) {
+        this.start = start
+        this.end = end
+        this.curr = start
+    }
+
+    set (gl: WebGLRenderingContext, buffer: WebGLBuffer, vals: Float32Array): void {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+        if (this.end - this.curr > vals.length) {
+            gl.bufferSubData(gl.ARRAY_BUFFER, this.curr * vals.BYTES_PER_ELEMENT, vals)
+            this.curr += vals.length
+        } else {
+            const wrap = vals.slice(0, this.end - this.start)
+            gl.bufferSubData(gl.ARRAY_BUFFER, this.curr * vals.BYTES_PER_ELEMENT, wrap)
+            this.curr = this.start
+            this.set(gl, buffer, vals.slice(this.end - this.start))
+        }
+    }
+}
+
 // floats per vertex for attribs
 const POS_FPV = 3
 
@@ -18,8 +43,7 @@ class Worm {
     time: number
     numVertex: number
     buffer: WebGLBuffer
-    verts: Float32Array
-    currInd: number
+    ringBuffer: RingSubBuffer
 
     constructor (
         gl: WebGLRenderingContext,
@@ -32,39 +56,37 @@ class Worm {
         this.z = 100
         this.time = 0
         this.numVertex = history * 2
-        this.verts = new Float32Array(this.numVertex * POS_FPV)
         this.buffer = initBuffer(gl)
-        this.currInd = 0
-        gl.bufferData(gl.ARRAY_BUFFER, this.verts, gl.DYNAMIC_DRAW)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.numVertex * POS_FPV), gl.DYNAMIC_DRAW)
+        this.ringBuffer = new RingSubBuffer(0, this.numVertex * POS_FPV)
     }
 
-    update (data: ModelData, options: FlowOptions, time: number): void {
+    update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         time /= 1000
         const deltaTime = time - this.time
         this.time = time
         // prevent updates after freezes
         if (deltaTime > 1) { return }
-        const velocity = calcFlowVelocity(data, options, this.y, this.x, time / 1000)
+        const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
         const lastX = this.x
         const lastY = this.y
         const lastZ = this.z
         this.x -= velocity[0] * deltaTime * WORM_SPEED
         this.y -= velocity[1] * deltaTime * WORM_SPEED
         this.z -= velocity[2] * deltaTime * WORM_SPEED
-        this.verts.set([
+        const line = new Float32Array([
             lastX,
             lastY,
             lastZ,
             this.x,
             this.y,
             this.z
-        ], this.currInd)
-        this.currInd = (this.currInd + 6) % this.verts.length
+        ])
+        this.ringBuffer.set(gl, this.buffer, line)
     }
 
     draw (gl: WebGLRenderingContext, bindPosition: () => void): void {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.verts, gl.DYNAMIC_DRAW)
         bindPosition()
         gl.drawArrays(gl.LINES, 0, this.numVertex)
     }
@@ -113,9 +135,9 @@ class Worms {
         }
     }
 
-    update (data: ModelData, options: FlowOptions, time: number): void {
+    update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         for (const worm of this.worms) {
-            worm.update(data, options, time)
+            worm.update(gl, data, options, time)
         }
     }
 
