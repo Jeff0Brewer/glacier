@@ -15,8 +15,8 @@ const FLOW_OPTIONS_ENABLED: FlowOptions = {
 }
 // floats per vertex for attribs
 const POS_FPV = 3
-const TIME_FPV = 1
-const ALL_FPV = POS_FPV + TIME_FPV
+const SEG_FPV = 1
+const ALL_FPV = POS_FPV + SEG_FPV
 
 // ring buffer for drawing trails
 class RingSubBuffer {
@@ -51,6 +51,8 @@ class Worm {
     x: number
     y: number
     z: number
+    history: number
+    currSegment: number
     time: number
     numVertex: number
     ringBuffer: RingSubBuffer
@@ -61,9 +63,11 @@ class Worm {
         x: number,
         y: number
     ) {
+        this.history = history
         this.x = x
         this.y = y
         this.z = 0
+        this.currSegment = 0
         this.time = 0
         this.numVertex = history * 2
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * ALL_FPV)
@@ -71,7 +75,6 @@ class Worm {
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         const deltaTime = time - this.time
-        const lastTime = time
         this.time = time
 
         // prevent updates after freezes
@@ -84,24 +87,33 @@ class Worm {
         this.x += velocity[0] * deltaTime * WORM_SPEED
         this.y -= velocity[1] * deltaTime * WORM_SPEED
         this.z += velocity[2] * deltaTime * WORM_SPEED
+
+        const lastSegment = this.currSegment
+        this.currSegment += 1
         const line = new Float32Array([
             lastX,
             lastY,
             lastZ,
-            lastTime,
+            lastSegment,
             this.x,
             this.y,
             this.z,
-            this.time
+            this.currSegment
         ])
 
         this.ringBuffer.set(gl, line)
     }
 
-    draw (gl: WebGLRenderingContext, bindPosition: () => void, bindTime: () => void): void {
+    draw (
+        gl: WebGLRenderingContext,
+        bindPosition: () => void,
+        bindSegment: () => void,
+        setCurrSegment: (ind: number) => void
+    ): void {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.ringBuffer.buffer)
         bindPosition()
-        bindTime()
+        bindSegment()
+        setCurrSegment(this.currSegment)
         gl.drawArrays(gl.LINES, 0, this.numVertex)
     }
 }
@@ -111,14 +123,15 @@ class Worms {
     program: WebGLProgram
     texture: WebGLTexture
     bindPosition: () => void
-    bindTime: () => void
+    bindSegment: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setScaleMatrix: (mat: mat4) => void
     setDimensions: (width: number, height: number) => void
     setHeightScale: (scale: number) => void
-    setCurrTime: (time: number) => void
+    setHistory: (history: number) => void
+    setCurrSegment: (ind: number) => void
 
     constructor (
         gl: WebGLRenderingContext,
@@ -152,7 +165,7 @@ class Worms {
         )
 
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
-        this.bindTime = initAttribute(gl, this.program, 'time', TIME_FPV, ALL_FPV, POS_FPV)
+        this.bindSegment = initAttribute(gl, this.program, 'segment', SEG_FPV, ALL_FPV, POS_FPV)
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
@@ -178,10 +191,15 @@ class Worms {
         this.setHeightScale = (scale: number): void => {
             gl.uniform1f(uHeightScale, scale)
         }
-        const uCurrTime = gl.getUniformLocation(this.program, 'currTime')
-        this.setCurrTime = (scale: number): void => {
-            gl.uniform1f(uCurrTime, scale)
+        const uHistory = gl.getUniformLocation(this.program, 'history')
+        this.setHistory = (scale: number): void => {
+            gl.uniform1f(uHistory, scale)
         }
+        const uCurrSegment = gl.getUniformLocation(this.program, 'currSegment')
+        this.setCurrSegment = (scale: number): void => {
+            gl.uniform1f(uCurrSegment, scale)
+        }
+        this.setHistory(history)
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
@@ -189,7 +207,6 @@ class Worms {
             worm.update(gl, data, options, time)
         }
         gl.useProgram(this.program)
-        this.setCurrTime(time)
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
@@ -197,7 +214,7 @@ class Worms {
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.setModelMatrix(modelMatrix)
         for (const worm of this.worms) {
-            worm.draw(gl, this.bindPosition, this.bindTime)
+            worm.draw(gl, this.bindPosition, this.bindSegment, this.setCurrSegment)
         }
     }
 }

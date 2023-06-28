@@ -1,5 +1,5 @@
 attribute vec3 position;
-attribute float time;
+attribute float segment;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -8,7 +8,8 @@ uniform mat4 scaleMatrix;
 uniform sampler2D surfaceMap;
 uniform vec2 dimensions;
 uniform float heightScale;
-uniform float currTime;
+uniform float history;
+uniform float currSegment;
 
 varying float fade;
 
@@ -23,5 +24,5 @@ void main() {
     float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
     vec3 pos = vec3(position.xy, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
-    fade = 1.0 / ((currTime - time) * 0.2);
+    fade = 1.0 - ((currSegment - segment) / history);
 }
