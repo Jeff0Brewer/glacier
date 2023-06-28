@@ -6,6 +6,18 @@ import type { ModelData } from '../lib/data-load'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
+const WORM_SPEED = 15
+const FLOW_OPTIONS_ENABLED: FlowOptions = {
+    vel: true,
+    p1: true,
+    p2: true,
+    p3: true
+}
+// floats per vertex for attribs
+const POS_FPV = 3
+const TIME_FPV = 1
+const ALL_FPV = POS_FPV + TIME_FPV
+
 // ring buffer for drawing trails
 class RingSubBuffer {
     length: number
@@ -35,11 +47,6 @@ class RingSubBuffer {
     }
 }
 
-// floats per vertex for attribs
-const POS_FPV = 3
-
-const WORM_SPEED = 15
-
 class Worm {
     x: number
     y: number
@@ -59,11 +66,12 @@ class Worm {
         this.z = 0
         this.time = 0
         this.numVertex = history * 2
-        this.ringBuffer = new RingSubBuffer(gl, this.numVertex * POS_FPV)
+        this.ringBuffer = new RingSubBuffer(gl, this.numVertex * ALL_FPV)
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         const deltaTime = time - this.time
+        const lastTime = time
         this.time = time
 
         // prevent updates after freezes
@@ -80,9 +88,11 @@ class Worm {
             lastX,
             lastY,
             lastZ,
+            lastTime,
             this.x,
             this.y,
-            this.z
+            this.z,
+            this.time
         ])
 
         this.ringBuffer.set(gl, line)
@@ -93,13 +103,6 @@ class Worm {
         bindPosition()
         gl.drawArrays(gl.LINES, 0, this.numVertex)
     }
-}
-
-const FLOW_OPTIONS_ENABLED: FlowOptions = {
-    vel: true,
-    p1: true,
-    p2: true,
-    p3: true
 }
 
 class Worms {
@@ -145,7 +148,7 @@ class Worms {
             surface
         )
 
-        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
+        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
