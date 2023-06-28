@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import { calcFlowVelocity } from '../lib/flow-calc'
 import type { FlowOptions } from '../lib/flow-calc'
@@ -96,6 +96,13 @@ class Worm {
     }
 }
 
+const FLOW_OPTIONS_ENABLED: FlowOptions = {
+    vel: true,
+    p1: true,
+    p2: true,
+    p3: true
+}
+
 class Worms {
     worms: Array<Worm>
     program: WebGLProgram
@@ -120,7 +127,10 @@ class Worms {
         this.worms = []
         for (let x = 0; x < width; x += 1 / density) {
             for (let y = 0; y < height; y += 1 / density) {
-                this.worms.push(new Worm(gl, history, x, y))
+                const vel = calcFlowVelocity(data, FLOW_OPTIONS_ENABLED, y, x, 0)
+                if (vec3.length(vel) !== 0) {
+                    this.worms.push(new Worm(gl, history, x, y))
+                }
             }
         }
 

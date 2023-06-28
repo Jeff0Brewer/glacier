@@ -55,7 +55,7 @@ class VisRenderer {
         this.glacier.setDimensions(WIDTH, HEIGHT)
         this.glacier.setHeightScale(HEIGHT_SCALE)
 
-        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 100)
+        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 1000)
         this.gl.useProgram(this.worms.program)
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)
