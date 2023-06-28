@@ -145,9 +145,12 @@ class Worms {
         this.worms = []
         for (let x = 0; x < width; x += 1 / density) {
             for (let y = 0; y < height; y += 1 / density) {
-                const vel = calcFlowVelocity(data, FLOW_OPTIONS_ENABLED, y, x, 0)
+                // distribute worms semi-randomly
+                const rx = x + Math.random() * 10 - 5
+                const ry = y + Math.random() * 10 - 5
+                const vel = calcFlowVelocity(data, FLOW_OPTIONS_ENABLED, ry, rx, 0)
                 if (vec3.length(vel) !== 0) {
-                    this.worms.push(new Worm(gl, history, x, y))
+                    this.worms.push(new Worm(gl, history, rx, ry))
                 }
             }
         }
