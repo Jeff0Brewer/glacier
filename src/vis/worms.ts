@@ -13,8 +13,6 @@ class Worm {
     x: number
     y: number
     z: number
-    width: number
-    height: number
     time: number
     numVertex: number
     buffer: WebGLBuffer
@@ -22,17 +20,13 @@ class Worm {
 
     constructor (
         gl: WebGLRenderingContext,
-        x: number,
-        y: number,
         history: number,
-        width: number,
-        height: number
+        x: number,
+        y: number
     ) {
         this.x = x
         this.y = y
         this.z = 100
-        this.width = width
-        this.height = height
         this.time = 0
         this.numVertex = history * 2
         this.verts = new Float32Array(this.numVertex * POS_FPV)
@@ -42,14 +36,14 @@ class Worm {
 
     update (data: ModelData, options: FlowOptions, time: number): void {
         this.time = time
-        const velocity = calcFlowVelocity(data, options, this.x, this.y, time / 1000)
+        const velocity = calcFlowVelocity(data, options, this.y, this.x, time / 1000)
         const velScale = 20
         this.verts.set([
-            this.y,
             this.x,
+            this.y,
             this.z,
-            this.y + velocity[0] * velScale,
-            this.x + velocity[1] * velScale,
+            this.x + velocity[0] * velScale,
+            this.y + velocity[1] * velScale,
             this.z + velocity[2] * velScale
         ])
     }
@@ -81,7 +75,7 @@ class Worms {
         this.worms = []
         for (let x = 0; x < width; x += 1 / density) {
             for (let y = 0; y < height; y += 1 / density) {
-                this.worms.push(new Worm(gl, x, y, history, width, height))
+                this.worms.push(new Worm(gl, history, x, y))
             }
         }
 
