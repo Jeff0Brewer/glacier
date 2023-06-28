@@ -30,7 +30,7 @@ class Worm {
     ) {
         this.x = x
         this.y = y
-        this.z = 0.15
+        this.z = 100
         this.width = width
         this.height = height
         this.time = 0
@@ -42,7 +42,7 @@ class Worm {
 
     update (data: ModelData, options: FlowOptions, time: number): void {
         this.time = time
-        const velocity = calcFlowVelocity(data, options, this.x, this.height - this.y, time / 1000)
+        const velocity = calcFlowVelocity(data, options, this.x, this.y, time / 1000)
         const velScale = 20
         this.verts.set([
             this.y,
@@ -50,7 +50,7 @@ class Worm {
             this.z,
             this.y + velocity[0] * velScale,
             this.x + velocity[1] * velScale,
-            this.z + velocity[2] * 0.01
+            this.z + velocity[2] * velScale
         ])
     }
 

@@ -5,8 +5,6 @@ import fragSource from '../shaders/glacier-frag.glsl?raw'
 
 // floats per vertex for attribs
 const POS_FPV = 2
-const TEX_FPV = 2
-const ALL_FPV = POS_FPV + TEX_FPV
 
 class Glacier {
     buffer: WebGLBuffer
@@ -14,18 +12,17 @@ class Glacier {
     program: WebGLProgram
     numVertex: number
     bindPosition: () => void
-    bindTexCoord: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setScaleMatrix: (mat: mat4) => void
+    setDimensions: (width: number, height: number) => void
 
     constructor (gl: WebGLRenderingContext) {
         this.program = initProgram(gl, vertSource, fragSource)
         this.buffer = initBuffer(gl)
         this.texture = initTexture(gl)
-        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
-        this.bindTexCoord = initAttribute(gl, this.program, 'texCoord', TEX_FPV, ALL_FPV, POS_FPV)
+        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
         this.numVertex = 0
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
@@ -44,6 +41,10 @@ class Glacier {
         this.setScaleMatrix = (mat: mat4): void => {
             gl.uniformMatrix4fv(uScaleMatrix, false, mat)
         }
+        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
+        this.setDimensions = (width: number, height: number): void => {
+            gl.uniform2f(uDimensions, width, height)
+        }
     }
 
     async setSurface (gl: WebGLRenderingContext, imageSource: string): Promise<void> {
@@ -60,7 +61,7 @@ class Glacier {
         )
         // set vertices from image size
         const plane = getPlaneVerts(image.width, image.height)
-        this.numVertex = plane.length / ALL_FPV
+        this.numVertex = plane.length / POS_FPV
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         gl.bufferData(gl.ARRAY_BUFFER, plane, gl.STATIC_DRAW)
     }
@@ -70,7 +71,6 @@ class Glacier {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.bindPosition()
-        this.bindTexCoord()
         this.setModelMatrix(modelMatrix)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
     }
@@ -84,26 +84,15 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
     height = Math.ceil(height / DOWNSAMPLE)
 
     const VERT_PER_POS = 2 // since drawing as triangle strip
-    const verts = new Float32Array((width - 1) * height * VERT_PER_POS * ALL_FPV)
+    const verts = new Float32Array((width - 1) * height * VERT_PER_POS * POS_FPV)
 
     let ind = 0
-    const texScaleX = 1 / (width - 1)
-    const texScaleY = 1 / (height - 1)
-
-    // helper to set swizzled attribs from xy position
-    const setVert = (x: number, y: number): void => {
-        // position in same as img index
-        verts[ind++] = x * DOWNSAMPLE
-        verts[ind++] = y * DOWNSAMPLE
-        // tex coords in range (0, 1)
-        verts[ind++] = 1 - x * texScaleX
-        verts[ind++] = y * texScaleY
-    }
-
     // helper to set single line in plane's triangle strip
     const setStrip = (x: number, y: number): void => {
-        setVert(x, y)
-        setVert(x + 1, y)
+        verts[ind++] = x * DOWNSAMPLE
+        verts[ind++] = y * DOWNSAMPLE
+        verts[ind++] = (x + 1) * DOWNSAMPLE
+        verts[ind++] = y * DOWNSAMPLE
     }
 
     for (let x = 0; x < width - 1; x++) {
