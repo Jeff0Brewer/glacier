@@ -53,7 +53,7 @@ class VisRenderer {
         this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford_5px.png')
         this.glacier.setDimensions(WIDTH, HEIGHT)
 
-        this.worms = new Worms(this.gl, WIDTH, HEIGHT, 0.05, 10)
+        this.worms = new Worms(this.gl, WIDTH, HEIGHT, 0.05, 100)
         this.gl.useProgram(this.worms.program)
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)

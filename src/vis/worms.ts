@@ -9,6 +9,8 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 // floats per vertex for attribs
 const POS_FPV = 3
 
+const WORM_SPEED = 10
+
 class Worm {
     x: number
     y: number
@@ -17,6 +19,7 @@ class Worm {
     numVertex: number
     buffer: WebGLBuffer
     verts: Float32Array
+    currInd: number
 
     constructor (
         gl: WebGLRenderingContext,
@@ -31,21 +34,32 @@ class Worm {
         this.numVertex = history * 2
         this.verts = new Float32Array(this.numVertex * POS_FPV)
         this.buffer = initBuffer(gl)
+        this.currInd = 0
         gl.bufferData(gl.ARRAY_BUFFER, this.verts, gl.DYNAMIC_DRAW)
     }
 
     update (data: ModelData, options: FlowOptions, time: number): void {
+        time /= 1000
+        const deltaTime = time - this.time
         this.time = time
+        // prevent updates after freezes
+        if (deltaTime > 1) { return }
         const velocity = calcFlowVelocity(data, options, this.y, this.x, time / 1000)
-        const velScale = 20
+        const lastX = this.x
+        const lastY = this.y
+        const lastZ = this.z
+        this.x -= velocity[0] * deltaTime * WORM_SPEED
+        this.y -= velocity[1] * deltaTime * WORM_SPEED
+        this.z -= velocity[2] * deltaTime * WORM_SPEED
         this.verts.set([
+            lastX,
+            lastY,
+            lastZ,
             this.x,
             this.y,
-            this.z,
-            this.x + velocity[0] * velScale,
-            this.y + velocity[1] * velScale,
-            this.z + velocity[2] * velScale
-        ])
+            this.z
+        ], this.currInd)
+        this.currInd = (this.currInd + 6) % this.verts.length
     }
 
     draw (gl: WebGLRenderingContext, bindPosition: () => void): void {
