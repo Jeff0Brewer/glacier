@@ -23,6 +23,8 @@ class VisRenderer {
         this.data = data
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
+        this.gl.enable(this.gl.BLEND)
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
         const eye = vec3.fromValues(1, 1, 1)
         const focus = vec3.fromValues(0, 0, 0)

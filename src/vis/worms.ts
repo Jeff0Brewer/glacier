@@ -98,9 +98,10 @@ class Worm {
         this.ringBuffer.set(gl, line)
     }
 
-    draw (gl: WebGLRenderingContext, bindPosition: () => void): void {
+    draw (gl: WebGLRenderingContext, bindPosition: () => void, bindTime: () => void): void {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.ringBuffer.buffer)
         bindPosition()
+        bindTime()
         gl.drawArrays(gl.LINES, 0, this.numVertex)
     }
 }
@@ -110,12 +111,14 @@ class Worms {
     program: WebGLProgram
     texture: WebGLTexture
     bindPosition: () => void
+    bindTime: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setScaleMatrix: (mat: mat4) => void
     setDimensions: (width: number, height: number) => void
     setHeightScale: (scale: number) => void
+    setCurrTime: (time: number) => void
 
     constructor (
         gl: WebGLRenderingContext,
@@ -149,6 +152,7 @@ class Worms {
         )
 
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
+        this.bindTime = initAttribute(gl, this.program, 'time', TIME_FPV, ALL_FPV, POS_FPV)
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
@@ -174,12 +178,18 @@ class Worms {
         this.setHeightScale = (scale: number): void => {
             gl.uniform1f(uHeightScale, scale)
         }
+        const uCurrTime = gl.getUniformLocation(this.program, 'currTime')
+        this.setCurrTime = (scale: number): void => {
+            gl.uniform1f(uCurrTime, scale)
+        }
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         for (const worm of this.worms) {
             worm.update(gl, data, options, time)
         }
+        gl.useProgram(this.program)
+        this.setCurrTime(time)
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
@@ -187,7 +197,7 @@ class Worms {
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.setModelMatrix(modelMatrix)
         for (const worm of this.worms) {
-            worm.draw(gl, this.bindPosition)
+            worm.draw(gl, this.bindPosition, this.bindTime)
         }
     }
 }
