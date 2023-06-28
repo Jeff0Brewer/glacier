@@ -1,10 +1,12 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initGl } from '../lib/gl-wrap'
 import type { ModelData } from '../lib/data-load'
-import { loadDataset, WIDTH, HEIGHT } from '../lib/data-load'
+import { loadDataset, loadImageAsync, WIDTH, HEIGHT } from '../lib/data-load'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
+
+const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
 
 class VisRenderer {
     data: ModelData | null
@@ -50,7 +52,6 @@ class VisRenderer {
         this.glacier.setViewMatrix(this.view)
         this.glacier.setProjMatrix(this.proj)
         this.glacier.setScaleMatrix(this.scale)
-        this.glacier.setSurface(this.gl, './data/bedmap2_surface_rutford_5px.png')
         this.glacier.setDimensions(WIDTH, HEIGHT)
 
         this.worms = new Worms(this.gl, WIDTH, HEIGHT, 0.05, 100)
@@ -72,7 +73,12 @@ class VisRenderer {
     }
 
     async getData (): Promise<void> {
-        this.data = await loadDataset()
+        const [data, surface] = await Promise.all([
+            loadDataset(),
+            loadImageAsync(SURFACE_SRC)
+        ])
+        this.data = data
+        this.glacier.setSurface(this.gl, surface)
     }
 
     draw (time: number): void {

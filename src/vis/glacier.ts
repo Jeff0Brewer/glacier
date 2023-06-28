@@ -47,8 +47,7 @@ class Glacier {
         }
     }
 
-    async setSurface (gl: WebGLRenderingContext, imageSource: string): Promise<void> {
-        const image = await loadImageAsync(imageSource)
+    setSurface (gl: WebGLRenderingContext, image: HTMLImageElement): void {
         // set texture from image data
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         gl.texImage2D(
@@ -88,6 +87,7 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
 
     let ind = 0
     // helper to set single line in plane's triangle strip
+    // multiply by downsample to get coords aligned with pixel inds
     const setStrip = (x: number, y: number): void => {
         verts[ind++] = x * DOWNSAMPLE
         verts[ind++] = y * DOWNSAMPLE
@@ -109,20 +109,6 @@ const getPlaneVerts = (width: number, height: number): Float32Array => {
     }
 
     return verts
-}
-
-// wrap image load event in promise for async use
-const loadImageAsync = async (source: string): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-        const image = new Image()
-        image.src = source
-        image.addEventListener('load', (): void => {
-            resolve(image)
-        })
-        image.addEventListener('error', (): void => {
-            reject(new Error(`Failed to load image ${source}`))
-        })
-    })
 }
 
 export default Glacier
