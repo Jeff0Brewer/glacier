@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix'
-import { initProgram, initBuffer, initAttribute } from '../lib/gl-wrap'
+import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import { calcFlowVelocity } from '../lib/flow-calc'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ModelData } from '../lib/data-load'
@@ -38,7 +38,7 @@ class RingSubBuffer {
 // floats per vertex for attribs
 const POS_FPV = 3
 
-const WORM_SPEED = 10
+const WORM_SPEED = 15
 
 class Worm {
     x: number
@@ -56,7 +56,7 @@ class Worm {
     ) {
         this.x = x
         this.y = y
-        this.z = 50
+        this.z = 0
         this.time = 0
         this.numVertex = history * 2
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * POS_FPV)
@@ -76,7 +76,7 @@ class Worm {
         const lastZ = this.z
         this.x += velocity[0] * deltaTime * WORM_SPEED
         this.y -= velocity[1] * deltaTime * WORM_SPEED
-        this.z -= velocity[2] * deltaTime * WORM_SPEED
+        this.z += velocity[2] * deltaTime * WORM_SPEED
         const line = new Float32Array([
             lastX,
             lastY,
@@ -99,11 +99,14 @@ class Worm {
 class Worms {
     worms: Array<Worm>
     program: WebGLProgram
+    texture: WebGLTexture
     bindPosition: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setScaleMatrix: (mat: mat4) => void
+    setDimensions: (width: number, height: number) => void
+    setHeightScale: (scale: number) => void
 
     constructor (
         gl: WebGLRenderingContext,
@@ -120,6 +123,7 @@ class Worms {
         }
 
         this.program = initProgram(gl, vertSource, fragSource)
+        this.texture = initTexture(gl)
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
@@ -137,6 +141,26 @@ class Worms {
         this.setScaleMatrix = (mat: mat4): void => {
             gl.uniformMatrix4fv(uScaleMatrix, false, mat)
         }
+        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
+        this.setDimensions = (width: number, height: number): void => {
+            gl.uniform2f(uDimensions, width, height)
+        }
+        const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
+        this.setHeightScale = (scale: number): void => {
+            gl.uniform1f(uHeightScale, scale)
+        }
+    }
+
+    setSurface (gl: WebGLRenderingContext, image: HTMLImageElement): void {
+        gl.bindTexture(gl.TEXTURE_2D, this.texture)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            image
+        )
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
@@ -147,6 +171,7 @@ class Worms {
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
         gl.useProgram(this.program)
+        gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.setModelMatrix(modelMatrix)
         for (const worm of this.worms) {
             worm.draw(gl, this.bindPosition)

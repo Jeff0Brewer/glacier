@@ -7,6 +7,7 @@ import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
 
 const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
+const HEIGHT_SCALE = 100
 
 class VisRenderer {
     data: ModelData | null
@@ -53,6 +54,7 @@ class VisRenderer {
         this.glacier.setProjMatrix(this.proj)
         this.glacier.setScaleMatrix(this.scale)
         this.glacier.setDimensions(WIDTH, HEIGHT)
+        this.glacier.setHeightScale(HEIGHT_SCALE)
 
         this.worms = new Worms(this.gl, WIDTH, HEIGHT, 0.05, 100)
         this.gl.useProgram(this.worms.program)
@@ -60,6 +62,8 @@ class VisRenderer {
         this.worms.setViewMatrix(this.view)
         this.worms.setProjMatrix(this.proj)
         this.worms.setScaleMatrix(this.scale)
+        this.worms.setDimensions(WIDTH, HEIGHT)
+        this.worms.setHeightScale(HEIGHT_SCALE)
 
         window.addEventListener('resize', (): void => {
             const aspect = canvas.width / canvas.height
@@ -79,6 +83,7 @@ class VisRenderer {
         ])
         this.data = data
         this.glacier.setSurface(this.gl, surface)
+        this.worms.setSurface(this.gl, surface)
     }
 
     draw (time: number): void {

@@ -17,6 +17,7 @@ class Glacier {
     setProjMatrix: (mat: mat4) => void
     setScaleMatrix: (mat: mat4) => void
     setDimensions: (width: number, height: number) => void
+    setHeightScale: (scale: number) => void
 
     constructor (gl: WebGLRenderingContext) {
         this.program = initProgram(gl, vertSource, fragSource)
@@ -44,6 +45,10 @@ class Glacier {
         const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
         this.setDimensions = (width: number, height: number): void => {
             gl.uniform2f(uDimensions, width, height)
+        }
+        const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
+        this.setHeightScale = (scale: number): void => {
+            gl.uniform1f(uHeightScale, scale)
         }
     }
 
