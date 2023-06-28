@@ -9,7 +9,7 @@ import Worms from '../vis/worms'
 const HEIGHT_SCALE = 100
 
 class VisRenderer {
-    data: ModelData | null
+    data: ModelData
     gl: WebGLRenderingContext
     model: mat4
     view: mat4
@@ -81,10 +81,8 @@ class VisRenderer {
         time /= 1000
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
-        if (this.data) {
-            this.worms.update(this.gl, this.data, { vel: true, p1: true, p2: true, p3: true }, time)
-            this.worms.draw(this.gl, this.model)
-        }
+        this.worms.update(this.gl, this.data, { vel: true, p1: true, p2: true, p3: true }, time)
+        this.worms.draw(this.gl, this.model)
     }
 }
 
