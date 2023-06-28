@@ -63,7 +63,6 @@ class Worm {
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
-        time /= 1000
         const deltaTime = time - this.time
         this.time = time
 

@@ -76,6 +76,7 @@ class VisRenderer {
     }
 
     draw (time: number): void {
+        time /= 1000
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         if (this.data) {
