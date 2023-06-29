@@ -1,0 +1,32 @@
+.menu {
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.menu div {
+    display: flex;
+}
+
+.menu div > * {
+    margin: 5px;
+}
+
+.menu p {
+    color: #888;
+    text-transform: uppercase;
+}
+
+.menu button {
+    font: inherit;
+    border: 0;
+    background-color: transparent;
+}
+
+.active {
+    color: #fff;
+}
+
+.inactive {
+    color: #aaa;
+}

@@ -3,15 +3,15 @@ import { loadDataset, loadImageAsync } from '../lib/data-load'
 import VisRenderer from '../vis/vis'
 import type { VisMode } from '../vis/vis'
 import type { FlowOptions } from '../lib/flow-calc'
+import styles from '../styles/app.module.css'
 
 const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
-const VIS_MODES: Array<VisMode> = ['worm', 'flow']
 
 const App: FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const frameIdRef = useRef<number>(-1)
     const [vis, setVis] = useState<VisRenderer | null>(null)
-    const [mode, setMode] = useState<number>(0)
+    const [mode, setMode] = useState<VisMode>('worm')
     const [options, setOptions] = useState<FlowOptions>({
         vel: true,
         p1: true,
@@ -52,7 +52,7 @@ const App: FC = () => {
 
     useEffect(() => {
         if (vis) {
-            vis.setMode(VIS_MODES[mode])
+            vis.setMode(mode)
         }
     }, [vis, mode])
 
@@ -68,10 +68,6 @@ const App: FC = () => {
         canvasRef.current.style.height = `${window.innerHeight}px`
         canvasRef.current.width = window.innerWidth * window.devicePixelRatio
         canvasRef.current.height = window.innerHeight * window.devicePixelRatio
-    }
-
-    const toggleMode = (): void => {
-        setMode((mode + 1) % 2)
     }
 
     const toggleVel = (): void => {
@@ -96,19 +92,38 @@ const App: FC = () => {
 
     return (
         <section>
-            <div>
-                <p>vis mode</p>
-                <button onClick={toggleMode}>
-                    { VIS_MODES[mode] }
-                </button>
-            </div>
-            <div>
-                <p>calc options</p>
-                <button onClick={toggleVel}>vel</button>
-                <button onClick={toggleP1}>p1</button>
-                <button onClick={toggleP2}>p2</button>
-                <button onClick={toggleP3}>p3</button>
-            </div>
+            <nav className={styles.menu}>
+                <div>
+                    <p>vis mode</p>
+                    <button
+                        className={mode === 'worm' ? styles.active : styles.inactive}
+                        onClick={(): void => { setMode('worm') }}
+                    > worm </button>
+                    <button
+                        className={mode === 'flow' ? styles.active : styles.inactive}
+                        onClick={(): void => { setMode('flow') }}
+                    > flow </button>
+                </div>
+                <div>
+                    <p>calc options</p>
+                    <button
+                        className={options.vel ? styles.active : styles.inactive}
+                        onClick={toggleVel}
+                    > vel </button>
+                    <button
+                        className={options.p1 ? styles.active : styles.inactive}
+                        onClick={toggleP1}
+                    > p1 </button>
+                    <button
+                        className={options.p2 ? styles.active : styles.inactive}
+                        onClick={toggleP2}
+                    > p2 </button>
+                    <button
+                        className={options.p3 ? styles.active : styles.inactive}
+                        onClick={toggleP3}
+                    > p3 </button>
+                </div>
+            </nav>
             <canvas ref={canvasRef} />
         </section>
     )
