@@ -9,6 +9,8 @@ import Worms from '../vis/worms'
 import FlowLines from '../vis/flow'
 
 const HEIGHT_SCALE = 100
+const FLOW_DENSITY = 0.05
+const FLOW_HISTORY = 200
 
 type VisMode = 'flow' | 'worm'
 
@@ -110,18 +112,33 @@ class VisRenderer {
     }
 
     setMode (mode: VisMode): void {
-        if (mode === 'flow') {
+        this.mode = mode
+        if (this.mode === 'flow') {
             this.flow.update(
                 this.gl,
                 this.data,
                 this.options,
                 WIDTH,
                 HEIGHT,
-                0.05,
-                200
+                FLOW_DENSITY,
+                FLOW_HISTORY
             )
         }
-        this.mode = mode
+    }
+
+    setOptions (options: FlowOptions): void {
+        this.options = options
+        if (this.mode === 'flow') {
+            this.flow.update(
+                this.gl,
+                this.data,
+                this.options,
+                WIDTH,
+                HEIGHT,
+                FLOW_DENSITY,
+                FLOW_HISTORY
+            )
+        }
     }
 
     draw (time: number): void {
