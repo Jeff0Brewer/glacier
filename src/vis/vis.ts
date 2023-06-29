@@ -9,7 +9,7 @@ import Worms from '../vis/worms'
 import FlowLines from '../vis/flow'
 
 const HEIGHT_SCALE = 100
-const FLOW_DENSITY = 0.05
+const FLOW_DENSITY = 0.075
 const FLOW_HISTORY = 200
 
 type VisMode = 'flow' | 'worm'

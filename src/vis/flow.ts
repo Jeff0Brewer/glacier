@@ -15,7 +15,7 @@ const MAX_CALC = 200
 const TIMESTEP = 0.2
 const FLOW_SPEED = 6
 const MIN_LINE_LENGTH = 1
-const LINE_WIDTH = 0.75
+const LINE_WIDTH = 0.5
 
 const calcFlowLine = (
     data: ModelData,
