@@ -6,7 +6,7 @@ import type { ModelData } from '../lib/data-load'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
-const WORM_SPEED = 15
+const WORM_SPEED = 20
 const FLOW_OPTIONS_ENABLED: FlowOptions = {
     vel: true,
     p1: true,
@@ -16,7 +16,8 @@ const FLOW_OPTIONS_ENABLED: FlowOptions = {
 // floats per vertex for attribs
 const POS_FPV = 3
 const SEG_FPV = 1
-const ALL_FPV = POS_FPV + SEG_FPV
+const PRP_FPV = 2
+const ALL_FPV = POS_FPV + SEG_FPV + PRP_FPV
 
 // ring buffer for drawing trails
 class RingSubBuffer {
@@ -69,7 +70,7 @@ class Worm {
         this.z = 0
         this.currSegment = 0
         this.time = 0
-        this.numVertex = history * 2
+        this.numVertex = history * 6
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * ALL_FPV)
     }
 
@@ -81,40 +82,59 @@ class Worm {
         if (deltaTime > 1) { return }
 
         const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
+        vec3.multiply(velocity, velocity, [1, -1, 1])
+
         const lastX = this.x
         const lastY = this.y
         const lastZ = this.z
         this.x += velocity[0] * deltaTime * WORM_SPEED
-        this.y -= velocity[1] * deltaTime * WORM_SPEED
+        this.y += velocity[1] * deltaTime * WORM_SPEED
         this.z += velocity[2] * deltaTime * WORM_SPEED
+
+        const perp = vec3.cross(vec3.create(), velocity, [0, 0, 1])
+        vec3.normalize(perp, perp)
 
         const lastSegment = this.currSegment
         this.currSegment += 1
-        const line = new Float32Array([
-            lastX,
-            lastY,
-            lastZ,
+        const rect = [
+            lastX, lastY, lastZ,
             lastSegment,
-            this.x,
-            this.y,
-            this.z,
-            this.currSegment
-        ])
+            -perp[0], -perp[1],
+            lastX, lastY, lastZ,
+            lastSegment,
+            perp[0], perp[1],
+            this.x, this.y, this.z,
+            this.currSegment,
+            perp[0], perp[1],
+            lastX, lastY, lastZ,
+            lastSegment,
+            -perp[0], -perp[1],
+            this.x, this.y, this.z,
+            this.currSegment,
+            perp[0], perp[1],
+            this.x, this.y, this.z,
+            this.currSegment,
+            -perp[0], -perp[1]
 
-        this.ringBuffer.set(gl, line)
+        ]
+        const verts = new Float32Array(rect)
+
+        this.ringBuffer.set(gl, verts)
     }
 
     draw (
         gl: WebGLRenderingContext,
         bindPosition: () => void,
         bindSegment: () => void,
+        bindPerp: () => void,
         setCurrSegment: (ind: number) => void
     ): void {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.ringBuffer.buffer)
         bindPosition()
         bindSegment()
+        bindPerp()
         setCurrSegment(this.currSegment)
-        gl.drawArrays(gl.LINES, 0, this.numVertex)
+        gl.drawArrays(gl.TRIANGLES, 0, this.numVertex)
     }
 }
 
@@ -124,6 +144,7 @@ class Worms {
     texture: WebGLTexture
     bindPosition: () => void
     bindSegment: () => void
+    bindPerp: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
@@ -169,6 +190,7 @@ class Worms {
 
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         this.bindSegment = initAttribute(gl, this.program, 'segment', SEG_FPV, ALL_FPV, POS_FPV)
+        this.bindPerp = initAttribute(gl, this.program, 'perp', PRP_FPV, ALL_FPV, POS_FPV + SEG_FPV)
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         this.setModelMatrix = (mat: mat4): void => {
@@ -216,7 +238,7 @@ class Worms {
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.setModelMatrix(modelMatrix)
         for (const worm of this.worms) {
-            worm.draw(gl, this.bindPosition, this.bindSegment, this.setCurrSegment)
+            worm.draw(gl, this.bindPosition, this.bindSegment, this.bindPerp, this.setCurrSegment)
         }
     }
 }

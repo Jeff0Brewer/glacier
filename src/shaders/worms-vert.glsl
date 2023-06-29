@@ -1,5 +1,6 @@
 attribute vec3 position;
 attribute float segment;
+attribute vec2 perp;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -20,9 +21,10 @@ float heightMap(sampler2D map, vec2 texCoord, float scale) {
 }
 
 void main() {
+    fade = 1.0 - ((currSegment - segment) / history);
+
     vec2 texCoord = position.xy / dimensions;
     float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
-    vec3 pos = vec3(position.xy, height);
+    vec3 pos = vec3(position.xy + perp * fade, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
-    fade = 1.0 - ((currSegment - segment) / history);
 }
