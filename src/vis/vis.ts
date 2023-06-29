@@ -6,9 +6,11 @@ import type { FlowOptions } from '../lib/flow-calc'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
-// import FlowLines from '../vis/flow'
+import FlowLines from '../vis/flow'
 
 const HEIGHT_SCALE = 100
+
+type VisMode = 'flow' | 'worm'
 
 class VisRenderer {
     data: ModelData
@@ -21,11 +23,13 @@ class VisRenderer {
     camera: Camera
     glacier: Glacier
     worms: Worms
-    // flow: FlowLines
+    flow: FlowLines
+    mode: VisMode
 
     constructor (canvas: HTMLCanvasElement, data: ModelData, surface: HTMLImageElement) {
         this.data = data
         this.options = { vel: true, p1: true, p2: true, p3: true }
+        this.mode = 'worm'
 
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
@@ -63,14 +67,13 @@ class VisRenderer {
         this.glacier.setDimensions(WIDTH, HEIGHT)
         this.glacier.setHeightScale(HEIGHT_SCALE)
 
-        // this.flow = new FlowLines(this.gl, data, options, surface, WIDTH, HEIGHT, 0.05, 200)
-        // this.gl.useProgram(this.flow.program)
-        // this.flow.setModelMatrix(this.model)
-        // this.flow.setViewMatrix(this.view)
-        // this.flow.setProjMatrix(this.proj)
-        // this.flow.setScaleMatrix(this.scale)
-        // this.flow.setDimensions(WIDTH, HEIGHT)
-        // this.flow.setHeightScale(HEIGHT_SCALE)
+        this.flow = new FlowLines(this.gl, surface)
+        this.gl.useProgram(this.flow.program)
+        this.flow.setModelMatrix(this.model)
+        this.flow.setViewMatrix(this.view)
+        this.flow.setProjMatrix(this.proj)
+        this.flow.setScaleMatrix(this.scale)
+        this.flow.setHeightScale(HEIGHT_SCALE)
 
         this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 200)
         this.gl.useProgram(this.worms.program)
@@ -91,20 +94,37 @@ class VisRenderer {
             this.gl.useProgram(this.worms.program)
             this.worms.setProjMatrix(this.proj)
 
-            // this.gl.useProgram(this.flow.program)
-            // this.flow.setProjMatrix(this.proj)
+            this.gl.useProgram(this.flow.program)
+            this.flow.setProjMatrix(this.proj)
 
             this.gl.viewport(0, 0, canvas.width, canvas.height)
         })
     }
 
+    setMode (mode: VisMode): void {
+        if (mode === 'flow') {
+            this.flow.update(this.gl, this.data, this.options, 0.05, 200)
+        }
+        this.mode = mode
+    }
+
     draw (time: number): void {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
-        this.worms.update(this.gl, this.data, this.options, time)
-        this.worms.draw(this.gl, this.model)
-        // this.flow.draw(this.gl, this.model)
+        switch (this.mode) {
+            case 'worm':
+                this.worms.update(this.gl, this.data, this.options, time)
+                this.worms.draw(this.gl, this.model)
+                break
+            case 'flow':
+                this.flow.draw(this.gl, this.model)
+                break
+        }
     }
 }
 
 export default VisRenderer
+
+export type {
+    VisMode
+}

@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect, FC } from 'react'
 import { loadDataset, loadImageAsync } from '../lib/data-load'
 import VisRenderer from '../vis/vis'
+import type { VisMode } from '../vis/vis'
 
 const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
+const VIS_MODES: Array<VisMode> = ['worm', 'flow']
 
 const App: FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const frameIdRef = useRef<number>(-1)
     const [vis, setVis] = useState<VisRenderer | null>(null)
+    const [mode, setMode] = useState<number>(0)
 
     const initVis = async (canvas: HTMLCanvasElement): Promise<void> => {
         const [data, surface] = await Promise.all([
@@ -40,6 +43,12 @@ const App: FC = () => {
         }
     }, [vis])
 
+    useEffect(() => {
+        if (vis) {
+            vis.setMode(VIS_MODES[mode])
+        }
+    }, [vis, mode])
+
     const resizeCanvas = (): void => {
         if (!canvasRef.current) { return }
         canvasRef.current.style.width = `${window.innerWidth}px`
@@ -48,8 +57,18 @@ const App: FC = () => {
         canvasRef.current.height = window.innerHeight * window.devicePixelRatio
     }
 
+    const toggleMode = (): void => {
+        setMode((mode + 1) % 2)
+    }
+
     return (
         <section>
+            <div>
+                <p>vis mode</p>
+                <button onClick={toggleMode}>
+                    { VIS_MODES[mode] }
+                </button>
+            </div>
             <canvas ref={canvasRef} />
         </section>
     )
