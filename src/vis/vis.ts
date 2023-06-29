@@ -26,7 +26,7 @@ class VisRenderer {
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
-        const eye = vec3.fromValues(1, 1, 1)
+        const eye = vec3.fromValues(0.5, -0.2, 0.6)
         const focus = vec3.fromValues(0, 0, 0)
         const up = vec3.fromValues(0, 0, 1)
         const fov = 1
