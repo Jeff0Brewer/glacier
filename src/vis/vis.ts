@@ -36,17 +36,21 @@ class VisRenderer {
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
+        this.model = mat4.create()
+
         const eye = vec3.fromValues(0.5, -0.2, 0.6)
         const focus = vec3.fromValues(0, 0, 0)
         const up = vec3.fromValues(0, 0, 1)
+        this.view = mat4.lookAt(mat4.create(), eye, focus, up)
+
         const fov = 1
         const aspect = canvas.width / canvas.height
         const near = 0.1
         const far = 50
-        const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
-        this.model = mat4.create()
-        this.view = mat4.lookAt(mat4.create(), eye, focus, up)
+
         this.proj = mat4.perspective(mat4.create(), fov, aspect, near, far)
+
+        const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
         this.scale = mat4.translate(
             mat4.create(),
             mat4.fromScaling(
@@ -58,52 +62,64 @@ class VisRenderer {
 
         this.camera = new Camera(canvas, this.model, eye, focus, up)
 
-        this.glacier = new Glacier(this.gl, surface)
-        this.gl.useProgram(this.glacier.program)
-        this.glacier.setModelMatrix(this.model)
-        this.glacier.setViewMatrix(this.view)
-        this.glacier.setProjMatrix(this.proj)
-        this.glacier.setScaleMatrix(this.scale)
-        this.glacier.setDimensions(WIDTH, HEIGHT)
-        this.glacier.setHeightScale(HEIGHT_SCALE)
+        this.glacier = new Glacier(
+            this.gl,
+            surface,
+            this.model,
+            this.view,
+            this.proj,
+            this.scale,
+            HEIGHT_SCALE
+        )
 
-        this.flow = new FlowLines(this.gl, surface)
-        this.gl.useProgram(this.flow.program)
-        this.flow.setModelMatrix(this.model)
-        this.flow.setViewMatrix(this.view)
-        this.flow.setProjMatrix(this.proj)
-        this.flow.setScaleMatrix(this.scale)
-        this.flow.setHeightScale(HEIGHT_SCALE)
+        this.flow = new FlowLines(
+            this.gl,
+            surface,
+            this.model,
+            this.view,
+            this.proj,
+            this.scale,
+            HEIGHT_SCALE
+        )
 
-        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 200)
-        this.gl.useProgram(this.worms.program)
-        this.worms.setModelMatrix(this.model)
-        this.worms.setViewMatrix(this.view)
-        this.worms.setProjMatrix(this.proj)
-        this.worms.setScaleMatrix(this.scale)
-        this.worms.setDimensions(WIDTH, HEIGHT)
-        this.worms.setHeightScale(HEIGHT_SCALE)
+        this.worms = new Worms(
+            this.gl,
+            data,
+            surface,
+            this.model,
+            this.view,
+            this.proj,
+            this.scale,
+            HEIGHT_SCALE,
+            0.05,
+            200
+        )
 
         window.addEventListener('resize', (): void => {
+            this.gl.viewport(0, 0, canvas.width, canvas.height)
+
             const aspect = canvas.width / canvas.height
             mat4.perspective(this.proj, fov, aspect, near, far)
-
             this.gl.useProgram(this.glacier.program)
             this.glacier.setProjMatrix(this.proj)
-
             this.gl.useProgram(this.worms.program)
             this.worms.setProjMatrix(this.proj)
-
             this.gl.useProgram(this.flow.program)
             this.flow.setProjMatrix(this.proj)
-
-            this.gl.viewport(0, 0, canvas.width, canvas.height)
         })
     }
 
     setMode (mode: VisMode): void {
         if (mode === 'flow') {
-            this.flow.update(this.gl, this.data, this.options, 0.05, 200)
+            this.flow.update(
+                this.gl,
+                this.data,
+                this.options,
+                WIDTH,
+                HEIGHT,
+                0.05,
+                200
+            )
         }
         this.mode = mode
     }

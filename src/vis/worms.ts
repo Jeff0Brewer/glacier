@@ -170,24 +170,23 @@ class Worms {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
-    setScaleMatrix: (mat: mat4) => void
-    setDimensions: (width: number, height: number) => void
-    setHeightScale: (scale: number) => void
-    setHistory: (history: number) => void
     setCurrSegment: (ind: number) => void
 
     constructor (
         gl: WebGLRenderingContext,
         data: ModelData,
         surface: HTMLImageElement,
-        width: number,
-        height: number,
+        model: mat4,
+        view: mat4,
+        proj: mat4,
+        scale: mat4,
+        heightScale: number,
         density: number,
         history: number
     ) {
         this.worms = []
-        for (let x = 0; x < width; x += 1 / density) {
-            for (let y = 0; y < height; y += 1 / density) {
+        for (let x = 0; x < surface.width; x += 1 / density) {
+            for (let y = 0; y < surface.height; y += 1 / density) {
                 // distribute worms semi-randomly
                 const rx = x + Math.random() * 10 - 5
                 const ry = y + Math.random() * 10 - 5
@@ -199,7 +198,6 @@ class Worms {
         }
 
         this.program = initProgram(gl, vertSource, fragSource)
-        // set height map from image data
         this.texture = initTexture(gl)
         gl.texImage2D(
             gl.TEXTURE_2D,
@@ -214,39 +212,27 @@ class Worms {
         this.bindSegment = initAttribute(gl, this.program, 'segment', SEG_FPV, ALL_FPV, POS_FPV)
         this.bindPerp = initAttribute(gl, this.program, 'perp', PRP_FPV, ALL_FPV, POS_FPV + SEG_FPV)
 
-        const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
-        this.setModelMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uModelMatrix, false, mat)
-        }
-        const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
-        this.setViewMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uViewMatrix, false, mat)
-        }
-        const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
-        this.setProjMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uProjMatrix, false, mat)
-        }
-        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
-        this.setScaleMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uScaleMatrix, false, mat)
-        }
-        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
-        this.setDimensions = (width: number, height: number): void => {
-            gl.uniform2f(uDimensions, width, height)
-        }
-        const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
-        this.setHeightScale = (scale: number): void => {
-            gl.uniform1f(uHeightScale, scale)
-        }
-        const uHistory = gl.getUniformLocation(this.program, 'history')
-        this.setHistory = (scale: number): void => {
-            gl.uniform1f(uHistory, scale)
-        }
         const uCurrSegment = gl.getUniformLocation(this.program, 'currSegment')
-        this.setCurrSegment = (scale: number): void => {
-            gl.uniform1f(uCurrSegment, scale)
-        }
-        this.setHistory(history)
+        this.setCurrSegment = (scale: number): void => { gl.uniform1f(uCurrSegment, scale) }
+
+        const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
+        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
+        this.setModelMatrix(model)
+        const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
+        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
+        this.setViewMatrix(view)
+        const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
+        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setProjMatrix(proj)
+
+        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
+        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
+        gl.uniform2f(uDimensions, surface.width, surface.height)
+        const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
+        gl.uniform1f(uHeightScale, heightScale)
+        const uHistory = gl.getUniformLocation(this.program, 'history')
+        gl.uniform1f(uHistory, history)
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {

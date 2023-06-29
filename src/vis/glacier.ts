@@ -15,20 +15,23 @@ class Glacier {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
-    setScaleMatrix: (mat: mat4) => void
-    setDimensions: (width: number, height: number) => void
-    setHeightScale: (scale: number) => void
 
-    constructor (gl: WebGLRenderingContext, surface: HTMLImageElement) {
+    constructor (
+        gl: WebGLRenderingContext,
+        surface: HTMLImageElement,
+        model: mat4,
+        view: mat4,
+        proj: mat4,
+        scale: mat4,
+        heightScale: number
+    ) {
         this.program = initProgram(gl, vertSource, fragSource)
 
-        // buffer plane verts from image size
         this.buffer = initBuffer(gl)
         const plane = getPlaneVerts(surface.width, surface.height)
         this.numVertex = plane.length / POS_FPV
         gl.bufferData(gl.ARRAY_BUFFER, plane, gl.STATIC_DRAW)
 
-        // set height map from image data
         this.texture = initTexture(gl)
         gl.texImage2D(
             gl.TEXTURE_2D,
@@ -42,29 +45,21 @@ class Glacier {
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
-        this.setModelMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uModelMatrix, false, mat)
-        }
+        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
+        this.setModelMatrix(model)
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
-        this.setViewMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uViewMatrix, false, mat)
-        }
+        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
+        this.setViewMatrix(view)
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
-        this.setProjMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uProjMatrix, false, mat)
-        }
+        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setProjMatrix(proj)
+
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
-        this.setScaleMatrix = (mat: mat4): void => {
-            gl.uniformMatrix4fv(uScaleMatrix, false, mat)
-        }
-        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
-        this.setDimensions = (width: number, height: number): void => {
-            gl.uniform2f(uDimensions, width, height)
-        }
+        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
-        this.setHeightScale = (scale: number): void => {
-            gl.uniform1f(uHeightScale, scale)
-        }
+        gl.uniform1f(uHeightScale, heightScale)
+        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
+        gl.uniform2f(uDimensions, surface.width, surface.height)
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {

@@ -112,15 +112,19 @@ class FlowLines {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
-    setScaleMatrix: (mat: mat4) => void
-    setHeightScale: (scale: number) => void
     setCurrInd: (ind: number) => void
-    width: number
-    height: number
     numVertex: number
     currInd: number
 
-    constructor (gl: WebGLRenderingContext, surface: HTMLImageElement) {
+    constructor (
+        gl: WebGLRenderingContext,
+        surface: HTMLImageElement,
+        model: mat4,
+        view: mat4,
+        proj: mat4,
+        scale: mat4,
+        heightScale: number
+    ) {
         this.program = initProgram(gl, vertSource, fragSource)
         this.texture = initTexture(gl)
         gl.texImage2D(
@@ -132,31 +136,32 @@ class FlowLines {
             surface
         )
         this.buffer = initBuffer(gl)
-        this.width = surface.width
-        this.height = surface.height
         this.numVertex = 0
+        this.currInd = 0
 
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         this.bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
         this.bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + IND_FPV)
 
-        const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
-        const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
-        const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
-        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
-        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
-        const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
         const uCurrInd = gl.getUniformLocation(this.program, 'currInd')
-        const uMaxInd = gl.getUniformLocation(this.program, 'maxInd')
-
-        this.setScaleMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uScaleMatrix, false, mat) }
-        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
-        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
-        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
-        this.setHeightScale = (scale: number): void => { gl.uniform1f(uHeightScale, scale) }
         this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
-        this.currInd = 0
-        gl.uniform2f(uDimensions, this.width, this.height)
+        const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
+        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
+        this.setModelMatrix(model)
+        const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
+        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
+        this.setViewMatrix(view)
+        const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
+        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setProjMatrix(proj)
+
+        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
+        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
+        gl.uniform2f(uDimensions, surface.width, surface.height)
+        const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
+        gl.uniform1f(uHeightScale, heightScale)
+        const uMaxInd = gl.getUniformLocation(this.program, 'maxInd')
         gl.uniform1f(uMaxInd, 50)
     }
 
@@ -164,10 +169,12 @@ class FlowLines {
         gl: WebGLRenderingContext,
         data: ModelData,
         options: FlowOptions,
+        width: number,
+        height: number,
         density: number,
         history: number
     ): void {
-        const verts = calcFlow(data, options, this.width, this.height, density, history)
+        const verts = calcFlow(data, options, width, height, density, history)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
         this.numVertex = verts.length / ALL_FPV
