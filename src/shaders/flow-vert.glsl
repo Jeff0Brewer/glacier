@@ -1,5 +1,6 @@
 attribute vec3 position;
 attribute float ind;
+attribute float speed;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -12,6 +13,7 @@ uniform float maxInd;
 uniform float currInd;
 
 varying float fade;
+varying vec3 color;
 
 float heightMap(sampler2D map, vec2 texCoord, float scale) {
     vec4 pixel = texture2D(map, texCoord);
@@ -24,5 +26,8 @@ void main() {
     float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
     vec3 pos = vec3(position.xy, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
+
     fade = sign(ind) * mod((ind - currInd), maxInd) / maxInd;
+    float brightness = (1.0 - speed * 2.0) * 0.65;
+    color = vec3(brightness, brightness, 1.0);
 }

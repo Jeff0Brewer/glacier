@@ -8,7 +8,8 @@ import fragSource from '../shaders/flow-frag.glsl?raw'
 
 const POS_FPV = 3
 const IND_FPV = 1
-const ALL_FPV = POS_FPV + IND_FPV
+const SPD_FPV = 1
+const ALL_FPV = POS_FPV + IND_FPV + SPD_FPV
 
 const MAX_CALC = 200
 const TIMESTEP = 0.2
@@ -28,22 +29,25 @@ const calcFlowLine = (
 
     let i
     for (i = 0; i < history; i++) {
-        verts.set([
-            pos[0],
-            pos[1],
-            pos[2],
-            i
-        ], i * ALL_FPV)
-
         let calcInd = 0
+        let avgSpeed = 0
         const lastPos = vec3.clone(pos)
         while (vec3.distance(pos, lastPos) < MIN_LINE_LENGTH && calcInd < MAX_CALC) {
             const velocity = calcFlowVelocity(data, options, pos[1], pos[0], time)
             vec3.scale(velocity, velocity, TIMESTEP * FLOW_SPEED)
             vec3.add(pos, pos, [velocity[0], -velocity[1], velocity[2]])
+            avgSpeed += vec3.length(velocity)
             time += TIMESTEP
             calcInd++
         }
+        avgSpeed /= calcInd
+        verts.set([
+            lastPos[0],
+            lastPos[1],
+            lastPos[2],
+            i,
+            avgSpeed
+        ], i * ALL_FPV)
 
         if (calcInd === MAX_CALC) {
             return verts.slice(0, i * ALL_FPV)
@@ -84,6 +88,7 @@ const calcFlow = (
         verts[bufInd++] = line[1]
         verts[bufInd++] = line[2]
         verts[bufInd++] = -1
+        verts[bufInd++] = 0
 
         verts.set(line, bufInd)
         bufInd += line.length
@@ -92,6 +97,7 @@ const calcFlow = (
         verts[bufInd++] = line[line.length - ALL_FPV + 1]
         verts[bufInd++] = line[line.length - ALL_FPV + 2]
         verts[bufInd++] = -1
+        verts[bufInd++] = 0
     }
     return verts
 }
@@ -102,6 +108,7 @@ class FlowLines {
     buffer: WebGLBuffer
     bindPosition: () => void
     bindInd: () => void
+    bindSpeed: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
@@ -139,6 +146,7 @@ class FlowLines {
 
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         this.bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
+        this.bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + IND_FPV)
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
@@ -167,6 +175,7 @@ class FlowLines {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindPosition()
         this.bindInd()
+        this.bindSpeed()
         this.setCurrInd(this.currInd)
         this.setModelMatrix(modelMatrix)
         gl.drawArrays(gl.LINE_STRIP, 0, this.numVertex)
