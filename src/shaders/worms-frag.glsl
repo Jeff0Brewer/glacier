@@ -1,7 +1,8 @@
 precision highp float;
 
 varying float fade;
+varying vec3 color;
 
 void main() {
-    gl_FragColor = vec4(0.0, 0.0, 1.0, fade); // temp color
+    gl_FragColor = vec4(color, fade);
 }

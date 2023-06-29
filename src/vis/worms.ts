@@ -135,7 +135,7 @@ class Worm {
         ])
         this.ringBuffer.set(gl, verts)
 
-        this.lifespan += speed
+        this.lifespan += Math.pow(speed, 0.25)
         if (this.lifespan > WORM_LIFESPAN) {
             this.x = this.startX
             this.y = this.startY

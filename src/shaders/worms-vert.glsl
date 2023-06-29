@@ -13,6 +13,7 @@ uniform float history;
 uniform float currSegment;
 
 varying float fade;
+varying vec3 color;
 
 float heightMap(sampler2D map, vec2 texCoord, float scale) {
     vec4 pixel = texture2D(map, texCoord);
@@ -27,6 +28,8 @@ void main() {
     float surfaceHeight = heightMap(surfaceMap, texCoord, heightScale);
     float height = surfaceHeight + 30.0 + position.z * 0.4;
     height = max(height, surfaceHeight + 0.1);
-    vec3 pos = vec3(position.xy + perp * fade, height);
+    vec3 pos = vec3(position.xy + perp * fade * 2.0, height);
+    float brightness = clamp((position.z + 30.0) / 60.0, 0.0, 1.0) * 0.7;
+    color = vec3(brightness, brightness, 1.0);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 }
