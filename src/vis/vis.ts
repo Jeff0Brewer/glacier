@@ -10,7 +10,7 @@ import FlowLines from '../vis/flow'
 import Waves from '../vis/wave'
 
 const HEIGHT_SCALE = 100
-const FLOW_DENSITY = 0.075
+const FLOW_DENSITY = 0.065
 const FLOW_HISTORY = 200
 const WAVE_DENSITY = 0.04
 const WAVE_HISTORY = 200
