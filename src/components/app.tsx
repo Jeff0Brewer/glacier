@@ -103,6 +103,10 @@ const App: FC = () => {
                         className={mode === 'flow' ? styles.active : styles.inactive}
                         onClick={(): void => { setMode('flow') }}
                     > flow </button>
+                    <button
+                        className={mode === 'wave' ? styles.active : styles.inactive}
+                        onClick={(): void => { setMode('wave') }}
+                    > wave </button>
                 </div>
                 <div>
                     <p>calc options</p>

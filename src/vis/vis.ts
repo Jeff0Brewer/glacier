@@ -7,12 +7,15 @@ import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
 import FlowLines from '../vis/flow'
+import Waves from '../vis/wave'
 
 const HEIGHT_SCALE = 100
 const FLOW_DENSITY = 0.075
 const FLOW_HISTORY = 200
+const WAVE_DENSITY = 0.04
+const WAVE_HISTORY = 200
 
-type VisMode = 'flow' | 'worm'
+type VisMode = 'flow' | 'worm' | 'wave'
 
 class VisRenderer {
     data: ModelData
@@ -26,6 +29,7 @@ class VisRenderer {
     glacier: Glacier
     worms: Worms
     flow: FlowLines
+    wave: Waves
     mode: VisMode
 
     constructor (canvas: HTMLCanvasElement, data: ModelData, surface: HTMLImageElement) {
@@ -84,6 +88,16 @@ class VisRenderer {
             HEIGHT_SCALE
         )
 
+        this.wave = new Waves(
+            this.gl,
+            surface,
+            this.model,
+            this.view,
+            this.proj,
+            this.scale,
+            HEIGHT_SCALE
+        )
+
         this.worms = new Worms(
             this.gl,
             data,
@@ -123,6 +137,16 @@ class VisRenderer {
                 FLOW_DENSITY,
                 FLOW_HISTORY
             )
+        } else if (this.mode === 'wave') {
+            this.wave.update(
+                this.gl,
+                this.data,
+                this.options,
+                WIDTH,
+                HEIGHT,
+                WAVE_DENSITY,
+                WAVE_HISTORY
+            )
         }
     }
 
@@ -138,6 +162,16 @@ class VisRenderer {
                 FLOW_DENSITY,
                 FLOW_HISTORY
             )
+        } else if (this.mode === 'wave') {
+            this.wave.update(
+                this.gl,
+                this.data,
+                this.options,
+                WIDTH,
+                HEIGHT,
+                WAVE_DENSITY,
+                WAVE_HISTORY
+            )
         }
     }
 
@@ -151,6 +185,9 @@ class VisRenderer {
                 break
             case 'flow':
                 this.flow.draw(this.gl, this.model)
+                break
+            case 'wave':
+                this.wave.draw(this.gl, this.model)
                 break
         }
     }
