@@ -15,6 +15,7 @@ const MAX_CALC = 200
 const TIMESTEP = 0.2
 const FLOW_SPEED = 6
 const MIN_LINE_LENGTH = 1
+const LINE_WIDTH = 0.75
 
 const calcFlowLine = (
     data: ModelData,
@@ -23,7 +24,7 @@ const calcFlowLine = (
     y: number,
     history: number
 ): Float32Array => {
-    const verts = new Float32Array(history * ALL_FPV)
+    const verts = new Float32Array(history * ALL_FPV * 2)
     const pos = vec3.fromValues(x, y, 0)
     let time = 0
 
@@ -41,16 +42,36 @@ const calcFlowLine = (
             calcInd++
         }
         avgSpeed /= calcInd
+        const perp = vec3.create()
+        vec3.scale(
+            perp,
+            vec3.normalize(
+                perp,
+                vec3.cross(
+                    perp,
+                    vec3.subtract(perp, lastPos, pos),
+                    [0, 0, 1]
+                )
+            ),
+            LINE_WIDTH
+        )
+        const left = vec3.add(vec3.create(), lastPos, perp)
+        const right = vec3.subtract(vec3.create(), lastPos, perp)
         verts.set([
-            lastPos[0],
-            lastPos[1],
-            lastPos[2],
+            left[0],
+            left[1],
+            left[2],
+            i,
+            avgSpeed,
+            right[0],
+            right[1],
+            right[2],
             i,
             avgSpeed
-        ], i * ALL_FPV)
+        ], i * ALL_FPV * 2)
 
         if (calcInd === MAX_CALC) {
-            return verts.slice(0, i * ALL_FPV)
+            return verts.slice(0, i * ALL_FPV * 2)
         }
     }
 
@@ -80,10 +101,15 @@ const calcFlow = (
             }
         }
     }
-    length += lines.length * 2 * ALL_FPV
+    length += lines.length * 4 * ALL_FPV
     const verts = new Float32Array(length)
     let bufInd = 0
     for (const line of lines) {
+        verts[bufInd++] = line[0]
+        verts[bufInd++] = line[1]
+        verts[bufInd++] = line[2]
+        verts[bufInd++] = -1
+        verts[bufInd++] = 0
         verts[bufInd++] = line[0]
         verts[bufInd++] = line[1]
         verts[bufInd++] = line[2]
@@ -93,6 +119,11 @@ const calcFlow = (
         verts.set(line, bufInd)
         bufInd += line.length
 
+        verts[bufInd++] = line[line.length - ALL_FPV + 0]
+        verts[bufInd++] = line[line.length - ALL_FPV + 1]
+        verts[bufInd++] = line[line.length - ALL_FPV + 2]
+        verts[bufInd++] = -1
+        verts[bufInd++] = 0
         verts[bufInd++] = line[line.length - ALL_FPV + 0]
         verts[bufInd++] = line[line.length - ALL_FPV + 1]
         verts[bufInd++] = line[line.length - ALL_FPV + 2]
@@ -189,7 +220,7 @@ class FlowLines {
         this.bindSpeed()
         this.setCurrInd(this.currInd)
         this.setModelMatrix(modelMatrix)
-        gl.drawArrays(gl.LINE_STRIP, 0, this.numVertex)
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
         this.currInd += 0.5
     }
 }
