@@ -8,7 +8,7 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 
 const WORM_SPEED = 20
 const MIN_WORM_SPEED = 0.2
-const WORM_LIFESPAN = 400
+const WORM_LIFESPAN = 800
 const FLOW_OPTIONS_ENABLED: FlowOptions = {
     vel: true,
     p1: true,

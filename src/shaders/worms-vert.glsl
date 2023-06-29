@@ -24,7 +24,9 @@ void main() {
     fade = 1.0 - ((currSegment - segment) / history);
 
     vec2 texCoord = position.xy / dimensions;
-    float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
+    float surfaceHeight = heightMap(surfaceMap, texCoord, heightScale);
+    float height = surfaceHeight + 30.0 + position.z * 0.4;
+    height = max(height, surfaceHeight + 0.1);
     vec3 pos = vec3(position.xy + perp * fade, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 }

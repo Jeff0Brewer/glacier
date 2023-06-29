@@ -72,7 +72,7 @@ class VisRenderer {
         // this.flow.setDimensions(WIDTH, HEIGHT)
         // this.flow.setHeightScale(HEIGHT_SCALE)
 
-        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 100)
+        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 200)
         this.gl.useProgram(this.worms.program)
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)
