@@ -7,6 +7,8 @@ import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
 const WORM_SPEED = 20
+const MIN_WORM_SPEED = 0.2
+const WORM_LIFESPAN = 400
 const FLOW_OPTIONS_ENABLED: FlowOptions = {
     vel: true,
     p1: true,
@@ -52,9 +54,12 @@ class Worm {
     x: number
     y: number
     z: number
-    history: number
-    currSegment: number
+    lifespan: number
+    startX: number
+    startY: number
     time: number
+    currSegment: number
+    history: number
     numVertex: number
     ringBuffer: RingSubBuffer
 
@@ -68,8 +73,11 @@ class Worm {
         this.x = x
         this.y = y
         this.z = 0
-        this.currSegment = 0
+        this.lifespan = 0
+        this.startX = x
+        this.startY = y
         this.time = 0
+        this.currSegment = 0
         this.numVertex = history * 6
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * ALL_FPV)
     }
@@ -83,6 +91,15 @@ class Worm {
 
         const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
         vec3.multiply(velocity, velocity, [1, -1, 1])
+        let speed = vec3.length(velocity)
+        if (speed < MIN_WORM_SPEED) {
+            vec3.scale(
+                velocity,
+                vec3.normalize(velocity, velocity),
+                MIN_WORM_SPEED
+            )
+            speed = MIN_WORM_SPEED // for lifespan tracking
+        }
 
         const lastX = this.x
         const lastY = this.y
@@ -96,7 +113,7 @@ class Worm {
 
         const lastSegment = this.currSegment
         this.currSegment += 1
-        const rect = [
+        const verts = new Float32Array([
             lastX, lastY, lastZ,
             lastSegment,
             -perp[0], -perp[1],
@@ -115,11 +132,16 @@ class Worm {
             this.x, this.y, this.z,
             this.currSegment,
             -perp[0], -perp[1]
-
-        ]
-        const verts = new Float32Array(rect)
-
+        ])
         this.ringBuffer.set(gl, verts)
+
+        this.lifespan += speed
+        if (this.lifespan > WORM_LIFESPAN) {
+            this.x = this.startX
+            this.y = this.startY
+            this.z = 0
+            this.lifespan = 0
+        }
     }
 
     draw (

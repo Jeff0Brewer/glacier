@@ -1,7 +1,8 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initGl } from '../lib/gl-wrap'
-import type { ModelData } from '../lib/data-load'
 import { WIDTH, HEIGHT } from '../lib/data-load'
+import type { ModelData } from '../lib/data-load'
+import type { FlowOptions } from '../lib/flow-calc'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import Worms from '../vis/worms'
@@ -71,7 +72,7 @@ class VisRenderer {
         // this.flow.setDimensions(WIDTH, HEIGHT)
         // this.flow.setHeightScale(HEIGHT_SCALE)
 
-        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 200)
+        this.worms = new Worms(this.gl, data, surface, WIDTH, HEIGHT, 0.05, 100)
         this.gl.useProgram(this.worms.program)
         this.worms.setModelMatrix(this.model)
         this.worms.setViewMatrix(this.view)
