@@ -13,7 +13,7 @@ const ALL_FPV = POS_FPV + IND_FPV + SPD_FPV
 
 const MAX_CALC = 200
 const TIMESTEP = 0.2
-const FLOW_SPEED = 10
+const FLOW_SPEED = 6
 const MIN_LINE_LENGTH = 1
 
 const calcFlowLine = (
