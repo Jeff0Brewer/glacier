@@ -24,5 +24,5 @@ void main() {
     float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
     vec3 pos = vec3(position.xy, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
-    fade = clamp(1.0 - ((currInd - ind) / maxInd), 0.0, 1.0);
+    fade = sign(ind) * mod((ind - currInd), maxInd) / maxInd;
 }

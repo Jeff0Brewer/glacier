@@ -1,20 +1,3 @@
-/*
- * Flow Representation
- *   - pre calculate flow field
- *   - set segment inds statically
- *   - only update is to curr segment
- *   - ensure that lines cover noticable distance, increases utility of history
- *
- * Structs
- *   - FlowLine
- *      - flow from initial position
- *      - accumulates verts
- *   - Flow
- *      - inits FlowLines
- *      - runs update loop
- *      - contains verts
- */
-
 import { mat4, vec3 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import { calcFlowVelocity } from '../lib/flow-calc'
@@ -27,8 +10,9 @@ const POS_FPV = 3
 const IND_FPV = 1
 const ALL_FPV = POS_FPV + IND_FPV
 
-const MAX_CALC = 500
-const TIMESTEP = 1
+const MAX_CALC = 400
+const TIMESTEP = 0.1
+const FLOW_SPEED = 5
 const MIN_LINE_LENGTH = 1
 
 const calcFlowLine = (
@@ -55,7 +39,7 @@ const calcFlowLine = (
         const lastPos = vec3.clone(pos)
         while (vec3.distance(pos, lastPos) < MIN_LINE_LENGTH && calcInd < MAX_CALC) {
             const velocity = calcFlowVelocity(data, options, pos[1], pos[0], time)
-            vec3.scale(velocity, velocity, TIMESTEP)
+            vec3.scale(velocity, velocity, TIMESTEP * FLOW_SPEED)
             vec3.add(pos, pos, [velocity[0], -velocity[1], velocity[2]])
             time += TIMESTEP
             calcInd++
@@ -99,7 +83,7 @@ const calcFlow = (
         verts[bufInd++] = line[0]
         verts[bufInd++] = line[1]
         verts[bufInd++] = line[2]
-        verts[bufInd++] = -history
+        verts[bufInd++] = -1
 
         verts.set(line, bufInd)
         bufInd += line.length
@@ -107,7 +91,7 @@ const calcFlow = (
         verts[bufInd++] = line[line.length - ALL_FPV + 0]
         verts[bufInd++] = line[line.length - ALL_FPV + 1]
         verts[bufInd++] = line[line.length - ALL_FPV + 2]
-        verts[bufInd++] = -history
+        verts[bufInd++] = -1
     }
     return verts
 }
@@ -126,6 +110,7 @@ class FlowLines {
     setHeightScale: (scale: number) => void
     setCurrInd: (ind: number) => void
     numVertex: number
+    currInd: number
 
     constructor (
         gl: WebGLRenderingContext,
@@ -171,8 +156,9 @@ class FlowLines {
         this.setHeightScale = (scale: number): void => { gl.uniform1f(uHeightScale, scale) }
         this.setDimensions = (w: number, h: number): void => { gl.uniform2f(uDimensions, w, h) }
         this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
-        this.setCurrInd(history)
-        gl.uniform1f(uMaxInd, history)
+        this.currInd = 0
+        this.setCurrInd(this.currInd)
+        gl.uniform1f(uMaxInd, history / 5)
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
@@ -181,8 +167,10 @@ class FlowLines {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindPosition()
         this.bindInd()
+        this.setCurrInd(this.currInd)
         this.setModelMatrix(modelMatrix)
         gl.drawArrays(gl.LINE_STRIP, 0, this.numVertex)
+        this.currInd += 0.5
     }
 }
 

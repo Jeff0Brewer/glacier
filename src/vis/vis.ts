@@ -63,7 +63,7 @@ class VisRenderer {
             p2: true,
             p3: true
         }
-        this.flow = new FlowLines(this.gl, data, options, surface, WIDTH, HEIGHT, 0.05, 100)
+        this.flow = new FlowLines(this.gl, data, options, surface, WIDTH, HEIGHT, 0.05, 200)
         this.gl.useProgram(this.flow.program)
         this.flow.setModelMatrix(this.model)
         this.flow.setViewMatrix(this.view)
