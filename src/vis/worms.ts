@@ -209,7 +209,6 @@ class Worms {
         for (const worm of this.worms) {
             worm.update(gl, data, options, time)
         }
-        gl.useProgram(this.program)
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {

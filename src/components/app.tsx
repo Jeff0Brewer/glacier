@@ -28,9 +28,9 @@ const App: FC = () => {
     }, [])
 
     useEffect(() => {
-        const draw = (): void => {
+        const draw = (time: number): void => {
             if (!vis) { return }
-            vis.draw()
+            vis.draw(time / 1000)
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
