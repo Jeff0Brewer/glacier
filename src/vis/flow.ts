@@ -34,9 +34,9 @@ const calcFlowLine = (
         const lastPos = vec3.clone(pos)
         while (vec3.distance(pos, lastPos) < MIN_LINE_LENGTH && calcInd < MAX_CALC) {
             const velocity = calcFlowVelocity(data, options, pos[1], pos[0], time)
+            avgSpeed += vec3.length(velocity)
             vec3.scale(velocity, velocity, TIMESTEP * FLOW_SPEED)
             vec3.add(pos, pos, [velocity[0], -velocity[1], velocity[2]])
-            avgSpeed += vec3.length(velocity)
             time += TIMESTEP
             calcInd++
         }
