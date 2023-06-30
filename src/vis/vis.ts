@@ -5,17 +5,11 @@ import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
-import Worms from '../vis/worms'
 import FlowLines from '../vis/flow'
-import Waves from '../vis/wave'
 
 const HEIGHT_SCALE = 100
 const FLOW_DENSITY = 0.065
 const FLOW_HISTORY = 200
-const WAVE_DENSITY = 0.04
-const WAVE_HISTORY = 200
-
-type VisMode = 'flow' | 'worm' | 'wave'
 
 class VisRenderer {
     data: ModelData
@@ -27,15 +21,11 @@ class VisRenderer {
     scale: mat4
     camera: Camera
     glacier: Glacier
-    worms: Worms
     flow: FlowLines
-    wave: Waves
-    mode: VisMode
 
     constructor (canvas: HTMLCanvasElement, data: ModelData, surface: HTMLImageElement) {
         this.data = data
         this.options = { vel: true, p1: true, p2: true, p3: true }
-        this.mode = 'worm'
 
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
@@ -53,7 +43,6 @@ class VisRenderer {
         const aspect = canvas.width / canvas.height
         const near = 0.1
         const far = 50
-
         this.proj = mat4.perspective(mat4.create(), fov, aspect, near, far)
 
         const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
@@ -88,113 +77,38 @@ class VisRenderer {
             HEIGHT_SCALE
         )
 
-        this.wave = new Waves(
-            this.gl,
-            surface,
-            this.model,
-            this.view,
-            this.proj,
-            this.scale,
-            HEIGHT_SCALE
-        )
-
-        this.worms = new Worms(
-            this.gl,
-            data,
-            surface,
-            this.model,
-            this.view,
-            this.proj,
-            this.scale,
-            HEIGHT_SCALE,
-            0.05,
-            200
-        )
-
         window.addEventListener('resize', (): void => {
             this.gl.viewport(0, 0, canvas.width, canvas.height)
 
             const aspect = canvas.width / canvas.height
             mat4.perspective(this.proj, fov, aspect, near, far)
+
             this.gl.useProgram(this.glacier.program)
             this.glacier.setProjMatrix(this.proj)
-            this.gl.useProgram(this.worms.program)
-            this.worms.setProjMatrix(this.proj)
+
             this.gl.useProgram(this.flow.program)
             this.flow.setProjMatrix(this.proj)
         })
     }
 
-    setMode (mode: VisMode): void {
-        this.mode = mode
-        if (this.mode === 'flow') {
-            this.flow.update(
-                this.gl,
-                this.data,
-                this.options,
-                WIDTH,
-                HEIGHT,
-                FLOW_DENSITY,
-                FLOW_HISTORY
-            )
-        } else if (this.mode === 'wave') {
-            this.wave.update(
-                this.gl,
-                this.data,
-                this.options,
-                WIDTH,
-                HEIGHT,
-                WAVE_DENSITY,
-                WAVE_HISTORY
-            )
-        }
-    }
-
     setOptions (options: FlowOptions): void {
         this.options = options
-        if (this.mode === 'flow') {
-            this.flow.update(
-                this.gl,
-                this.data,
-                this.options,
-                WIDTH,
-                HEIGHT,
-                FLOW_DENSITY,
-                FLOW_HISTORY
-            )
-        } else if (this.mode === 'wave') {
-            this.wave.update(
-                this.gl,
-                this.data,
-                this.options,
-                WIDTH,
-                HEIGHT,
-                WAVE_DENSITY,
-                WAVE_HISTORY
-            )
-        }
+        this.flow.update(
+            this.gl,
+            this.data,
+            this.options,
+            WIDTH,
+            HEIGHT,
+            FLOW_DENSITY,
+            FLOW_HISTORY
+        )
     }
 
-    draw (time: number): void {
+    draw (): void {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
-        switch (this.mode) {
-            case 'worm':
-                this.worms.update(this.gl, this.data, this.options, time)
-                this.worms.draw(this.gl, this.model)
-                break
-            case 'flow':
-                this.flow.draw(this.gl, this.model)
-                break
-            case 'wave':
-                this.wave.draw(this.gl, this.model)
-                break
-        }
+        this.flow.draw(this.gl, this.model)
     }
 }
 
 export default VisRenderer
-
-export type {
-    VisMode
-}

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, FC } from 'react'
 import { loadDataset, loadImageAsync } from '../lib/data-load'
 import VisRenderer from '../vis/vis'
-import type { VisMode } from '../vis/vis'
 import type { FlowOptions } from '../lib/flow-calc'
 import styles from '../styles/app.module.css'
 
@@ -11,7 +10,6 @@ const App: FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const frameIdRef = useRef<number>(-1)
     const [vis, setVis] = useState<VisRenderer | null>(null)
-    const [mode, setMode] = useState<VisMode>('worm')
     const [options, setOptions] = useState<FlowOptions>({
         vel: true,
         p1: true,
@@ -38,9 +36,9 @@ const App: FC = () => {
     }, [])
 
     useEffect(() => {
-        const draw = (time: number): void => {
+        const draw = (): void => {
             if (!vis) { return }
-            vis.draw(time / 1000)
+            vis.draw()
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
@@ -49,12 +47,6 @@ const App: FC = () => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
     }, [vis])
-
-    useEffect(() => {
-        if (vis) {
-            vis.setMode(mode)
-        }
-    }, [vis, mode])
 
     useEffect(() => {
         if (vis) {
@@ -93,21 +85,6 @@ const App: FC = () => {
     return (
         <section>
             <nav className={styles.menu}>
-                <div>
-                    <p>vis mode</p>
-                    <button
-                        className={mode === 'worm' ? styles.active : styles.inactive}
-                        onClick={(): void => { setMode('worm') }}
-                    > worm </button>
-                    <button
-                        className={mode === 'flow' ? styles.active : styles.inactive}
-                        onClick={(): void => { setMode('flow') }}
-                    > flow </button>
-                    <button
-                        className={mode === 'wave' ? styles.active : styles.inactive}
-                        onClick={(): void => { setMode('wave') }}
-                    > wave </button>
-                </div>
                 <div>
                     <p>calc options</p>
                     <button
