@@ -137,9 +137,7 @@ class FlowLines {
     program: WebGLProgram
     texture: WebGLTexture
     buffer: WebGLBuffer
-    bindPosition: () => void
-    bindInd: () => void
-    bindSpeed: () => void
+    bindAttrib: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
@@ -170,9 +168,14 @@ class FlowLines {
         this.numVertex = 0
         this.currInd = 0
 
-        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
-        this.bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
-        this.bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + IND_FPV)
+        const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
+        const bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
+        const bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + IND_FPV)
+        this.bindAttrib = (): void => {
+            bindPosition()
+            bindInd()
+            bindSpeed()
+        }
 
         const uCurrInd = gl.getUniformLocation(this.program, 'currInd')
         this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
@@ -215,9 +218,7 @@ class FlowLines {
         gl.useProgram(this.program)
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-        this.bindPosition()
-        this.bindInd()
-        this.bindSpeed()
+        this.bindAttrib()
         this.setCurrInd(this.currInd)
         this.setModelMatrix(modelMatrix)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
