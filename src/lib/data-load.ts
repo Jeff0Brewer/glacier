@@ -32,7 +32,6 @@ const getUtmData = async (
 // sample dataset
 const WIDTH = 1027
 const HEIGHT = 1820
-const MODEL_DIR = './data/model/'
 const MODEL_FILES = {
     mag: 'mag.utm',
     hMag: 'hmag.utm',
@@ -63,11 +62,11 @@ type ModelData = {
     [component: string]: Float32Array2D
 }
 
-const loadDataset = async (): Promise<ModelData> => {
+const loadDataset = async (dataDir: string): Promise<ModelData> => {
     // read data from files
     const dataPromises = []
     for (const file of Object.values(MODEL_FILES)) {
-        dataPromises.push(getUtmData(MODEL_DIR + file, WIDTH, HEIGHT))
+        dataPromises.push(getUtmData(dataDir + file, WIDTH, HEIGHT))
     }
     const data = await Promise.all(dataPromises)
 

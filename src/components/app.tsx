@@ -6,6 +6,7 @@ import OptionToggle from '../components/option-toggle'
 import Vis from '../components/vis'
 import styles from '../styles/app.module.css'
 
+const DATA_DIR = './data/model/'
 const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
 
 const App: FC = () => {
@@ -17,7 +18,7 @@ const App: FC = () => {
 
     const getData = async (): Promise<void> => {
         const [data, surface] = await Promise.all([
-            loadDataset(),
+            loadDataset(DATA_DIR),
             loadImageAsync(SURFACE_SRC)
         ])
         setData(data)
