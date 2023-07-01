@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import type { FlowOptions, FlowOptionField } from '../lib/flow-calc'
-import styles from '../app.module.css'
+import styles from '../styles/app.module.css'
 
 type OptionToggleProps = {
     field: FlowOptionField,
