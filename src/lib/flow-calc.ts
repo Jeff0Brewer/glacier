@@ -12,6 +12,7 @@ type FlowOptions = {
     p2: boolean,
     p3: boolean
 }
+type FlowOptionField = 'vel' | 'p1' | 'p2' | 'p3'
 
 const calcSinComp = (amp: number, phase: number, period: number, t: number): number => {
     return amp * Math.sin((Math.PI * 2 / period) * t + phase)
@@ -60,5 +61,6 @@ export {
 }
 
 export type {
-    FlowOptions
+    FlowOptions,
+    FlowOptionField
 }

@@ -12,8 +12,6 @@ const FLOW_DENSITY = 0.065
 const FLOW_HISTORY = 200
 
 class VisRenderer {
-    data: ModelData
-    options: FlowOptions
     gl: WebGLRenderingContext
     model: mat4
     view: mat4
@@ -23,10 +21,7 @@ class VisRenderer {
     glacier: Glacier
     flow: FlowLines
 
-    constructor (canvas: HTMLCanvasElement, data: ModelData, surface: HTMLImageElement) {
-        this.data = data
-        this.options = { vel: true, p1: true, p2: true, p3: true }
-
+    constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement) {
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.BLEND)
@@ -91,12 +86,11 @@ class VisRenderer {
         })
     }
 
-    setOptions (options: FlowOptions): void {
-        this.options = options
+    calcFlow (data: ModelData, options: FlowOptions): void {
         this.flow.update(
             this.gl,
-            this.data,
-            this.options,
+            data,
+            options,
             WIDTH,
             HEIGHT,
             FLOW_DENSITY,
