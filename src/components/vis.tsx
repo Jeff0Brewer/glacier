@@ -13,7 +13,7 @@ const Vis: FC<VisProps> = props => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
     const visRef = useRef<VisRenderer | null>(null)
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
 
     // setup resize handler
@@ -30,9 +30,7 @@ const Vis: FC<VisProps> = props => {
             visRef.current = new VisRenderer(canvasRef.current, props.surface)
         }
         const draw = (): void => {
-            if (visRef.current) {
-                visRef.current.draw()
-            }
+            if (visRef.current) { visRef.current.draw() }
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
