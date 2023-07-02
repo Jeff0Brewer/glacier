@@ -1,5 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
+import { triangleRayIntersect } from '../lib/unproject'
 import vertSource from '../shaders/glacier-vert.glsl?raw'
 import fragSource from '../shaders/glacier-frag.glsl?raw'
 
@@ -71,13 +72,15 @@ class Glacier {
 
     hitTest (origin: vec3, direction: vec3): vec3 | null {
         for (let i = 0; i < this.posVerts.length; i += POS_FPV) {
-            const intersect = triangleRayIntersect(
-                origin,
-                direction,
-                this.posVerts.slice(i, i + 3),
-                this.posVerts.slice(i + 3, i + 6),
-                this.posVerts.slice(i + 6, i + 9)
-            )
+            // get triangle points
+            const t0 = this.posVerts.slice(i, i + POS_FPV)
+            const t1 = this.posVerts.slice(i + POS_FPV, i + 2 * POS_FPV)
+            const t2 = this.posVerts.slice(i + 2 * POS_FPV, i + 3 * POS_FPV)
+
+            // check intersection
+            const intersect = triangleRayIntersect(origin, direction, t0, t1, t2)
+
+            // early return if intersection found
             if (intersect) {
                 return intersect
             }
@@ -95,47 +98,6 @@ class Glacier {
         this.setModelMatrix(modelMatrix)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
     }
-}
-
-const triangleRayIntersect = (
-    origin: vec3,
-    direction: vec3,
-    t0: vec3,
-    t1: vec3,
-    t2: vec3
-): vec3 | null => {
-    const EPSILON = 0.00001
-    const edge0 = vec3.subtract(vec3.create(), t1, t0)
-    const edge1 = vec3.subtract(vec3.create(), t2, t0)
-    const h = vec3.cross(vec3.create(), direction, edge1)
-    const a = vec3.dot(edge0, h)
-
-    if (a > -EPSILON && a < EPSILON) {
-        return null
-    }
-
-    const f = 1.0 / a
-    const s = vec3.subtract(vec3.create(), origin, t0)
-    const u = f * vec3.dot(s, h)
-    if (u < 0.0 || u > 1.0) {
-        return null
-    }
-
-    const q = vec3.cross(vec3.create(), s, edge0)
-    const v = f * vec3.dot(direction, q)
-
-    if (v < 0.0 || u + v > 1.0) {
-        return null
-    }
-
-    const t = f * vec3.dot(edge1, q)
-    const intersection = vec3.scaleAndAdd(
-        vec3.create(),
-        origin,
-        direction,
-        t
-    )
-    return intersection
 }
 
 // from width and height, create plane triangle strip with position and tex coordinate attributes
