@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix'
-import { initProgram, initBuffer, initAttribute } from '../lib/gl-wrap'
+import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import vertSource from '../shaders/glacier-vert.glsl?raw'
 import fragSource from '../shaders/glacier-frag.glsl?raw'
 
@@ -9,6 +9,7 @@ const NRM_FPV = 3
 
 class Glacier {
     program: WebGLProgram
+    texture: WebGLTexture
     posBuffer: WebGLBuffer
     nrmBuffer: WebGLBuffer
     bindPosition: () => void
@@ -21,6 +22,7 @@ class Glacier {
     constructor (
         gl: WebGLRenderingContext,
         surface: HTMLImageElement,
+        texture: HTMLImageElement,
         model: mat4,
         view: mat4,
         proj: mat4,
@@ -28,6 +30,9 @@ class Glacier {
         heightScale: number
     ) {
         this.program = initProgram(gl, vertSource, fragSource)
+
+        this.texture = initTexture(gl)
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture)
 
         // position and normal as seperate buffers
         // so position verts can be used efficiently for mouse interaction hit tests
@@ -47,12 +52,14 @@ class Glacier {
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
+        const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
 
         // initialize uniforms
         gl.uniformMatrix4fv(uModelMatrix, false, model)
         gl.uniformMatrix4fv(uViewMatrix, false, view)
         gl.uniformMatrix4fv(uProjMatrix, false, proj)
         gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        gl.uniform2f(uDimensions, surface.width, surface.height)
 
         // get closures to easily set uniforms which may change
         this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
@@ -62,6 +69,7 @@ class Glacier {
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
         gl.useProgram(this.program)
+        gl.bindTexture(gl.TEXTURE_2D, this.texture)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer)
         this.bindPosition()
         gl.bindBuffer(gl.ARRAY_BUFFER, this.nrmBuffer)

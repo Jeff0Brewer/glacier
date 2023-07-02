@@ -21,7 +21,7 @@ class VisRenderer {
     glacier: Glacier
     flow: FlowLines
 
-    constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement) {
+    constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement, texture: HTMLImageElement) {
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.BLEND)
@@ -55,6 +55,7 @@ class VisRenderer {
         this.glacier = new Glacier(
             this.gl,
             surface,
+            texture,
             this.model,
             this.view,
             this.proj,

@@ -5,8 +5,9 @@ import VisRenderer from '../vis/vis'
 
 type VisProps = {
     data: ModelData,
+    options: FlowOptions,
     surface: HTMLImageElement,
-    options: FlowOptions
+    texture: HTMLImageElement
 }
 
 const Vis: FC<VisProps> = props => {
@@ -27,7 +28,7 @@ const Vis: FC<VisProps> = props => {
     // init vis renderer, draw loop
     useEffect(() => {
         if (canvasRef.current) {
-            visRef.current = new VisRenderer(canvasRef.current, props.surface)
+            visRef.current = new VisRenderer(canvasRef.current, props.surface, props.texture)
         }
         const draw = (): void => {
             if (visRef.current) { visRef.current.draw() }
@@ -37,7 +38,7 @@ const Vis: FC<VisProps> = props => {
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
-    }, [props.surface, props.data])
+    }, [props.data, props.surface, props.texture])
 
     // recalculate flow on option changes
     useEffect(() => {
