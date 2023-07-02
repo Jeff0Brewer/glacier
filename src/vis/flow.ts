@@ -6,16 +6,11 @@ import FlowWorkerURL from '../workers/flow-verts?worker&url'
 import vertSource from '../shaders/flow-vert.glsl?raw'
 import fragSource from '../shaders/flow-frag.glsl?raw'
 
+// floats per vertex for each attribute
 const POS_FPV = 3
 const IND_FPV = 1
 const SPD_FPV = 1
 const ALL_FPV = POS_FPV + IND_FPV + SPD_FPV
-
-const MAX_CALC = 200
-const TIMESTEP = 0.2
-const FLOW_SPEED = 6
-const MIN_LINE_LENGTH = 1
-const LINE_WIDTH = 0.5
 
 class FlowLines {
     worker: Worker
@@ -117,10 +112,5 @@ class FlowLines {
 export default FlowLines
 
 export {
-    MAX_CALC,
-    TIMESTEP,
-    FLOW_SPEED,
-    MIN_LINE_LENGTH,
-    LINE_WIDTH,
     ALL_FPV
 }

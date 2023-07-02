@@ -3,8 +3,17 @@ import type { ModelData } from '../lib/data-load'
 import { Float32Array2D } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import { calcFlowVelocity } from '../lib/flow-calc'
-import { MAX_CALC, TIMESTEP, FLOW_SPEED, MIN_LINE_LENGTH, LINE_WIDTH, ALL_FPV } from '../vis/flow'
+import { ALL_FPV } from '../vis/flow'
 
+const MAX_CALC = 200
+const TIMESTEP = 0.2
+const FLOW_SPEED = 6
+const MIN_LINE_LENGTH = 1
+const LINE_WIDTH = 0.5
+const VERT_PER_POSITION = 2 // since drawing as triangle strip with left / right sides
+
+// get path of single particle's translation through vector field
+// returns triangle strip vertices
 const calcFlowLine = (
     data: ModelData,
     options: FlowOptions,
@@ -16,12 +25,14 @@ const calcFlowLine = (
     const pos = vec3.fromValues(x, y, 0)
     let time = 0
 
-    let i
-    for (i = 0; i < history; i++) {
+    for (let i = 0; i < history; i++) {
+        const lastPos = vec3.clone(pos)
         let calcInd = 0
         let avgSpeed = 0
-        const lastPos = vec3.clone(pos)
-        while (vec3.distance(pos, lastPos) < MIN_LINE_LENGTH && calcInd < MAX_CALC) {
+
+        // translate particle potentially many times, until distance above threshold
+        // allows drawing slow moving particles without too many history vertices
+        while (calcInd < MAX_CALC && vec3.distance(pos, lastPos) < MIN_LINE_LENGTH) {
             const velocity = calcFlowVelocity(data, options, pos[1], pos[0], time)
             avgSpeed += vec3.length(velocity)
             vec3.scale(velocity, velocity, TIMESTEP * FLOW_SPEED)
@@ -30,42 +41,31 @@ const calcFlowLine = (
             calcInd++
         }
         avgSpeed /= calcInd
+
+        // get perpendicular vector for tri strip width
         const perp = vec3.create()
-        vec3.scale(
-            perp,
-            vec3.normalize(
-                perp,
-                vec3.cross(
-                    perp,
-                    vec3.subtract(perp, lastPos, pos),
-                    [0, 0, 1]
-                )
-            ),
-            LINE_WIDTH
-        )
+        vec3.subtract(perp, lastPos, pos)
+        vec3.cross(perp, perp, [0, 0, 1])
+        vec3.normalize(perp, perp)
+        vec3.scale(perp, perp, LINE_WIDTH)
+
+        // get left / right sides of tri strip
         const left = vec3.add(vec3.create(), lastPos, perp)
         const right = vec3.subtract(vec3.create(), lastPos, perp)
-        verts.set([
-            left[0],
-            left[1],
-            left[2],
-            i,
-            avgSpeed,
-            right[0],
-            right[1],
-            right[2],
-            i,
-            avgSpeed
-        ], i * ALL_FPV * 2)
 
+        // set verts at current offset
+        verts.set([...left, i, avgSpeed, ...right, i, avgSpeed], i * ALL_FPV * VERT_PER_POSITION)
+
+        // early return if particle isn't moving fast enough
         if (calcInd === MAX_CALC) {
-            return verts.slice(0, i * ALL_FPV * 2)
+            return verts.slice(0, i * ALL_FPV * VERT_PER_POSITION)
         }
     }
 
     return verts
 }
 
+// calculate full flow field, get triangle strip vertices
 const calcFlow = (
     data: ModelData,
     options: FlowOptions,
@@ -78,45 +78,51 @@ const calcFlow = (
     let length = 0
     for (let x = 0; x < width; x += 1 / density) {
         for (let y = 0; y < height; y += 1 / density) {
+            // position origin points semi-randomly
             const rx = x + Math.random() * 10 + 5
             const ry = y + Math.random() * 10 + 5
             // exclude lines starting with 0 velocity
             const initVelocity = calcFlowVelocity(data, options, ry, rx, 0)
             if (vec3.length(initVelocity) !== 0) {
+                // calculate single flow line
                 const line = calcFlowLine(data, options, rx, ry, history)
                 lines.push(line)
                 length += line.length
             }
         }
     }
-    length += lines.length * 4 * ALL_FPV
+
+    // wrapping each flow line with transparent vertices
+    // affords single triangle strip draw call with disconnected flow lines
+    length += lines.length * VERT_PER_POSITION * ALL_FPV * 2
+
     const verts = new Float32Array(length)
     let bufInd = 0
+
+    // set 2 transparent vertices in triangle strip at given position
+    const setTransparentStrip = (x: number, y: number, z: number): void => {
+        verts[bufInd++] = x
+        verts[bufInd++] = y
+        verts[bufInd++] = z
+        verts[bufInd++] = -1
+        verts[bufInd++] = 0
+
+        verts[bufInd++] = x
+        verts[bufInd++] = y
+        verts[bufInd++] = z
+        verts[bufInd++] = -1
+        verts[bufInd++] = 0
+    }
+
+    // fill buffer with each line wrapped in transparent verts
     for (const line of lines) {
-        verts[bufInd++] = line[0]
-        verts[bufInd++] = line[1]
-        verts[bufInd++] = line[2]
-        verts[bufInd++] = -1
-        verts[bufInd++] = 0
-        verts[bufInd++] = line[0]
-        verts[bufInd++] = line[1]
-        verts[bufInd++] = line[2]
-        verts[bufInd++] = -1
-        verts[bufInd++] = 0
+        setTransparentStrip(line[0], line[1], line[2])
 
         verts.set(line, bufInd)
         bufInd += line.length
 
-        verts[bufInd++] = line[line.length - ALL_FPV + 0]
-        verts[bufInd++] = line[line.length - ALL_FPV + 1]
-        verts[bufInd++] = line[line.length - ALL_FPV + 2]
-        verts[bufInd++] = -1
-        verts[bufInd++] = 0
-        verts[bufInd++] = line[line.length - ALL_FPV + 0]
-        verts[bufInd++] = line[line.length - ALL_FPV + 1]
-        verts[bufInd++] = line[line.length - ALL_FPV + 2]
-        verts[bufInd++] = -1
-        verts[bufInd++] = 0
+        const lastInd = line.length - ALL_FPV
+        setTransparentStrip(line[lastInd], line[lastInd + 1], line[lastInd + 2])
     }
     return verts
 }
@@ -129,15 +135,6 @@ type ModelDataMessage = {
     }
 }
 
-type CalcMessage = {
-    data: ModelDataMessage,
-    options: FlowOptions,
-    width: number,
-    height: number,
-    density: number,
-    history: number
-}
-
 const parseData = (obj: ModelDataMessage): ModelData => {
     const data: ModelData = {}
     for (const key of Object.keys(obj)) {
@@ -147,9 +144,18 @@ const parseData = (obj: ModelDataMessage): ModelData => {
     return data
 }
 
+type CalcMessage = {
+    data: ModelDataMessage,
+    options: FlowOptions,
+    width: number,
+    height: number,
+    density: number,
+    history: number
+}
+
 onmessage = (e: MessageEvent<CalcMessage>): void => {
-    const data = parseData(e.data.data)
     const { options, width, height, density, history } = e.data
+    const data = parseData(e.data.data)
     const verts = calcFlow(data, options, width, height, density, history)
     postMessage(verts)
 }
