@@ -7,7 +7,7 @@ import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import FlowLines from '../vis/flow'
 
-const HEIGHT_SCALE = 100
+const HEIGHT_SCALE = 50
 const FLOW_DENSITY = 0.065
 const FLOW_HISTORY = 200
 
