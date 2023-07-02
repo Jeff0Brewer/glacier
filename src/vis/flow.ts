@@ -47,6 +47,7 @@ class FlowLines {
             gl.UNSIGNED_BYTE,
             surface
         )
+
         // setup attributes
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
