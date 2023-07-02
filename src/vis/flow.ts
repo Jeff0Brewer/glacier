@@ -13,17 +13,17 @@ const SPD_FPV = 1
 const ALL_FPV = POS_FPV + IND_FPV + SPD_FPV
 
 class FlowLines {
-    worker: Worker
+    numVertex: number
+    currInd: number
     program: WebGLProgram
-    texture: WebGLTexture
     buffer: WebGLBuffer
+    texture: WebGLTexture
     bindAttrib: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setCurrInd: (ind: number) => void
-    numVertex: number
-    currInd: number
+    worker: Worker
 
     constructor (
         gl: WebGLRenderingContext,
@@ -34,7 +34,10 @@ class FlowLines {
         scale: mat4,
         heightScale: number
     ) {
+        this.numVertex = 0
+        this.currInd = 0
         this.program = initProgram(gl, vertSource, fragSource)
+        this.buffer = initBuffer(gl)
         this.texture = initTexture(gl)
         gl.texImage2D(
             gl.TEXTURE_2D,
@@ -44,42 +47,47 @@ class FlowLines {
             gl.UNSIGNED_BYTE,
             surface
         )
-        this.buffer = initBuffer(gl)
-        this.numVertex = 0
-        this.currInd = 0
-
+        // setup attributes
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
         const bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + IND_FPV)
+
+        // get closure to bind all attributes easily
         this.bindAttrib = (): void => {
             bindPosition()
             bindInd()
             bindSpeed()
         }
 
-        const uCurrInd = gl.getUniformLocation(this.program, 'currInd')
-        this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
+        // get uniform locations
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
-        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
-        this.setModelMatrix(model)
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
-        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
-        this.setViewMatrix(view)
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
-        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
-        this.setProjMatrix(proj)
-
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
-        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        const uCurrInd = gl.getUniformLocation(this.program, 'currInd')
         const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
-        gl.uniform2f(uDimensions, surface.width, surface.height)
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
-        gl.uniform1f(uHeightScale, heightScale)
         const uMaxInd = gl.getUniformLocation(this.program, 'maxInd')
-        gl.uniform1f(uMaxInd, 50)
 
+        // initialize uniforms
+        gl.uniformMatrix4fv(uModelMatrix, false, model)
+        gl.uniformMatrix4fv(uViewMatrix, false, view)
+        gl.uniformMatrix4fv(uProjMatrix, false, proj)
+        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        gl.uniform2f(uDimensions, surface.width, surface.height)
+        gl.uniform1f(uHeightScale, heightScale)
+        gl.uniform1f(uMaxInd, 50)
+        gl.uniform1f(uCurrInd, 0)
+
+        // get closures to easily set uniforms which may change
+        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
+        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
+        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
+
+        // setup flow field calculation worker
         this.worker = new Worker(FlowWorkerURL, { type: 'module' })
-        this.worker.onmessage = (e: MessageEvent): void => {
+        this.worker.onmessage = (e: MessageEvent<Float32Array>): void => {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
             gl.bufferData(gl.ARRAY_BUFFER, e.data, gl.STATIC_DRAW)
             this.numVertex = e.data.length / ALL_FPV
@@ -94,7 +102,9 @@ class FlowLines {
         density: number,
         history: number
     ): void {
-        this.worker.postMessage({ data, options, width, height, density, history })
+        this.worker.postMessage({
+            data, options, width, height, density, history
+        })
     }
 
     draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
@@ -111,6 +121,4 @@ class FlowLines {
 
 export default FlowLines
 
-export {
-    ALL_FPV
-}
+export { ALL_FPV }
