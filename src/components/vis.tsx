@@ -37,14 +37,14 @@ const Vis: FC<VisProps> = props => {
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
-    }, [props.surface])
+    }, [props.surface, props.data])
 
-    // recalculate flow on data / options changes
+    // recalculate flow on option changes
     useEffect(() => {
         if (visRef.current) {
             visRef.current.calcFlow(props.data, props.options)
         }
-    }, [props.options, props.data])
+    }, [props.data, props.options])
 
     return (
         <canvas

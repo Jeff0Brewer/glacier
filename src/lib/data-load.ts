@@ -97,7 +97,8 @@ export {
     loadDataset,
     loadImageAsync,
     WIDTH,
-    HEIGHT
+    HEIGHT,
+    Float32Array2D
 }
 
 export type {

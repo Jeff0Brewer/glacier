@@ -88,7 +88,6 @@ class VisRenderer {
 
     calcFlow (data: ModelData, options: FlowOptions): void {
         this.flow.update(
-            this.gl,
             data,
             options,
             WIDTH,
