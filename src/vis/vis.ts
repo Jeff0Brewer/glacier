@@ -87,6 +87,26 @@ class VisRenderer {
         })
     }
 
+    mouseSelect (x: number, y: number): void {
+        // get inverse matrix to unproject mouse into world space
+        const invMatrix = mat4.invert(mat4.create(), this.scale)
+        mat4.multiply(invMatrix, invMatrix, mat4.invert(mat4.create(), this.model))
+        mat4.multiply(invMatrix, invMatrix, mat4.invert(mat4.create(), this.view))
+        mat4.multiply(invMatrix, invMatrix, mat4.invert(mat4.create(), this.proj))
+
+        // get mouse vec in world space
+        const origin = vec3.fromValues(x, y, 0)
+        vec3.transformMat4(origin, origin, invMatrix)
+        const direction = vec3.fromValues(x, y, 1)
+        vec3.transformMat4(direction, direction, invMatrix)
+        vec3.subtract(direction, direction, origin)
+        vec3.normalize(direction, direction)
+
+        // hit test with glacier surface to get position
+        const intersection = this.glacier.hitTest(origin, direction)
+        console.log(intersection)
+    }
+
     calcFlow (data: ModelData, options: FlowOptions): void {
         this.flow.update(
             data,
