@@ -60,7 +60,10 @@ const triangleRayIntersect = (
         direction,
         t
     )
-    return intersection
+    if (t > EPSILON) {
+        return intersection
+    }
+    return null
 }
 
 export {
