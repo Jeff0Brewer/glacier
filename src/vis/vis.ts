@@ -88,12 +88,10 @@ class VisRenderer {
         })
     }
 
-    mouseSelect (x: number, y: number): void {
+    mouseSelect (x: number, y: number): vec3 | null {
         const inv = getInvMatrix([this.proj, this.view, this.model, this.scale])
         const { origin, direction } = getMouseRay(x, y, inv)
-        const intersection = this.glacier.hitTest(origin, direction)
-
-        console.log(intersection)
+        return this.glacier.hitTest(origin, direction)
     }
 
     calcFlow (data: ModelData, options: FlowOptions): void {

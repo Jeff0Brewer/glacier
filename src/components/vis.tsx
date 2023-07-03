@@ -4,6 +4,12 @@ import type { FlowOptions } from '../lib/flow-calc'
 import VisRenderer from '../vis/vis'
 import styles from '../styles/vis.module.css'
 
+type Marker = {
+    x: number,
+    y: number,
+    z: number
+}
+
 type VisProps = {
     data: ModelData,
     options: FlowOptions,
@@ -14,35 +20,20 @@ type VisProps = {
 const Vis: FC<VisProps> = props => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
+    const [markers, setMarkers] = useState<Array<Marker>>([])
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
 
-    // setup event handlers
+    // setup resize handler
     useEffect(() => {
         const onResize = (): void => {
             setWidth(window.innerWidth)
             setHeight(window.innerHeight)
         }
         window.addEventListener('resize', onResize)
-        const onMouseDown = (e: MouseEvent): void => {
-            if (visRef.current) {
-                // convert pixel coords to gl clip space
-                const x = e.clientX / window.innerWidth * 2.0 - 1.0
-                const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
-                visRef.current.mouseSelect(x, y)
-            }
-        }
-        const canvas = canvasRef.current
-        if (canvas) {
-            canvas.addEventListener('mousedown', onMouseDown)
-        }
-
         return (): void => {
             window.removeEventListener('resize', onResize)
-            if (canvas) {
-                canvas.removeEventListener('mousedown', onMouseDown)
-            }
         }
     }, [])
 
@@ -67,6 +58,30 @@ const Vis: FC<VisProps> = props => {
             visRef.current.calcFlow(props.data, props.options)
         }
     }, [props.data, props.options])
+
+    // handle markers
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) { return }
+
+        const addMarker = (e: MouseEvent): void => {
+            if (visRef.current && e.shiftKey) {
+                // convert pixel coords to gl clip space
+                const x = e.clientX / window.innerWidth * 2.0 - 1.0
+                const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
+                const pos = visRef.current.mouseSelect(x, y)
+                if (pos) {
+                    const marker: Marker = { x: pos[0], y: pos[1], z: pos[2] }
+                    setMarkers([...markers, marker])
+                }
+            }
+        }
+        canvas.addEventListener('mousedown', addMarker)
+
+        return (): void => {
+            canvas.removeEventListener('mousedown', addMarker)
+        }
+    }, [markers])
 
     return (
         <canvas
