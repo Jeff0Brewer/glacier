@@ -27,6 +27,7 @@ const getChartOptions = (title: string): ChartOptions<'line'> => {
     return {
         responsive: true,
         maintainAspectRatio: false,
+        backgroundColor: 'transparent',
         elements: {
             point: {
                 radius: 0
@@ -42,6 +43,9 @@ const getChartOptions = (title: string): ChartOptions<'line'> => {
                 },
                 ticks: {
                     display: false
+                },
+                grid: {
+                    display: false
                 }
             },
             y: {
@@ -54,7 +58,8 @@ const getChartOptions = (title: string): ChartOptions<'line'> => {
                 },
                 grid: {
                     tickColor: CHART_COLOR0,
-                    tickLength: 5
+                    tickLength: 5,
+                    drawOnChartArea: false
                 }
             }
         },
