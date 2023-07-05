@@ -22,6 +22,7 @@ const CHART_LEN = 300
 const CHART_TIMESTEP = 1
 
 const CHART_COLOR0 = 'rgb(100, 100, 100)'
+const CHART_COLOR1 = 'rgb(30, 30, 30)'
 
 const getChartOptions = (title: string): ChartOptions<'line'> => {
     return {
@@ -53,18 +54,19 @@ const getChartOptions = (title: string): ChartOptions<'line'> => {
                     color: CHART_COLOR0
                 },
                 ticks: {
-                    maxTicksLimit: 6,
-                    color: CHART_COLOR0
+                    color: CHART_COLOR0,
+                    maxTicksLimit: 6
                 },
                 grid: {
                     tickColor: CHART_COLOR0,
-                    tickLength: 5,
-                    drawOnChartArea: false
+                    color: CHART_COLOR1,
+                    tickLength: 5
                 }
             }
         },
         plugins: {
             title: {
+                color: CHART_COLOR0,
                 text: title,
                 display: true,
                 position: 'bottom',
