@@ -7,5 +7,5 @@ uniform mat4 scaleMatrix;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(position, 1.0);
-    gl_PointSize = 20.0 / gl_Position.w;
+    gl_PointSize = 8.0 / gl_Position.w;
 }
