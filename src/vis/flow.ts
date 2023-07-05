@@ -115,8 +115,12 @@ class FlowLines {
         this.bindAttrib()
         this.setCurrInd(this.currInd)
         this.setModelMatrix(modelMatrix)
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
         this.currInd += 0.5
+
+        // disable depth mask so overlapping flow lines will always be drawn fully
+        gl.depthMask(false)
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
+        gl.depthMask(true)
     }
 }
 
