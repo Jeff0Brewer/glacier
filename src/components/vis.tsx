@@ -17,6 +17,7 @@ const Vis: FC<VisProps> = props => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
     const [markers, setMarkers] = useState<Array<Marker>>([])
+    const [currMarker, setCurrMarker] = useState<number>(-1)
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
@@ -73,6 +74,7 @@ const Vis: FC<VisProps> = props => {
                 const marker = visRef.current.mouseSelect(x, y)
                 if (marker) {
                     setMarkers([...markers, marker])
+                    setCurrMarker(markers.length)
                 }
             }
         }
@@ -92,8 +94,14 @@ const Vis: FC<VisProps> = props => {
                 height={height * window.devicePixelRatio}
                 style={{ width: `${width}px`, height: `${height}px` }}
             />
-            { markers.length &&
-                <MarkerPlots marker={markers[0]} data={props.data} options={props.options} /> }
+            { markers[currMarker] &&
+                <MarkerPlots
+                    markers={markers}
+                    currMarker={currMarker}
+                    setCurrMarker={setCurrMarker}
+                    data={props.data}
+                    options={props.options}
+                /> }
         </section>
     )
 }

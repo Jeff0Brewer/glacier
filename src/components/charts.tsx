@@ -11,7 +11,9 @@ import styles from '../styles/charts.module.css'
 Chart.register(LineElement, PointElement, CategoryScale, LinearScale, Title)
 
 type MarkerPlotsProps = {
-    marker: Marker,
+    markers: Array<Marker>,
+    currMarker: number,
+    setCurrMarker: (ind: number) => void,
     data: ModelData,
     options: FlowOptions
 }
@@ -91,8 +93,8 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
             const vel = calcFlowVelocity(
                 props.data,
                 props.options,
-                props.marker.y,
-                props.marker.x,
+                props.markers[props.currMarker].y,
+                props.markers[props.currMarker].x,
                 i * CHART_TIMESTEP
             )
             labels.push(i * CHART_TIMESTEP)
@@ -104,20 +106,34 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         setEast(getChartData(labels, east))
         setNorth(getChartData(labels, north))
         setUp(getChartData(labels, up))
-    }, [props.marker, props.data, props.options])
+    }, [props.markers, props.currMarker, props.data, props.options])
 
     return (
-        <div className={styles.charts}>
-            <div>
-                <Line data={east} options={getChartOptions('East')} />
+        <section className={styles.markerInterface}>
+            <nav className={styles.markerSelect}>{
+                props.markers.map((_: Marker, i: number) => {
+                    return (
+                        <a
+                            onClick={(): void => props.setCurrMarker(i)}
+                            className={props.currMarker === i ? styles.active : styles.inactive}
+                        >
+                            {i}
+                        </a>
+                    )
+                })
+            }</nav>
+            <div className={styles.charts}>
+                <div>
+                    <Line data={east} options={getChartOptions('East')} />
+                </div>
+                <div>
+                    <Line data={north} options={getChartOptions('North')} />
+                </div>
+                <div>
+                    <Line data={up} options={getChartOptions('Up')} />
+                </div>
             </div>
-            <div>
-                <Line data={north} options={getChartOptions('North')} />
-            </div>
-            <div>
-                <Line data={up} options={getChartOptions('Up')} />
-            </div>
-        </div>
+        </section>
     )
 }
 
