@@ -69,9 +69,8 @@ const Vis: FC<VisProps> = props => {
                 // convert pixel coords to gl clip space
                 const x = e.clientX / window.innerWidth * 2.0 - 1.0
                 const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
-                const pos = visRef.current.mouseSelect(x, y)
-                if (pos) {
-                    const marker: Marker = { x: pos[0], y: pos[1], z: pos[2] }
+                const marker = visRef.current.mouseSelect(x, y)
+                if (marker) {
                     setMarkers([...markers, marker])
                 }
             }

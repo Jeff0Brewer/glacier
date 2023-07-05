@@ -4,9 +4,11 @@ import { getInvMatrix, getMouseRay } from '../lib/unproject'
 import { WIDTH, HEIGHT } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
+import type { Marker } from '../vis/markers'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import FlowLines from '../vis/flow'
+import Markers from '../vis/markers'
 
 const HEIGHT_SCALE = 50
 const FLOW_DENSITY = 0.065
@@ -21,6 +23,7 @@ class VisRenderer {
     camera: Camera
     glacier: Glacier
     flow: FlowLines
+    markers: Markers
 
     constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement, texture: HTMLImageElement) {
         this.gl = initGl(canvas)
@@ -74,6 +77,14 @@ class VisRenderer {
             HEIGHT_SCALE
         )
 
+        this.markers = new Markers(
+            this.gl,
+            this.model,
+            this.view,
+            this.proj,
+            this.scale
+        )
+
         window.addEventListener('resize', (): void => {
             this.gl.viewport(0, 0, canvas.width, canvas.height)
 
@@ -85,13 +96,18 @@ class VisRenderer {
 
             this.gl.useProgram(this.flow.program)
             this.flow.setProjMatrix(this.proj)
+
+            this.gl.useProgram(this.markers.program)
+            this.markers.setProjMatrix(this.proj)
         })
     }
 
-    mouseSelect (x: number, y: number): vec3 | null {
+    mouseSelect (x: number, y: number): Marker | null {
         const inv = getInvMatrix([this.proj, this.view, this.model, this.scale])
         const { origin, direction } = getMouseRay(x, y, inv)
-        return this.glacier.hitTest(origin, direction)
+        const intersect = this.glacier.hitTest(origin, direction)
+        if (!intersect) { return null }
+        return this.markers.addMarker(this.gl, intersect)
     }
 
     calcFlow (data: ModelData, options: FlowOptions): void {
@@ -109,6 +125,7 @@ class VisRenderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         this.flow.draw(this.gl, this.model)
+        this.markers.draw(this.gl, this.model)
     }
 }
 
