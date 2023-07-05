@@ -37,25 +37,30 @@ const Vis: FC<VisProps> = props => {
         }
     }, [])
 
-    // init vis renderer, draw loop
+    // init vis renderer
     useEffect(() => {
         if (canvasRef.current) {
             visRef.current = new VisRenderer(canvasRef.current, props.surface, props.texture)
         }
-        const draw = (): void => {
-            if (visRef.current) { visRef.current.draw() }
+    }, [props.surface, props.texture])
+
+    // setup draw loop / flow calculations
+    useEffect(() => {
+        // recalculate flow on option changes
+        if (visRef.current) {
+            visRef.current.calcFlow(props.data, props.options)
+        }
+        // start draw loop with current data / options
+        const draw = (time: number): void => {
+            if (visRef.current) {
+                visRef.current.draw(props.data, props.options, time / 1000)
+            }
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
+
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
-        }
-    }, [props.data, props.surface, props.texture])
-
-    // recalculate flow on option changes
-    useEffect(() => {
-        if (visRef.current) {
-            visRef.current.calcFlow(props.data, props.options)
         }
     }, [props.data, props.options])
 

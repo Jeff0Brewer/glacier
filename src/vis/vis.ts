@@ -97,7 +97,6 @@ class VisRenderer {
             this.gl.useProgram(this.flow.program)
             this.flow.setProjMatrix(this.proj)
 
-            this.gl.useProgram(this.markers.program)
             this.markers.setProjMatrix(this.proj)
         })
     }
@@ -121,10 +120,11 @@ class VisRenderer {
         )
     }
 
-    draw (): void {
+    draw (data: ModelData, options: FlowOptions, time: number): void {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         this.flow.draw(this.gl, this.model)
+        this.markers.update(this.gl, data, options, time)
         this.markers.draw(this.gl, this.model)
     }
 }

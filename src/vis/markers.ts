@@ -1,5 +1,8 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute } from '../lib/gl-wrap'
+import { calcFlowVelocity } from '../lib/flow-calc'
+import type { FlowOptions } from '../lib/flow-calc'
+import type { ModelData } from '../lib/data-load'
 import pointVertSource from '../shaders/marker-point-vert.glsl?raw'
 import pointFragSource from '../shaders/marker-point-frag.glsl?raw'
 import lineVertSource from '../shaders/marker-line-vert.glsl?raw'
@@ -13,7 +16,8 @@ type Marker = {
 
 const POS_FPV = 3
 
-const LINE_HEIGHT = 50
+const LINE_HEIGHT = 25
+const MAX_VEL = 5
 
 class Markers {
     pointProgram: WebGLProgram
@@ -91,7 +95,7 @@ class Markers {
         newPoints.set(pos, this.points.length)
         this.points = newPoints
         gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.STATIC_DRAW)
+        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.DYNAMIC_DRAW)
 
         const newLines = new Float32Array(this.lines.length + POS_FPV * 2)
         newLines.set(this.lines)
@@ -110,6 +114,19 @@ class Markers {
         }
     }
 
+    update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
+        for (let i = 0; i < this.points.length; i += POS_FPV) {
+            const x = this.points[i]
+            const y = this.points[i + 1]
+            const velocity = calcFlowVelocity(data, options, y, x, time)
+            const bottomZ = this.lines[i * 2 + 2]
+            const velZClamped = clampSymmetric(velocity[2], MAX_VEL)
+            this.points[i + 2] = bottomZ + velZClamped * LINE_HEIGHT
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.DYNAMIC_DRAW)
+    }
+
     draw (gl: WebGLRenderingContext, model: mat4): void {
         this.setModelMatrix(model)
 
@@ -123,6 +140,10 @@ class Markers {
         this.lineBindPosition()
         gl.drawArrays(gl.LINES, 0, this.lines.length / POS_FPV)
     }
+}
+
+const clampSymmetric = (val: number, max: number): number => {
+    return (Math.min(Math.max(val, -max), max) + max) / (2 * max)
 }
 
 export default Markers
