@@ -14,6 +14,7 @@ type MarkerPlotsProps = {
     markers: Array<Marker>,
     currMarker: number,
     setCurrMarker: (ind: number) => void,
+    deleteMarker: (ind: number) => void,
     data: ModelData,
     options: FlowOptions
 }
@@ -119,13 +120,21 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>{
                 props.markers.map((_: Marker, i: number) => {
+                    if (props.currMarker !== i) {
+                        return (
+                            <a
+                                className={styles.inactive}
+                                onClick={(): void => props.setCurrMarker(i)}
+                                key={i}
+                            >{i}</a>
+                        )
+                    }
                     return (
                         <a
-                            onClick={(): void => props.setCurrMarker(i)}
-                            className={props.currMarker === i ? styles.active : styles.inactive}
-                        >
-                            {i}
-                        </a>
+                            className={styles.active}
+                            onClick={(): void => props.deleteMarker(i)}
+                            key={i}
+                        > x </a>
                     )
                 })
             }</nav>

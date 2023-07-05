@@ -114,6 +114,22 @@ class Markers {
         }
     }
 
+    deleteMarker (gl: WebGLRenderingContext, ind: number): void {
+        const newPoints = new Float32Array(this.points.length - POS_FPV)
+        newPoints.set(this.points.slice(0, ind * POS_FPV))
+        newPoints.set(this.points.slice((ind + 1) * POS_FPV), ind * POS_FPV)
+        this.points = newPoints
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.DYNAMIC_DRAW)
+
+        const newLines = new Float32Array(this.lines.length - (POS_FPV * 2))
+        newLines.set(this.lines.slice(0, ind * POS_FPV * 2))
+        newLines.set(this.lines.slice((ind + 1) * POS_FPV * 2), ind * POS_FPV * 2)
+        this.lines = newLines
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, this.lines, gl.STATIC_DRAW)
+    }
+
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         for (let i = 0; i < this.points.length; i += POS_FPV) {
             const x = this.points[i]

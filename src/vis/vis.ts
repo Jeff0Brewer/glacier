@@ -101,6 +101,10 @@ class VisRenderer {
         })
     }
 
+    deleteMarker (ind: number): void {
+        this.markers.deleteMarker(this.gl, ind)
+    }
+
     mouseSelect (x: number, y: number): Marker | null {
         const inv = getInvMatrix([this.proj, this.view, this.model, this.scale])
         const { origin, direction } = getMouseRay(x, y, inv)

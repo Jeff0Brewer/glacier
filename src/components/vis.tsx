@@ -22,6 +22,16 @@ const Vis: FC<VisProps> = props => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
 
+    const deleteMarker = (ind: number): void => {
+        if (!visRef.current) { return }
+        visRef.current.deleteMarker(ind)
+        markers.splice(ind, 1)
+        setMarkers([...markers])
+        if (ind === markers.length) {
+            setCurrMarker(ind - 1)
+        }
+    }
+
     // setup resize handler
     useEffect(() => {
         const onResize = (): void => {
@@ -99,6 +109,7 @@ const Vis: FC<VisProps> = props => {
                     markers={markers}
                     currMarker={currMarker}
                     setCurrMarker={setCurrMarker}
+                    deleteMarker={deleteMarker}
                     data={props.data}
                     options={props.options}
                 /> }
