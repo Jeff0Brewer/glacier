@@ -1,14 +1,10 @@
 import { useState, useRef, useEffect, FC } from 'react'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
+import type { Marker } from '../vis/markers'
 import VisRenderer from '../vis/vis'
+import MarkerPlots from '../components/charts'
 import styles from '../styles/vis.module.css'
-
-type Marker = {
-    x: number,
-    y: number,
-    z: number
-}
 
 type VisProps = {
     data: ModelData,
@@ -88,13 +84,17 @@ const Vis: FC<VisProps> = props => {
     }, [markers])
 
     return (
-        <canvas
-            className={styles.canvas}
-            ref={canvasRef}
-            width={width * window.devicePixelRatio}
-            height={height * window.devicePixelRatio}
-            style={{ width: `${width}px`, height: `${height}px` }}
-        />
+        <section>
+            <canvas
+                className={styles.canvas}
+                ref={canvasRef}
+                width={width * window.devicePixelRatio}
+                height={height * window.devicePixelRatio}
+                style={{ width: `${width}px`, height: `${height}px` }}
+            />
+            { markers.length &&
+                <MarkerPlots marker={markers[0]} data={props.data} options={props.options} /> }
+        </section>
     )
 }
 
