@@ -1,5 +1,5 @@
 import { useState, useEffect, FC } from 'react'
-import { Chart, LineElement, CategoryScale, LinearScale, PointElement } from 'chart.js'
+import { Chart, LineElement, CategoryScale, LinearScale, PointElement, Title } from 'chart.js'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { Line } from 'react-chartjs-2'
 import type { Marker } from '../vis/markers'
@@ -8,7 +8,7 @@ import type { FlowOptions } from '../lib/flow-calc'
 import { calcFlowVelocity } from '../lib/flow-calc'
 import styles from '../styles/charts.module.css'
 
-Chart.register(LineElement, PointElement, CategoryScale, LinearScale)
+Chart.register(LineElement, PointElement, CategoryScale, LinearScale, Title)
 
 type MarkerPlotsProps = {
     marker: Marker,
@@ -18,20 +18,51 @@ type MarkerPlotsProps = {
 
 const CHART_LEN = 300
 const CHART_TIMESTEP = 1
-const CHART_OPTIONS: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    elements: {
-        point: {
-            radius: 0
+
+const CHART_COLOR0 = 'rgb(100, 100, 100)'
+
+const getChartOptions = (title: string): ChartOptions<'line'> => {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        elements: {
+            point: {
+                radius: 0
+            },
+            line: {
+                borderWidth: 1
+            }
         },
-        line: {
-            borderWidth: 1
-        }
-    },
-    scales: {
-        x: {
-            display: false
+        scales: {
+            x: {
+                border: {
+                    color: CHART_COLOR0
+                },
+                ticks: {
+                    display: false
+                }
+            },
+            y: {
+                border: {
+                    color: CHART_COLOR0
+                },
+                ticks: {
+                    maxTicksLimit: 6,
+                    color: CHART_COLOR0
+                },
+                grid: {
+                    tickColor: CHART_COLOR0,
+                    tickLength: 5
+                }
+            }
+        },
+        plugins: {
+            title: {
+                text: title,
+                display: true,
+                position: 'bottom',
+                padding: 5
+            }
         }
     }
 }
@@ -78,13 +109,13 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
     return (
         <div className={styles.charts}>
             <div>
-                <Line data={east} options={CHART_OPTIONS} />
+                <Line data={east} options={getChartOptions('East')} />
             </div>
             <div>
-                <Line data={north} options={CHART_OPTIONS} />
+                <Line data={north} options={getChartOptions('North')} />
             </div>
             <div>
-                <Line data={up} options={CHART_OPTIONS} />
+                <Line data={up} options={getChartOptions('Up')} />
             </div>
         </div>
     )
