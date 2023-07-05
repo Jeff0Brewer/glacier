@@ -42,7 +42,7 @@
 .charts {
     display: flex;
     width: 100vw;
-    height: 200px;
+    height: 150px;
 }
 
 .charts > div {
