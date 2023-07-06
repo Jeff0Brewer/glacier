@@ -31,12 +31,11 @@
 
 .inactive {
     color: #999;
-    background-color: #222;
+    opacity: 0.5;
 }
 
 .active {
     color: #fff;
-    background-color: #333;
 }
 
 .charts {

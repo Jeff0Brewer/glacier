@@ -1,4 +1,5 @@
 import { useState, useEffect, FC } from 'react'
+import { vec3 } from 'gl-matrix'
 import { Chart, LineElement, CategoryScale, LinearScale, PointElement, Title } from 'chart.js'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { Line } from 'react-chartjs-2'
@@ -119,11 +120,12 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
     return (
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>{
-                props.markers.map((_: Marker, i: number) => {
+                props.markers.map((marker: Marker, i: number) => {
                     if (props.currMarker !== i) {
                         return (
                             <a
                                 className={styles.inactive}
+                                style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
                                 onClick={(): void => props.setCurrMarker(i)}
                                 key={i}
                             >{i}</a>
@@ -132,6 +134,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
                     return (
                         <a
                             className={styles.active}
+                            style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
                             onClick={(): void => props.deleteMarker(i)}
                             key={i}
                         > x </a>
@@ -151,6 +154,10 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
             </div>
         </section>
     )
+}
+
+const colorVec3ToRGB = (color: vec3): string => {
+    return `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`
 }
 
 export default MarkerPlots
