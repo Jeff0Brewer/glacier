@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, FC } from 'react'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker } from '../vis/markers'
+import { markerColors } from '../vis/markers'
 import VisRenderer from '../vis/vis'
 import MarkerPlots from '../components/charts'
 import styles from '../styles/vis.module.css'
@@ -23,8 +24,6 @@ const Vis: FC<VisProps> = props => {
     const frameIdRef = useRef<number>(-1)
 
     const deleteMarker = (ind: number): void => {
-        if (!visRef.current) { return }
-        visRef.current.deleteMarker(ind)
         markers.splice(ind, 1)
         setMarkers([...markers])
         if (ind === markers.length) {
@@ -60,7 +59,7 @@ const Vis: FC<VisProps> = props => {
         // start draw loop with current data / options
         const draw = (time: number): void => {
             if (visRef.current) {
-                visRef.current.draw(props.data, props.options, time / 1000)
+                visRef.current.draw(props.data, props.options, time / 1000, markers)
             }
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
@@ -69,7 +68,7 @@ const Vis: FC<VisProps> = props => {
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
-    }, [props.data, props.options])
+    }, [props.data, props.options, markers])
 
     // handle markers
     useEffect(() => {
@@ -81,8 +80,14 @@ const Vis: FC<VisProps> = props => {
                 // convert pixel coords to gl clip space
                 const x = e.clientX / window.innerWidth * 2.0 - 1.0
                 const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
-                const marker = visRef.current.mouseSelect(x, y)
-                if (marker) {
+                const position = visRef.current.mouseSelect(x, y)
+                if (position) {
+                    const marker: Marker = {
+                        x: position[0],
+                        y: position[1],
+                        z: position[2],
+                        color: markerColors[markers.length % markerColors.length]
+                    }
                     setMarkers([...markers, marker])
                     setCurrMarker(markers.length)
                 }

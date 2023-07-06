@@ -97,20 +97,15 @@ class VisRenderer {
             this.gl.useProgram(this.flow.program)
             this.flow.setProjMatrix(this.proj)
 
+            this.gl.useProgram(this.markers.program)
             this.markers.setProjMatrix(this.proj)
         })
     }
 
-    deleteMarker (ind: number): void {
-        this.markers.deleteMarker(this.gl, ind)
-    }
-
-    mouseSelect (x: number, y: number): Marker | null {
+    mouseSelect (x: number, y: number): vec3 | null {
         const inv = getInvMatrix([this.proj, this.view, this.model, this.scale])
         const { origin, direction } = getMouseRay(x, y, inv)
-        const intersect = this.glacier.hitTest(origin, direction)
-        if (!intersect) { return null }
-        return this.markers.addMarker(this.gl, intersect)
+        return this.glacier.hitTest(origin, direction)
     }
 
     calcFlow (data: ModelData, options: FlowOptions): void {
@@ -124,12 +119,16 @@ class VisRenderer {
         )
     }
 
-    draw (data: ModelData, options: FlowOptions, time: number): void {
+    draw (data: ModelData, options: FlowOptions, time: number, markers: Array<Marker>): void {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         this.flow.draw(this.gl, this.model)
-        this.markers.update(this.gl, data, options, time)
-        this.markers.draw(this.gl, this.model)
+
+        this.gl.useProgram(this.markers.program)
+        this.markers.setModelMatrix(this.model)
+        for (const marker of markers) {
+            this.markers.draw(this.gl, data, options, time, marker)
+        }
     }
 }
 

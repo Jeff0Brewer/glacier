@@ -3,34 +3,36 @@ import { initProgram, initBuffer, initAttribute } from '../lib/gl-wrap'
 import { calcFlowVelocity } from '../lib/flow-calc'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ModelData } from '../lib/data-load'
-import pointVertSource from '../shaders/marker-point-vert.glsl?raw'
-import pointFragSource from '../shaders/marker-point-frag.glsl?raw'
-import lineVertSource from '../shaders/marker-line-vert.glsl?raw'
-import lineFragSource from '../shaders/marker-line-frag.glsl?raw'
+import vertSource from '../shaders/marker-vert.glsl?raw'
+import fragSource from '../shaders/marker-frag.glsl?raw'
+
+const markerColors = [
+    vec3.fromValues(1, 0, 0),
+    vec3.fromValues(0, 1, 0),
+    vec3.fromValues(1, 1, 0)
+]
 
 type Marker = {
     x: number,
     y: number,
-    z: number
+    z: number,
+    color: vec3
 }
 
 const POS_FPV = 3
-
-const LINE_HEIGHT = 25
-const MAX_VEL = 5
+const MARKER_HEIGHT = 50
 
 class Markers {
-    pointProgram: WebGLProgram
-    lineProgram: WebGLProgram
-    pointBuffer: WebGLBuffer
-    lineBuffer: WebGLBuffer
-    pointBindPosition: () => void
-    lineBindPosition: () => void
+    program: WebGLProgram
+    buffer: WebGLBuffer
+    bindPosition: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
-    points: Float32Array
-    lines: Float32Array
+    setHeight: (val: number) => void
+    setColor: (color: vec3) => void
+    setMarkerPos: (x: number, y: number, z: number) => void
+    numVertex: number
 
     constructor (
         gl: WebGLRenderingContext,
@@ -39,130 +41,76 @@ class Markers {
         proj: mat4,
         scale: mat4
     ) {
-        this.pointProgram = initProgram(gl, pointVertSource, pointFragSource)
-        this.lineProgram = initProgram(gl, lineVertSource, lineFragSource)
-        this.pointBuffer = initBuffer(gl)
-        this.lineBuffer = initBuffer(gl)
-        this.pointBindPosition = initAttribute(gl, this.pointProgram, 'position', POS_FPV, POS_FPV, 0)
-        this.lineBindPosition = initAttribute(gl, this.lineProgram, 'position', POS_FPV, POS_FPV, 0)
-        this.points = new Float32Array()
-        this.lines = new Float32Array()
+        this.program = initProgram(gl, vertSource, fragSource)
+        this.buffer = initBuffer(gl)
+        const verts = getCylVerts(20, 5)
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
+        this.numVertex = verts.length / POS_FPV
+        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
 
-        const uPointModelMatrix = gl.getUniformLocation(this.pointProgram, 'modelMatrix')
-        const uPointViewMatrix = gl.getUniformLocation(this.pointProgram, 'viewMatrix')
-        const uPointProjMatrix = gl.getUniformLocation(this.pointProgram, 'projMatrix')
-        const uPointScaleMatrix = gl.getUniformLocation(this.pointProgram, 'scaleMatrix')
-        const uLineModelMatrix = gl.getUniformLocation(this.lineProgram, 'modelMatrix')
-        const uLineViewMatrix = gl.getUniformLocation(this.lineProgram, 'viewMatrix')
-        const uLineProjMatrix = gl.getUniformLocation(this.lineProgram, 'projMatrix')
-        const uLineScaleMatrix = gl.getUniformLocation(this.lineProgram, 'scaleMatrix')
+        const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
+        const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
+        const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
+        const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
+        const uHeight = gl.getUniformLocation(this.program, 'height')
+        const uColor = gl.getUniformLocation(this.program, 'color')
+        const uMarkerPos = gl.getUniformLocation(this.program, 'markerPos')
 
-        gl.useProgram(this.pointProgram)
-        gl.uniformMatrix4fv(uPointModelMatrix, false, model)
-        gl.uniformMatrix4fv(uPointViewMatrix, false, view)
-        gl.uniformMatrix4fv(uPointProjMatrix, false, proj)
-        gl.uniformMatrix4fv(uPointScaleMatrix, false, scale)
+        gl.uniformMatrix4fv(uModelMatrix, false, model)
+        gl.uniformMatrix4fv(uViewMatrix, false, view)
+        gl.uniformMatrix4fv(uProjMatrix, false, proj)
+        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
 
-        gl.useProgram(this.lineProgram)
-        gl.uniformMatrix4fv(uLineModelMatrix, false, model)
-        gl.uniformMatrix4fv(uLineViewMatrix, false, view)
-        gl.uniformMatrix4fv(uLineProjMatrix, false, proj)
-        gl.uniformMatrix4fv(uLineScaleMatrix, false, scale)
-
-        this.setModelMatrix = (mat: mat4): void => {
-            gl.useProgram(this.pointProgram)
-            gl.uniformMatrix4fv(uPointModelMatrix, false, mat)
-            gl.useProgram(this.lineProgram)
-            gl.uniformMatrix4fv(uLineModelMatrix, false, mat)
-        }
-        this.setViewMatrix = (mat: mat4): void => {
-            gl.useProgram(this.pointProgram)
-            gl.uniformMatrix4fv(uPointViewMatrix, false, mat)
-            gl.useProgram(this.lineProgram)
-            gl.uniformMatrix4fv(uLineViewMatrix, false, mat)
-        }
-        this.setProjMatrix = (mat: mat4): void => {
-            gl.useProgram(this.pointProgram)
-            gl.uniformMatrix4fv(uPointProjMatrix, false, mat)
-            gl.useProgram(this.lineProgram)
-            gl.uniformMatrix4fv(uLineProjMatrix, false, mat)
+        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
+        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
+        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setHeight = (val: number): void => { gl.uniform1f(uHeight, val) }
+        this.setColor = (color: vec3): void => { gl.uniform3fv(uColor, color) }
+        this.setMarkerPos = (x: number, y: number, z: number): void => {
+            gl.uniform3f(uMarkerPos, x, y, z)
         }
     }
 
-    addMarker (gl: WebGLRenderingContext, pos: vec3): Marker {
-        const newPoints = new Float32Array(this.points.length + POS_FPV)
-        newPoints.set(this.points)
-        newPoints.set(pos, this.points.length)
-        this.points = newPoints
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.DYNAMIC_DRAW)
+    draw (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number, marker: Marker): void {
+        const vel = calcFlowVelocity(data, options, marker.y, marker.x, time)
+        const height = (clamp(vel[2], -5.0, 5.0) + 5.0) * 0.1 * MARKER_HEIGHT
 
-        const newLines = new Float32Array(this.lines.length + POS_FPV * 2)
-        newLines.set(this.lines)
-        newLines.set(pos, this.lines.length)
-        const lineTop = vec3.clone(pos)
-        lineTop[2] += LINE_HEIGHT
-        newLines.set(lineTop, this.lines.length + POS_FPV)
-        this.lines = newLines
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.lines, gl.STATIC_DRAW)
-
-        return {
-            x: pos[0],
-            y: pos[1],
-            z: pos[2]
-        }
-    }
-
-    deleteMarker (gl: WebGLRenderingContext, ind: number): void {
-        const newPoints = new Float32Array(this.points.length - POS_FPV)
-        newPoints.set(this.points.slice(0, ind * POS_FPV))
-        newPoints.set(this.points.slice((ind + 1) * POS_FPV), ind * POS_FPV)
-        this.points = newPoints
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.DYNAMIC_DRAW)
-
-        const newLines = new Float32Array(this.lines.length - (POS_FPV * 2))
-        newLines.set(this.lines.slice(0, ind * POS_FPV * 2))
-        newLines.set(this.lines.slice((ind + 1) * POS_FPV * 2), ind * POS_FPV * 2)
-        this.lines = newLines
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.lines, gl.STATIC_DRAW)
-    }
-
-    update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
-        for (let i = 0; i < this.points.length; i += POS_FPV) {
-            const x = this.points[i]
-            const y = this.points[i + 1]
-            const velocity = calcFlowVelocity(data, options, y, x, time)
-            const bottomZ = this.lines[i * 2 + 2]
-            const velZClamped = clampSymmetric(velocity[2], MAX_VEL)
-            this.points[i + 2] = bottomZ + velZClamped * LINE_HEIGHT
-        }
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.points, gl.DYNAMIC_DRAW)
-    }
-
-    draw (gl: WebGLRenderingContext, model: mat4): void {
-        this.setModelMatrix(model)
-
-        gl.useProgram(this.pointProgram)
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.pointBuffer)
-        this.pointBindPosition()
-        gl.drawArrays(gl.POINTS, 0, this.points.length / POS_FPV)
-
-        gl.useProgram(this.lineProgram)
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
-        this.lineBindPosition()
-        gl.drawArrays(gl.LINES, 0, this.lines.length / POS_FPV)
+        gl.useProgram(this.program)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+        this.bindPosition()
+        this.setMarkerPos(marker.x, marker.y, marker.z)
+        this.setHeight(height)
+        this.setColor(marker.color)
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
     }
 }
 
-const clampSymmetric = (val: number, max: number): number => {
-    return (Math.min(Math.max(val, -max), max) + max) / (2 * max)
+const clamp = (val: number, min: number, max: number): number => {
+    return Math.min(Math.max(val, min), max)
+}
+
+const getCylVerts = (detail: number, radius: number): Float32Array => {
+    const vert = new Float32Array(detail * POS_FPV * 2)
+    let ind = 0
+    const angleInc = 2 * Math.PI / (detail - 1)
+    for (let angle = 0; angle <= 2 * Math.PI; angle += angleInc) {
+        const x = Math.cos(angle) * radius
+        const y = Math.sin(angle) * radius
+        vert[ind++] = x
+        vert[ind++] = y
+        vert[ind++] = 0
+        vert[ind++] = x
+        vert[ind++] = y
+        vert[ind++] = 1
+    }
+    return vert
 }
 
 export default Markers
+
+export {
+    markerColors
+}
 
 export type {
     Marker
