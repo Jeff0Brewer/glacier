@@ -6,11 +6,11 @@ import type { ModelData } from '../lib/data-load'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
-const WORM_SPEED = 20
+const WORM_SPEED = 40
 const MIN_WORM_SPEED = 0.2
 const WORM_LIFESPAN = 800
 const WORM_HISTORY = 300
-const WORM_DENSITY = 0.3
+const WORM_DENSITY = 0.2
 const WORMS_RADIUS = 20.0
 
 // floats per vertex for attribs
@@ -134,12 +134,12 @@ class Worm {
         this.ringBuffer.set(gl, verts)
 
         this.lifespan += Math.pow(speed, 0.25)
-        if (this.lifespan > WORM_LIFESPAN) {
-            this.x = this.startX
-            this.y = this.startY
-            this.z = 0
-            this.lifespan = 0
-        }
+    }
+
+    fadeOut (setCurrSegment: (ind: number) => void): void {
+        this.lifespan += 1
+        this.currSegment += 1
+        setCurrSegment(this.currSegment)
     }
 
     draw (
@@ -227,8 +227,16 @@ class Worms {
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
-        for (const worm of this.worms) {
-            worm.update(gl, data, options, time)
+        for (let i = 0; i < this.worms.length; i++) {
+            if (this.worms[i].lifespan > WORM_LIFESPAN) {
+                this.worms[i].fadeOut(this.setCurrSegment)
+                if (this.worms[i].lifespan > WORM_LIFESPAN + WORM_HISTORY) {
+                    this.worms.splice(i, 1)
+                    i--
+                }
+            } else {
+                this.worms[i].update(gl, data, options, time)
+            }
         }
     }
 

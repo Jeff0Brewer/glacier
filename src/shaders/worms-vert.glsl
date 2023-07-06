@@ -21,7 +21,7 @@ float heightMap(sampler2D map, vec2 texCoord, float scale) {
 }
 
 void main() {
-    fade = 1.0 - ((currSegment - segment) / history);
+    fade = 1.0 - (clamp((currSegment - segment), 0.0, history) / history);
     vec2 texCoord = position.xy / dimensions;
     float height = heightMap(surfaceMap, texCoord, heightScale) + 2.0;
     vec3 pos = vec3(position.xy + perp * fade * 1.0, height);
