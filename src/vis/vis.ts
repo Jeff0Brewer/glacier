@@ -14,6 +14,10 @@ const HEIGHT_SCALE = 50
 const FLOW_DENSITY = 0.065
 const FLOW_HISTORY = 200
 
+const FOV = 1
+const NEAR = 0.1
+const FAR = 50
+
 class VisRenderer {
     gl: WebGLRenderingContext
     model: mat4
@@ -38,11 +42,8 @@ class VisRenderer {
         const up = vec3.fromValues(0, 0, 1)
         this.view = mat4.lookAt(mat4.create(), eye, focus, up)
 
-        const fov = 1
         const aspect = canvas.width / canvas.height
-        const near = 0.1
-        const far = 50
-        this.proj = mat4.perspective(mat4.create(), fov, aspect, near, far)
+        this.proj = mat4.perspective(mat4.create(), FOV, aspect, NEAR, FAR)
 
         const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
         this.scale = mat4.translate(
@@ -54,7 +55,7 @@ class VisRenderer {
             [-WIDTH * 0.5, -HEIGHT * 0.5, 0]
         )
 
-        this.camera = new Camera(canvas, this.model, eye, focus, up)
+        this.camera = new Camera(this.model, eye, focus, up)
 
         this.glacier = new Glacier(
             this.gl,
@@ -84,12 +85,14 @@ class VisRenderer {
             this.proj,
             this.scale
         )
+    }
 
-        window.addEventListener('resize', (): void => {
+    setupEventHandlers (canvas: HTMLCanvasElement): (() => void) {
+        const onResize = (): void => {
             this.gl.viewport(0, 0, canvas.width, canvas.height)
 
             const aspect = canvas.width / canvas.height
-            mat4.perspective(this.proj, fov, aspect, near, far)
+            mat4.perspective(this.proj, FOV, aspect, NEAR, FAR)
 
             this.gl.useProgram(this.glacier.program)
             this.glacier.setProjMatrix(this.proj)
@@ -99,7 +102,15 @@ class VisRenderer {
 
             this.gl.useProgram(this.markers.program)
             this.markers.setProjMatrix(this.proj)
-        })
+        }
+
+        window.addEventListener('resize', onResize)
+        const removeCameraEvents = this.camera.setupEventHandlers(canvas)
+
+        return (): void => {
+            window.removeEventListener('resize', onResize)
+            removeCameraEvents()
+        }
     }
 
     mouseSelect (x: number, y: number): vec3 | null {

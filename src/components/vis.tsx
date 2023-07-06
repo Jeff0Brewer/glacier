@@ -47,6 +47,9 @@ const Vis: FC<VisProps> = props => {
     useEffect(() => {
         if (canvasRef.current) {
             visRef.current = new VisRenderer(canvasRef.current, props.surface, props.texture)
+            // setup handlers returns closure to cleanup handlers
+            // return to useEffect to prevent accumulating excess handlers
+            return visRef.current.setupEventHandlers(canvasRef.current)
         }
     }, [props.surface, props.texture])
 
