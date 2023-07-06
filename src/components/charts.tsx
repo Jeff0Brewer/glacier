@@ -124,16 +124,16 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
                     if (props.currMarker !== i) {
                         return (
                             <a
-                                className={styles.inactive}
+                                className={styles.unselected}
                                 style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
                                 onClick={(): void => props.setCurrMarker(i)}
                                 key={i}
-                            >{i}</a>
+                            ></a>
                         )
                     }
                     return (
                         <a
-                            className={styles.active}
+                            className={styles.tab}
                             style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
                             onClick={(): void => props.deleteMarker(i)}
                             key={i}

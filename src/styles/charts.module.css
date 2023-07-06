@@ -9,33 +9,19 @@
     display: flex;
 }
 
-.inactive, .active {
+.tab, .unselected {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 25px;
+    width: 50px;
+    height: 20px;
     font-size: 12px;
-    border-left: 1px solid #555;
     user-select: none;
 }
 
-.delete {
-    position: absolute;
-    right: 10px;
-}
-
-.markerSelect > a:first-child {
-    border: none;
-}
-
-.inactive {
-    color: #999;
+.unselected {
     opacity: 0.5;
-}
-
-.active {
-    color: #fff;
 }
 
 .charts {
