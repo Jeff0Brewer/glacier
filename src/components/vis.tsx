@@ -53,13 +53,15 @@ const Vis: FC<VisProps> = props => {
         }
     }, [props.surface, props.texture])
 
-    // setup draw loop / flow calculations
+    // recalculate flow on data / option changes
     useEffect(() => {
-        // recalculate flow on option changes
         if (visRef.current) {
             visRef.current.calcFlow(props.data, props.options)
         }
-        // start draw loop with current data / options
+    }, [props.data, props.options])
+
+    // setup draw loop
+    useEffect(() => {
         const draw = (time: number): void => {
             if (visRef.current) {
                 visRef.current.draw(props.data, props.options, time / 1000, markers)
