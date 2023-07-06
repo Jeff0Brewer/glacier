@@ -7,9 +7,10 @@ import vertSource from '../shaders/marker-vert.glsl?raw'
 import fragSource from '../shaders/marker-frag.glsl?raw'
 
 const markerColors = [
-    vec3.fromValues(1, 0, 0),
-    vec3.fromValues(0, 1, 0),
-    vec3.fromValues(1, 1, 0)
+    vec3.fromValues(0, 0, 1),
+    vec3.fromValues(0, 0.7, 0),
+    vec3.fromValues(1, 0, 1),
+    vec3.fromValues(1, 0, 0)
 ]
 
 type Marker = {
@@ -43,7 +44,7 @@ class Markers {
     ) {
         this.program = initProgram(gl, vertSource, fragSource)
         this.buffer = initBuffer(gl)
-        const verts = getCylVerts(20, 5)
+        const verts = getCylVerts(20, 3)
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
         this.numVertex = verts.length / POS_FPV
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
