@@ -9,6 +9,9 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 const WORM_SPEED = 20
 const MIN_WORM_SPEED = 0.2
 const WORM_LIFESPAN = 800
+const WORM_HISTORY = 300
+const WORM_DENSITY = 0.3
+const WORMS_RADIUS = 20.0
 
 // floats per vertex for attribs
 const POS_FPV = 3
@@ -174,20 +177,9 @@ class Worms {
         view: mat4,
         proj: mat4,
         scale: mat4,
-        heightScale: number,
-        density: number,
-        history: number
+        heightScale: number
     ) {
         this.worms = []
-        for (let x = 0; x < surface.width; x += 1 / density) {
-            for (let y = 0; y < surface.height; y += 1 / density) {
-                // distribute worms semi-randomly
-                const rx = x + Math.random() * 10 - 5
-                const ry = y + Math.random() * 10 - 5
-                this.worms.push(new Worm(gl, history, rx, ry))
-            }
-        }
-
         this.program = initProgram(gl, vertSource, fragSource)
         this.texture = initTexture(gl)
         gl.texImage2D(
@@ -223,7 +215,15 @@ class Worms {
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
         gl.uniform1f(uHeightScale, heightScale)
         const uHistory = gl.getUniformLocation(this.program, 'history')
-        gl.uniform1f(uHistory, history)
+        gl.uniform1f(uHistory, WORM_HISTORY)
+    }
+
+    placeWorms (gl: WebGLRenderingContext, pos: vec3): void {
+        for (let x = pos[0] - WORMS_RADIUS; x < pos[0] + WORMS_RADIUS; x += 1 / WORM_DENSITY) {
+            for (let y = pos[1] - WORMS_RADIUS; y < pos[1] + WORMS_RADIUS; y += 1 / WORM_DENSITY) {
+                this.worms.push(new Worm(gl, WORM_HISTORY, x, y))
+            }
+        }
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {

@@ -95,9 +95,7 @@ class VisRenderer {
             this.view,
             this.proj,
             this.scale,
-            HEIGHT_SCALE,
-            0.01,
-            300
+            HEIGHT_SCALE
         )
     }
 
@@ -130,10 +128,17 @@ class VisRenderer {
         }
     }
 
-    mouseSelect (x: number, y: number): vec3 | null {
+    unprojectMouse (x: number, y: number): vec3 | null {
         const inv = getInvMatrix([this.proj, this.view, this.model, this.scale])
         const { origin, direction } = getMouseRay(x, y, inv)
         return this.glacier.hitTest(origin, direction)
+    }
+
+    placeWorms (x: number, y: number): void {
+        const pos = this.unprojectMouse(x, y)
+        if (pos) {
+            this.worms.placeWorms(this.gl, pos)
+        }
     }
 
     calcFlow (data: ModelData, options: FlowOptions): void {

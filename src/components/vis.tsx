@@ -75,17 +75,18 @@ const Vis: FC<VisProps> = props => {
         }
     }, [props.data, props.options, markers])
 
-    // handle markers
+    // handle mouse interaction
     useEffect(() => {
         const canvas = canvasRef.current
         if (!canvas) { return }
 
-        const addMarker = (e: MouseEvent): void => {
-            if (visRef.current && e.shiftKey) {
+        const mouseDown = (e: MouseEvent): void => {
+            if (!visRef.current) { return }
+            const x = e.clientX / window.innerWidth * 2.0 - 1.0
+            const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
+            if (e.shiftKey) {
                 // convert pixel coords to gl clip space
-                const x = e.clientX / window.innerWidth * 2.0 - 1.0
-                const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
-                const position = visRef.current.mouseSelect(x, y)
+                const position = visRef.current.unprojectMouse(x, y)
                 if (position) {
                     const marker: Marker = {
                         x: position[0],
@@ -96,12 +97,14 @@ const Vis: FC<VisProps> = props => {
                     setMarkers([...markers, marker])
                     setCurrMarker(markers.length)
                 }
+            } else if (e.altKey) {
+                visRef.current.placeWorms(x, y)
             }
         }
-        canvas.addEventListener('mousedown', addMarker)
+        canvas.addEventListener('mousedown', mouseDown)
 
         return (): void => {
-            canvas.removeEventListener('mousedown', addMarker)
+            canvas.removeEventListener('mousedown', mouseDown)
         }
     }, [markers])
 
