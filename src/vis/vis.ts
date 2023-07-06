@@ -9,6 +9,7 @@ import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import FlowLines from '../vis/flow'
 import Markers from '../vis/markers'
+import Worms from '../vis/worms'
 
 const HEIGHT_SCALE = 50
 const FLOW_DENSITY = 0.065
@@ -28,6 +29,7 @@ class VisRenderer {
     glacier: Glacier
     flow: FlowLines
     markers: Markers
+    worms: Worms
 
     constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement, texture: HTMLImageElement) {
         this.gl = initGl(canvas)
@@ -85,6 +87,18 @@ class VisRenderer {
             this.proj,
             this.scale
         )
+
+        this.worms = new Worms(
+            this.gl,
+            surface,
+            this.model,
+            this.view,
+            this.proj,
+            this.scale,
+            HEIGHT_SCALE,
+            0.01,
+            300
+        )
     }
 
     setupEventHandlers (canvas: HTMLCanvasElement): (() => void) {
@@ -102,6 +116,9 @@ class VisRenderer {
 
             this.gl.useProgram(this.markers.program)
             this.markers.setProjMatrix(this.proj)
+
+            this.gl.useProgram(this.worms.program)
+            this.worms.setProjMatrix(this.proj)
         }
 
         window.addEventListener('resize', onResize)
@@ -140,6 +157,10 @@ class VisRenderer {
         for (const marker of markers) {
             this.markers.draw(this.gl, data, options, time, marker)
         }
+
+        this.gl.useProgram(this.worms.program)
+        this.worms.update(this.gl, data, options, time)
+        this.worms.draw(this.gl, this.model)
     }
 }
 
