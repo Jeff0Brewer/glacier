@@ -18,6 +18,7 @@
     height: 20px;
     font-size: 12px;
     user-select: none;
+    color: #000;
 }
 
 .unselected {
