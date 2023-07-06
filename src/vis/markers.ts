@@ -8,8 +8,8 @@ import fragSource from '../shaders/marker-frag.glsl?raw'
 
 const markerColors = [
     vec3.fromValues(0.6, 0.2, 0.68),
-    vec3.fromValues(1, 0.24, 0.78),
     vec3.fromValues(0.94, 0.96, 0),
+    vec3.fromValues(1, 0.24, 0.78),
     vec3.fromValues(0, 0.79, 0.8),
     vec3.fromValues(0, 0.49, 0.47)
 ]
