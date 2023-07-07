@@ -22,16 +22,19 @@ type Marker = {
 }
 
 const POS_FPV = 3
+const NRM_FPV = 3
+const ALL_FPV = POS_FPV + NRM_FPV
+
 const VEL_BOUNDS = 3
-const PIN_WIDTH = 1.5
-const PIN_HEGIHT = 50
+const PIN_WIDTH = 1
+const PIN_HEIGHT = 30
 const PIN_DETAIL = 10
-const PIN_HEAD_WIDTH = 5
+const PIN_HEAD_WIDTH = 3
 
 class Markers {
     program: WebGLProgram
     buffer: WebGLBuffer
-    bindPosition: () => void
+    bindAttrib: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
@@ -51,8 +54,14 @@ class Markers {
         this.buffer = initBuffer(gl)
         const verts = getPinVerts(PIN_DETAIL, PIN_WIDTH, PIN_HEAD_WIDTH)
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
-        this.numVertex = verts.length / POS_FPV
-        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
+        this.numVertex = verts.length / ALL_FPV
+
+        const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
+        const bindNormal = initAttribute(gl, this.program, 'normal', NRM_FPV, ALL_FPV, POS_FPV)
+        this.bindAttrib = (): void => {
+            bindPosition()
+            bindNormal()
+        }
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
@@ -79,11 +88,11 @@ class Markers {
 
     draw (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number, marker: Marker): void {
         const vel = calcFlowVelocity(data, options, marker.y, marker.x, time)
-        const height = (clamp(vel[2], -VEL_BOUNDS, VEL_BOUNDS) + VEL_BOUNDS) * 0.1 * PIN_HEGIHT
+        const height = (clamp(vel[2], -VEL_BOUNDS, VEL_BOUNDS) + VEL_BOUNDS) * 0.1 * PIN_HEIGHT
 
         gl.useProgram(this.program)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-        this.bindPosition()
+        this.bindAttrib()
         this.setHeight(height)
         this.setMarkerPos(marker.x, marker.y, marker.z)
         this.setColor(marker.color)
@@ -96,29 +105,36 @@ const clamp = (val: number, min: number, max: number): number => {
 }
 
 const getPinVerts = (detail: number, pinRadius: number, headRadius: number): Float32Array => {
-    const ico = getIcosphere(2)
+    const ico = getIcosphere(1)
     const topZ = 3
 
-    const vert = new Float32Array(detail * POS_FPV * 6 + ico.triangles.length * 3 * POS_FPV)
+    const vert = new Float32Array(detail * ALL_FPV * 6 + ico.triangles.length * 3 * ALL_FPV)
     let ind = 0
-    const setVert = (x: number, y: number, z: number): void => {
+    const setVert = (x: number, y: number, z: number, nx: number, ny: number, nz: number): void => {
         vert[ind++] = x
         vert[ind++] = y
         vert[ind++] = z
+        vert[ind++] = nx
+        vert[ind++] = ny
+        vert[ind++] = nz
     }
 
     const angleInc = 2 * Math.PI / (detail - 1)
     for (let angle = 0; angle <= 2 * Math.PI; angle += angleInc) {
-        const x = Math.cos(angle) * pinRadius
-        const y = Math.sin(angle) * pinRadius
-        const nx = Math.cos(angle + angleInc) * pinRadius
-        const ny = Math.sin(angle + angleInc) * pinRadius
-        setVert(x, y, 0)
-        setVert(nx, ny, 0)
-        setVert(x, y, topZ)
-        setVert(x, y, topZ)
-        setVert(nx, ny, 0)
-        setVert(nx, ny, topZ)
+        const ax = Math.cos(angle)
+        const ay = Math.sin(angle)
+        const anx = Math.cos(angle + angleInc)
+        const any = Math.sin(angle + angleInc)
+        const x = ax * pinRadius
+        const y = ay * pinRadius
+        const nx = anx * pinRadius
+        const ny = any * pinRadius
+        setVert(x, y, 0, ax, ay, 0)
+        setVert(nx, ny, 0, anx, any, 0)
+        setVert(x, y, topZ, ax, ay, 0)
+        setVert(x, y, topZ, ax, ay, 0)
+        setVert(nx, ny, 0, anx, any, 0)
+        setVert(nx, ny, topZ, anx, any, 0)
     }
 
     const headZ = topZ - headRadius * 0.5
@@ -128,7 +144,10 @@ const getPinVerts = (detail: number, pinRadius: number, headRadius: number): Flo
             setVert(
                 x * headRadius,
                 y * headRadius,
-                (z + 1) * headRadius + headZ
+                (z + 1) * headRadius + headZ,
+                x,
+                y,
+                z
             )
         }
     }
