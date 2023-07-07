@@ -9,6 +9,8 @@ uniform float height;
 
 void main() {
     vec3 pos = position + markerPos;
-    pos.z += position.z * height;
+    // use step to avoid branch, check if vertex is bottom of pin (z = 0)
+    float notBottom = step(0.0001, abs(position.z));
+    pos.z += notBottom * (position.z + height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 }

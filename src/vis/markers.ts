@@ -22,7 +22,12 @@ type Marker = {
 }
 
 const POS_FPV = 3
-const MARKER_HEIGHT = 50
+const VEL_BOUNDS = 3
+const PIN_WIDTH = 1.5
+const PIN_HEGIHT = 50
+const PIN_DETAIL = 10
+const PIN_HEAD_HEIGHT = 6
+const PIN_HEAD_WIDTH = 5
 
 class Markers {
     program: WebGLProgram
@@ -45,7 +50,7 @@ class Markers {
     ) {
         this.program = initProgram(gl, vertSource, fragSource)
         this.buffer = initBuffer(gl)
-        const verts = getCylVerts(20, 3)
+        const verts = getPinVerts(PIN_DETAIL, PIN_WIDTH, PIN_HEAD_WIDTH)
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
         this.numVertex = verts.length / POS_FPV
         this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, POS_FPV, 0)
@@ -75,13 +80,13 @@ class Markers {
 
     draw (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number, marker: Marker): void {
         const vel = calcFlowVelocity(data, options, marker.y, marker.x, time)
-        const height = (clamp(vel[2], -5.0, 5.0) + 5.0) * 0.1 * MARKER_HEIGHT
+        const height = (clamp(vel[2], -VEL_BOUNDS, VEL_BOUNDS) + VEL_BOUNDS) * 0.1 * PIN_HEGIHT
 
         gl.useProgram(this.program)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindPosition()
-        this.setMarkerPos(marker.x, marker.y, marker.z)
         this.setHeight(height)
+        this.setMarkerPos(marker.x, marker.y, marker.z)
         this.setColor(marker.color)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
     }
@@ -91,19 +96,32 @@ const clamp = (val: number, min: number, max: number): number => {
     return Math.min(Math.max(val, min), max)
 }
 
-const getCylVerts = (detail: number, radius: number): Float32Array => {
-    const vert = new Float32Array(detail * POS_FPV * 2)
+const getPinVerts = (detail: number, pinRadius: number, headRadius: number): Float32Array => {
+    const vert = new Float32Array(detail * POS_FPV * 8)
     let ind = 0
+    // helper to set vertices in array sequentially
+    const setVert = (x: number, y: number, z: number): void => {
+        vert[ind++] = x
+        vert[ind++] = y
+        vert[ind++] = z
+    }
+
+    const zInc = PIN_HEAD_HEIGHT / 2
     const angleInc = 2 * Math.PI / (detail - 1)
     for (let angle = 0; angle <= 2 * Math.PI; angle += angleInc) {
-        const x = Math.cos(angle) * radius
-        const y = Math.sin(angle) * radius
-        vert[ind++] = x
-        vert[ind++] = y
-        vert[ind++] = 0
-        vert[ind++] = x
-        vert[ind++] = y
-        vert[ind++] = 1
+        const x = Math.cos(angle)
+        const y = Math.sin(angle)
+        const nx = Math.cos(angle + angleInc)
+        const ny = Math.sin(angle + angleInc)
+
+        setVert(x * pinRadius, y * pinRadius, 0)
+        setVert(nx * pinRadius, ny * pinRadius, 0)
+        setVert(x * pinRadius, y * pinRadius, 1)
+        setVert(nx * pinRadius, ny * pinRadius, 1)
+        setVert(x * headRadius, y * headRadius, 1 + zInc)
+        setVert(nx * headRadius, ny * headRadius, 1 + zInc)
+        setVert(0, 0, 1 + 2 * zInc)
+        setVert(0, 0, 1 + 2 * zInc)
     }
     return vert
 }
