@@ -27,9 +27,9 @@ const ALL_FPV = POS_FPV + NRM_FPV
 
 const VEL_BOUNDS = 3
 const PIN_WIDTH = 1
-const PIN_HEIGHT = 30
+const PIN_HEIGHT = 50
 const PIN_DETAIL = 10
-const PIN_HEAD_WIDTH = 3
+const PIN_HEAD_WIDTH = 4
 
 class Markers {
     program: WebGLProgram
