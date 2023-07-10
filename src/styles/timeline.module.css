@@ -6,14 +6,13 @@
     flex-direction: column;
 }
 
-.speedWrap {
-    width: 100px;
-}
-
 .speedWrap > input {
-    width: 10px;
+    font: inherit;
+    width: 30px;
     border: none;
     background-color: transparent;
+    text-align: right;
+    padding-right: 5px;
 }
 
 .bounds {
