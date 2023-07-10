@@ -48,8 +48,20 @@ const Timeline: FC<TimelineProps> = props => {
     }, [props.timeRef, maxPeriod])
 
     return (
-        <div className={styles.timeline} ref={timelineRef}>
-            <div className={styles.timelineBar} ref={barRef}></div>
+        <div>
+            <div className={styles.barWrap}>
+                <div className={styles.timeline} ref={timelineRef}>
+                    <div className={styles.timelineBar} ref={barRef}></div>
+                </div>
+                <div className={styles.bounds}>
+                    <p>0</p>
+                    <p>{Math.round(maxPeriod)}</p>
+                </div>
+            </div>
+            <div className={styles.speedWrap}>
+                <input type={'text'} defaultValue={1}/>
+                <p>hr / sec</p>
+            </div>
         </div>
     )
 }

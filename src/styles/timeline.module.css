@@ -1,11 +1,43 @@
-.timeline {
+.barWrap {
     position: relative;
+    width: 200px;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+}
+
+.speedWrap {
+    width: 100px;
+}
+
+.speedWrap > input {
+    width: 10px;
+    border: none;
+    background-color: transparent;
+}
+
+.bounds {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.timeline {
+    position: absolute;
+    left: 0;
+    right: 0;
     height: 15px;
-    background-color: #000;
+    background-color: #ddd;
 }
 
 .timelineBar {
+    position: relative;
     margin: 0;
-    background-color: #ff0;
+    background-color: #ddf;
     height: 100%;
+    display: flex;
+    justify-content: right;
 }
