@@ -6,7 +6,7 @@ import { Line } from 'react-chartjs-2'
 import type { Marker } from '../vis/markers'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
-import { calcFlowVelocity } from '../lib/flow-calc'
+import { calcFlowVelocity, PERIOD_1, PERIOD_2, PERIOD_3 } from '../lib/flow-calc'
 import styles from '../styles/charts.module.css'
 
 Chart.register(LineElement, PointElement, CategoryScale, LinearScale, Title)
@@ -20,7 +20,7 @@ type MarkerPlotsProps = {
     options: FlowOptions
 }
 
-const CHART_LEN = 300
+const CHART_LEN = Math.max(PERIOD_1, PERIOD_2, PERIOD_3)
 const CHART_TIMESTEP = 1
 
 const CHART_COLOR0 = 'rgb(0, 0, 0)'
