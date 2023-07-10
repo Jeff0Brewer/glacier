@@ -112,7 +112,8 @@ class VisRenderer {
             this.gl.useProgram(this.flow.program)
             this.flow.setProjMatrix(this.proj)
 
-            this.gl.useProgram(this.markers.program)
+            // multiple programs in markers
+            // don't bind program here
             this.markers.setProjMatrix(this.proj)
 
             this.gl.useProgram(this.worms.program)
@@ -157,7 +158,6 @@ class VisRenderer {
         this.glacier.draw(this.gl, this.model)
         this.flow.draw(this.gl, this.model)
 
-        this.gl.useProgram(this.markers.program)
         this.markers.setModelMatrix(this.model)
         for (const marker of markers) {
             this.markers.draw(this.gl, data, options, time, marker)
