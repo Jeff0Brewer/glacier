@@ -62,23 +62,6 @@ const Vis: FC<VisProps> = props => {
         }
     }, [props.data, props.options])
 
-    // setup draw loop
-    useEffect(() => {
-        const draw = (time: number): void => {
-            time /= 1000
-            if (visRef.current) {
-                visRef.current.draw(props.data, props.options, time, markers)
-            }
-            props.timeRef.current = time
-            frameIdRef.current = window.requestAnimationFrame(draw)
-        }
-        frameIdRef.current = window.requestAnimationFrame(draw)
-
-        return (): void => {
-            window.cancelAnimationFrame(frameIdRef.current)
-        }
-    }, [props.data, props.options, props.timeRef, markers])
-
     // handle mouse interaction
     useEffect(() => {
         const canvas = canvasRef.current
@@ -111,6 +94,26 @@ const Vis: FC<VisProps> = props => {
             canvas.removeEventListener('mousedown', mouseDown)
         }
     }, [markers])
+
+    // setup draw loop
+    useEffect(() => {
+        let lastT = 0
+        const draw = (time: number): void => {
+            time /= 1000
+            const elapsed = time - lastT
+            lastT = time
+            props.timeRef.current += elapsed
+            if (visRef.current) {
+                visRef.current.draw(props.data, props.options, props.timeRef.current, markers)
+            }
+            frameIdRef.current = window.requestAnimationFrame(draw)
+        }
+        frameIdRef.current = window.requestAnimationFrame(draw)
+
+        return (): void => {
+            window.cancelAnimationFrame(frameIdRef.current)
+        }
+    }, [props.data, props.options, props.timeRef, markers])
 
     return (
         <section>
