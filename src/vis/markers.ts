@@ -23,10 +23,11 @@ type Marker = {
 
 const POS_FPV = 3
 const NRM_FPV = 3
-const ALL_FPV = POS_FPV + NRM_FPV
+const COL_FPV = 3
+const ALL_FPV = POS_FPV + NRM_FPV + COL_FPV
 
 const VEL_BOUNDS = 3
-const PIN_WIDTH = 1
+const PIN_WIDTH = 0.5
 const PIN_HEIGHT = 50
 const PIN_DETAIL = 10
 const BALLOON_WIDTH = 6
@@ -40,7 +41,7 @@ class Markers {
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setHeight: (val: number) => void
-    setColor: (color: vec3) => void
+    setAccent: (color: vec3) => void
     setMarkerPos: (x: number, y: number, z: number) => void
     numVertex: number
 
@@ -59,9 +60,11 @@ class Markers {
 
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindNormal = initAttribute(gl, this.program, 'normal', NRM_FPV, ALL_FPV, POS_FPV)
+        const bindColor = initAttribute(gl, this.program, 'color', COL_FPV, ALL_FPV, POS_FPV + NRM_FPV)
         this.bindAttrib = (): void => {
             bindPosition()
             bindNormal()
+            bindColor()
         }
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
@@ -69,7 +72,7 @@ class Markers {
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
         const uHeight = gl.getUniformLocation(this.program, 'height')
-        const uColor = gl.getUniformLocation(this.program, 'color')
+        const uAccent = gl.getUniformLocation(this.program, 'accent')
         const uMarkerPos = gl.getUniformLocation(this.program, 'markerPos')
 
         gl.uniformMatrix4fv(uModelMatrix, false, model)
@@ -81,7 +84,7 @@ class Markers {
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
         this.setHeight = (val: number): void => { gl.uniform1f(uHeight, val) }
-        this.setColor = (color: vec3): void => { gl.uniform3fv(uColor, color) }
+        this.setAccent = (color: vec3): void => { gl.uniform3fv(uAccent, color) }
         this.setMarkerPos = (x: number, y: number, z: number): void => {
             gl.uniform3f(uMarkerPos, x, y, z)
         }
@@ -96,7 +99,7 @@ class Markers {
         this.bindAttrib()
         this.setHeight(height)
         this.setMarkerPos(marker.x, marker.y, marker.z)
-        this.setColor(marker.color)
+        this.setAccent(marker.color)
         gl.drawArrays(gl.TRIANGLES, 0, this.numVertex)
     }
 }
@@ -115,13 +118,20 @@ const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHe
 
     const vert = new Float32Array(detail * ALL_FPV * 6 + ico.triangles.length * 3 * ALL_FPV)
     let ind = 0
-    const setVert = (x: number, y: number, z: number, nx: number, ny: number, nz: number): void => {
+    const setVert = (
+        x: number, y: number, z: number,
+        nx: number, ny: number, nz: number,
+        cr: number, cg: number, cb: number
+    ): void => {
         vert[ind++] = x
         vert[ind++] = y
         vert[ind++] = z
         vert[ind++] = nx
         vert[ind++] = ny
         vert[ind++] = nz
+        vert[ind++] = cr
+        vert[ind++] = cg
+        vert[ind++] = cb
     }
 
     const angleInc = 2 * Math.PI / (detail - 1)
@@ -134,12 +144,12 @@ const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHe
         const y = ay * pinWidth
         const nx = anx * pinWidth
         const ny = any * pinWidth
-        setVert(x, y, 0, ax, ay, 0)
-        setVert(nx, ny, 0, anx, any, 0)
-        setVert(x, y, topZ, ax, ay, 0)
-        setVert(x, y, topZ, ax, ay, 0)
-        setVert(nx, ny, 0, anx, any, 0)
-        setVert(nx, ny, topZ, anx, any, 0)
+        setVert(x, y, 0, ax, ay, 0, 0, 0, 0)
+        setVert(nx, ny, 0, anx, any, 0, 0, 0, 0)
+        setVert(x, y, topZ, ax, ay, 0, 0, 0, 0)
+        setVert(x, y, topZ, ax, ay, 0, 0, 0, 0)
+        setVert(nx, ny, 0, anx, any, 0, 0, 0, 0)
+        setVert(nx, ny, topZ, anx, any, 0, 0, 0, 0)
     }
 
     const headZ = topZ - BALLOON_HEIGHT * 0.5
@@ -153,7 +163,10 @@ const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHe
                 (z + 1) * headHeight + headZ,
                 x,
                 y,
-                z
+                z,
+                1,
+                0,
+                1
             )
         }
     }
