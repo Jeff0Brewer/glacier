@@ -11,7 +11,7 @@ type Marker = {
     color: vec3
 }
 
-const BASE_RADIUS = 8
+const BASE_RADIUS = 5
 
 const POS_FPV = 3
 const NRM_FPV = 3
