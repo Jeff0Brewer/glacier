@@ -1,0 +1,11 @@
+.timeline {
+    position: relative;
+    height: 15px;
+    background-color: #000;
+}
+
+.timelineBar {
+    margin: 0;
+    background-color: #ff0;
+    height: 100%;
+}
