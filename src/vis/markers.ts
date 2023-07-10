@@ -29,7 +29,8 @@ const VEL_BOUNDS = 3
 const PIN_WIDTH = 1
 const PIN_HEIGHT = 50
 const PIN_DETAIL = 10
-const PIN_HEAD_WIDTH = 4
+const BALLOON_WIDTH = 6
+const BALLOON_HEIGHT = 8
 
 class Markers {
     program: WebGLProgram
@@ -52,7 +53,7 @@ class Markers {
     ) {
         this.program = initProgram(gl, vertSource, fragSource)
         this.buffer = initBuffer(gl)
-        const verts = getPinVerts(PIN_DETAIL, PIN_WIDTH, PIN_HEAD_WIDTH)
+        const verts = getPinVerts(PIN_DETAIL, PIN_WIDTH, BALLOON_WIDTH, BALLOON_HEIGHT)
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
         this.numVertex = verts.length / ALL_FPV
 
@@ -104,8 +105,12 @@ const clamp = (val: number, min: number, max: number): number => {
     return Math.min(Math.max(val, min), max)
 }
 
-const getPinVerts = (detail: number, pinRadius: number, headRadius: number): Float32Array => {
-    const ico = getIcosphere(1)
+const ballonWidth = (z: number): number => {
+    return (4 - Math.pow((Math.pow((1 - z) * 64, 0.3333) - 2), 2)) * 0.25
+}
+
+const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHeight: number): Float32Array => {
+    const ico = getIcosphere(2)
     const topZ = 3
 
     const vert = new Float32Array(detail * ALL_FPV * 6 + ico.triangles.length * 3 * ALL_FPV)
@@ -125,10 +130,10 @@ const getPinVerts = (detail: number, pinRadius: number, headRadius: number): Flo
         const ay = Math.sin(angle)
         const anx = Math.cos(angle + angleInc)
         const any = Math.sin(angle + angleInc)
-        const x = ax * pinRadius
-        const y = ay * pinRadius
-        const nx = anx * pinRadius
-        const ny = any * pinRadius
+        const x = ax * pinWidth
+        const y = ay * pinWidth
+        const nx = anx * pinWidth
+        const ny = any * pinWidth
         setVert(x, y, 0, ax, ay, 0)
         setVert(nx, ny, 0, anx, any, 0)
         setVert(x, y, topZ, ax, ay, 0)
@@ -137,14 +142,15 @@ const getPinVerts = (detail: number, pinRadius: number, headRadius: number): Flo
         setVert(nx, ny, topZ, anx, any, 0)
     }
 
-    const headZ = topZ - headRadius * 0.5
+    const headZ = topZ - BALLOON_HEIGHT * 0.5
     for (let ti = 0; ti < ico.triangles.length; ti++) {
         for (let vi = 0; vi < 3; vi++) {
             const [x, y, z] = ico.vertices[ico.triangles[ti][vi]]
+            const w = ballonWidth((z + 1) * 0.5)
             setVert(
-                x * headRadius,
-                y * headRadius,
-                (z + 1) * headRadius + headZ,
+                x * headWidth * w,
+                y * headWidth * w,
+                (z + 1) * headHeight + headZ,
                 x,
                 y,
                 z
@@ -221,7 +227,7 @@ const getIcosphere = (iterations: number): Icosphere => {
             const v1 = vert[tris[ti][1]]
             const v2 = vert[tris[ti][2]]
 
-            // calculate new verts from normalized midpoint between all
+            // calculate new verts from normalized midpoint between edges
             const v3 = midpoint(v0, v1)
             vec3.normalize(v3, v3)
             const v4 = midpoint(v1, v2)
