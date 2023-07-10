@@ -157,11 +157,7 @@ class VisRenderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         this.flow.draw(this.gl, this.model)
-
-        this.markers.setModelMatrix(this.model)
-        for (const marker of markers) {
-            this.markers.draw(this.gl, data, options, time, marker)
-        }
+        this.markers.draw(this.gl, this.model, markers, data, options, time)
 
         this.gl.useProgram(this.worms.program)
         this.worms.update(this.gl, data, options, time)

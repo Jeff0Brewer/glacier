@@ -61,14 +61,22 @@ class Markers {
 
     draw (
         gl: WebGLRenderingContext,
+        model: mat4,
+        markers: Array<Marker>,
         data: ModelData,
         options: FlowOptions,
-        time: number,
-        marker: Marker
+        time: number
     ): void {
-        const vel = calcFlowVelocity(data, options, marker.y, marker.x, time)
-        this.pin.draw(gl, marker, vel)
-        this.base.draw(gl, marker, vel)
+        this.setModelMatrix(model)
+        const vels: Array<vec3> = markers.map(m =>
+            calcFlowVelocity(data, options, m.y, m.x, time)
+        )
+        for (let i = 0; i < markers.length; i++) {
+            this.base.draw(gl, markers[i], vels[i])
+        }
+        for (let i = 0; i < markers.length; i++) {
+            this.pin.draw(gl, markers[i], vels[i])
+        }
     }
 }
 
