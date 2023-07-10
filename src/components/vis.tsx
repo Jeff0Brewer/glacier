@@ -13,7 +13,8 @@ type VisProps = {
     options: FlowOptions,
     surface: HTMLImageElement,
     texture: HTMLImageElement,
-    timeRef: MutableRefObject<number>
+    timeRef: MutableRefObject<number>,
+    speedRef: MutableRefObject<number>
 }
 
 const Vis: FC<VisProps> = props => {
@@ -103,7 +104,7 @@ const Vis: FC<VisProps> = props => {
             const elapsed = time - lastT
             lastT = time
             if (elapsed < 1) {
-                props.timeRef.current += elapsed
+                props.timeRef.current += elapsed * props.speedRef.current
             }
             if (visRef.current) {
                 visRef.current.draw(props.data, props.options, props.timeRef.current, markers)
@@ -115,7 +116,7 @@ const Vis: FC<VisProps> = props => {
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
-    }, [props.data, props.options, props.timeRef, markers])
+    }, [props.data, props.options, props.timeRef, props.speedRef, markers])
 
     return (
         <section>

@@ -19,6 +19,7 @@ const App: FC = () => {
         vel: true, p1: true, p2: true, p3: true
     })
     const timeRef = useRef<number>(0)
+    const speedRef = useRef<number>(1)
 
     const getData = async (): Promise<void> => {
         const [data, surface, texture] = await Promise.all([
@@ -45,7 +46,7 @@ const App: FC = () => {
                     <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
                     <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
                 </div>
-                <Timeline timeRef={timeRef} />
+                <Timeline timeRef={timeRef} speedRef={speedRef} />
             </nav>
             { data && surface && texture &&
                 <Vis
@@ -54,6 +55,7 @@ const App: FC = () => {
                     surface={surface}
                     texture={texture}
                     timeRef={timeRef}
+                    speedRef={speedRef}
                 />
             }
         </section>

@@ -1,10 +1,11 @@
 import { useEffect, useRef, FC } from 'react'
+import type { ChangeEvent, MutableRefObject } from 'react'
 import { PERIOD_1, PERIOD_2, PERIOD_3 } from '../lib/flow-calc'
-import type { MutableRefObject } from 'react'
 import styles from '../styles/timeline.module.css'
 
 type TimelineProps = {
-    timeRef: MutableRefObject<number>
+    timeRef: MutableRefObject<number>,
+    speedRef: MutableRefObject<number>
 }
 
 const updateBarWidth = (bar: HTMLDivElement | null, time: number, maxTime: number): void => {
@@ -47,6 +48,10 @@ const Timeline: FC<TimelineProps> = props => {
         }
     }, [props.timeRef, maxPeriod])
 
+    const inputSpeed = (e: ChangeEvent<HTMLInputElement>): void => {
+        props.speedRef.current = parseFloat(e.target.value)
+    }
+
     return (
         <div>
             <div className={styles.barWrap}>
@@ -59,7 +64,7 @@ const Timeline: FC<TimelineProps> = props => {
                 </div>
             </div>
             <div className={styles.speedWrap}>
-                <input type={'text'} defaultValue={1}/>
+                <input type={'text'} defaultValue={1} onChange={inputSpeed}/>
                 <p>hr / sec</p>
             </div>
         </div>
