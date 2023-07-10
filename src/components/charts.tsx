@@ -23,8 +23,8 @@ type MarkerPlotsProps = {
 const CHART_LEN = 300
 const CHART_TIMESTEP = 1
 
-const CHART_COLOR0 = 'rgb(100, 100, 100)'
-const CHART_COLOR1 = 'rgb(30, 30, 30)'
+const CHART_COLOR0 = 'rgb(0, 0, 0)'
+const CHART_COLOR1 = 'rgb(200, 200, 200)'
 
 const getChartOptions = (title: string): ChartOptions<'line'> => {
     return {
@@ -60,7 +60,7 @@ const getChartOptions = (title: string): ChartOptions<'line'> => {
                     maxTicksLimit: 6
                 },
                 grid: {
-                    tickColor: CHART_COLOR0,
+                    tickColor: CHART_COLOR1,
                     color: CHART_COLOR1,
                     tickLength: 5
                 }
@@ -83,7 +83,7 @@ const getChartData = (labels: Array<number>, data: Array<number>): ChartData<'li
         labels,
         datasets: [{
             data,
-            borderColor: 'rgb(255, 255, 255)'
+            borderColor: CHART_COLOR0
         }]
     }
 }

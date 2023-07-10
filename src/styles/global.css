@@ -5,7 +5,8 @@
 }
 
 html, body {
-    background-color: #000;
-    color: #fff;
+    background: linear-gradient(0deg, #888 0%, #fff 100%);
+    background-size: 100vw 100vh;
+    color: #000;
     font-family: Arial, Helvetica, sans-serif;
 }
