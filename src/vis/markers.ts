@@ -68,6 +68,7 @@ class Markers {
     ): void {
         const vel = calcFlowVelocity(data, options, marker.y, marker.x, time)
         this.pin.draw(gl, marker, vel)
+        this.base.draw(gl, marker, vel)
     }
 }
 

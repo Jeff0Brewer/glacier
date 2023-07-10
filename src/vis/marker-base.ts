@@ -11,6 +11,8 @@ type Marker = {
     color: vec3
 }
 
+const BASE_RADIUS = 8
+
 const POS_FPV = 3
 const NRM_FPV = 3
 const ALL_FPV = POS_FPV + NRM_FPV
@@ -34,7 +36,9 @@ class MarkerBase {
     ) {
         this.program = initProgram(gl, vertSource, fragSource)
         this.buffer = initBuffer(gl)
-        this.numVertex = 0
+        const verts = getBaseVerts(BASE_RADIUS)
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
+        this.numVertex = verts.length / ALL_FPV
 
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindNormal = initAttribute(gl, this.program, 'normal', NRM_FPV, ALL_FPV, POS_FPV)
@@ -63,22 +67,25 @@ class MarkerBase {
     }
 
     draw (gl: WebGLRenderingContext, marker: Marker, vel: vec3): void {
-        // TODO
+        gl.useProgram(this.program)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+        this.bindAttrib()
+        this.setMarkerPos(marker.x, marker.y, marker.z)
+        gl.drawArrays(gl.TRIANGLES, 0, this.numVertex)
     }
 }
 
 const getBaseVerts = (radius: number): Float32Array => {
     const ico = getIcosphere(2)
-    // remove triangles with vertices at z < 0
-    // since only need hemisphere
-    ico.triangles.filter(t => {
+    // remove triangles with z below 0 since only need hemisphere
+    ico.triangles = ico.triangles.filter(t => {
         const v0 = ico.vertices[t[0]]
         const v1 = ico.vertices[t[1]]
         const v2 = ico.vertices[t[2]]
-        return v0[2] > 0 && v1[2] > 0 && v2[2] > 0
+        return v0[2] > 0 || v1[2] > 0 || v2[2] > 0
     })
 
-    const vert = new Float32Array(9999)
+    const vert = new Float32Array(ico.triangles.length * ALL_FPV * 3)
     let ind = 0
     const setVert = (
         x: number, y: number, z: number,
@@ -105,6 +112,8 @@ const getBaseVerts = (radius: number): Float32Array => {
             )
         }
     }
+
+    return vert
 }
 
 export default MarkerBase
