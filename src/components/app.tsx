@@ -1,8 +1,9 @@
-import { useState, useEffect, FC } from 'react'
+import { useState, useEffect, useRef, FC } from 'react'
 import { loadDataset, loadImageAsync } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import OptionToggle from '../components/option-toggle'
+import Timeline from '../components/timeline'
 import Vis from '../components/vis'
 import styles from '../styles/app.module.css'
 
@@ -17,6 +18,7 @@ const App: FC = () => {
     const [options, setOptions] = useState<FlowOptions>({
         vel: true, p1: true, p2: true, p3: true
     })
+    const timeRef = useRef<number>(0)
 
     const getData = async (): Promise<void> => {
         const [data, surface, texture] = await Promise.all([
@@ -43,9 +45,16 @@ const App: FC = () => {
                     <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
                     <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
                 </div>
+                <Timeline timeRef={timeRef} />
             </nav>
             { data && surface && texture &&
-                <Vis data={data} options={options} surface={surface} texture={texture} />
+                <Vis
+                    data={data}
+                    options={options}
+                    surface={surface}
+                    texture={texture}
+                    timeRef={timeRef}
+                />
             }
         </section>
     )
