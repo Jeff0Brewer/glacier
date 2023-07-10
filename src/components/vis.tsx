@@ -102,7 +102,9 @@ const Vis: FC<VisProps> = props => {
             time /= 1000
             const elapsed = time - lastT
             lastT = time
-            props.timeRef.current += elapsed
+            if (elapsed < 1) {
+                props.timeRef.current += elapsed
+            }
             if (visRef.current) {
                 visRef.current.draw(props.data, props.options, props.timeRef.current, markers)
             }
