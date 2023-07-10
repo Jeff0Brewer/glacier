@@ -11,7 +11,7 @@ const COL_FPV = 3
 const ALL_FPV = POS_FPV + NRM_FPV + COL_FPV
 
 const VEL_BOUNDS = 3
-const PIN_WIDTH = 0.5
+const PIN_WIDTH = 0.25
 const PIN_HEIGHT = 50
 const PIN_DETAIL = 10
 const BALLOON_WIDTH = 6
@@ -97,7 +97,7 @@ const ballonWidth = (z: number): number => {
 
 const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHeight: number): Float32Array => {
     const ico = getIcosphere(2)
-    const topZ = 3
+    const topZ = 5
 
     const vert = new Float32Array(detail * ALL_FPV * 6 + ico.triangles.length * 3 * ALL_FPV)
     let ind = 0
