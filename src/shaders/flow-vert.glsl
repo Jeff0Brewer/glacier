@@ -27,7 +27,7 @@ void main() {
     vec3 pos = vec3(position.xy, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 
-    float brightness = 1.0 - clamp(pow(speed, 0.15), 0.0, 1.0);
-    color = vec3(brightness, brightness, brightness);
+    float brightness = 1.0 - clamp(speed, 0.0, 1.0);
+    color = mix(vec3(0.4, 0.8, 0.8), vec3(0.2, 0.2, 0.2), brightness);
     fade = sign(ind) * mod((ind - currInd), maxInd) / maxInd;
 }
