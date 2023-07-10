@@ -1,17 +1,11 @@
 import { mat4, vec3 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute } from '../lib/gl-wrap'
 import { getIcosphere } from '../lib/icosphere'
+import type { Marker } from '../vis/markers'
 import vertSource from '../shaders/marker-base-vert.glsl?raw'
 import fragSource from '../shaders/marker-base-frag.glsl?raw'
 
-type Marker = {
-    x: number,
-    y: number,
-    z: number,
-    color: vec3
-}
-
-const BASE_RADIUS = 5
+const BASE_RADIUS = 4
 
 const POS_FPV = 3
 const NRM_FPV = 3
@@ -24,6 +18,7 @@ class MarkerBase {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
+    setBaseRotation: (mat: mat4) => void
     setMarkerPos: (x: number, y: number, z: number) => void
     numVertex: number
 
@@ -52,6 +47,7 @@ class MarkerBase {
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
         const uMarkerPos = gl.getUniformLocation(this.program, 'markerPos')
+        const uBaseRotation = gl.getUniformLocation(this.program, 'baseRotation')
 
         gl.uniformMatrix4fv(uModelMatrix, false, model)
         gl.uniformMatrix4fv(uViewMatrix, false, view)
@@ -61,6 +57,7 @@ class MarkerBase {
         this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setBaseRotation = (mat: mat4): void => { gl.uniformMatrix4fv(uBaseRotation, false, mat) }
         this.setMarkerPos = (x: number, y: number, z: number): void => {
             gl.uniform3f(uMarkerPos, x, y, z)
         }
@@ -71,8 +68,15 @@ class MarkerBase {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindAttrib()
         this.setMarkerPos(marker.x, marker.y, marker.z)
+        this.setBaseRotation(getBaseRotation(vel))
         gl.drawArrays(gl.TRIANGLES, 0, this.numVertex)
     }
+}
+
+const DEFAULT_DIRECTION = vec3.fromValues(1.0, 1.0, 0.0)
+const getBaseRotation = (vel: vec3): mat4 => {
+    const angle = vec3.angle(DEFAULT_DIRECTION, [vel[0], -vel[1], 0.0])
+    return mat4.fromZRotation(mat4.create(), angle)
 }
 
 const getBaseVerts = (radius: number): Float32Array => {
@@ -101,7 +105,11 @@ const getBaseVerts = (radius: number): Float32Array => {
 
     for (let ti = 0; ti < ico.triangles.length; ti++) {
         for (let vi = 0; vi < 3; vi++) {
-            const [x, y, z] = ico.vertices[ico.triangles[ti][vi]]
+            let [x, y, z] = ico.vertices[ico.triangles[ti][vi]]
+            if (x > 0 && y > 0) {
+                x = 1
+                y = 1
+            }
             setVert(
                 x * radius,
                 y * radius,
