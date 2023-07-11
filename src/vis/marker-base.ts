@@ -119,7 +119,7 @@ const getBaseVerts = (radius: number): Float32Array => {
             setVert(
                 x * radius,
                 y * radius,
-                z * radius,
+                Math.max(z, 0) * radius,
                 x,
                 y,
                 z
