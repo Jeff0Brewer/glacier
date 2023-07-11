@@ -122,14 +122,21 @@ class VisRenderer {
             }
         }
         if (mode === 'worm') {
-            const placeWorms = (e: MouseEvent): void => {
-                const x = e.clientX / window.innerWidth * 2 - 1
-                const y = (1 - e.clientY / window.innerHeight) * 2 - 1
-                this.placeWorms(x, y)
+            const WORM_DELAY = 200
+            let lastT = Date.now()
+            const placeWorm = (e: MouseEvent): void => {
+                const thisT = Date.now()
+                const elapsed = thisT - lastT
+                if (this.camera.dragging && elapsed > WORM_DELAY) {
+                    const x = e.clientX / window.innerWidth * 2 - 1
+                    const y = (1 - e.clientY / window.innerHeight) * 2 - 1
+                    this.placeWorm(x, y)
+                    lastT = thisT
+                }
             }
-            this.canvas.addEventListener('mousedown', placeWorms)
+            this.canvas.addEventListener('mousemove', placeWorm)
             return (): void => {
-                this.canvas.removeEventListener('mousedown', placeWorms)
+                this.canvas.removeEventListener('mousemove', placeWorm)
             }
         }
         return null
@@ -171,10 +178,10 @@ class VisRenderer {
         return this.glacier.hitTest(origin, direction)
     }
 
-    placeWorms (x: number, y: number): void {
+    placeWorm (x: number, y: number): void {
         const pos = this.unprojectMouse(x, y)
         if (pos) {
-            this.worms.placeWorms(this.gl, pos)
+            this.worms.placeWorm(this.gl, pos)
         }
     }
 

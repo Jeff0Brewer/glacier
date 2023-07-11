@@ -218,12 +218,8 @@ class Worms {
         gl.uniform1f(uHistory, WORM_HISTORY)
     }
 
-    placeWorms (gl: WebGLRenderingContext, pos: vec3): void {
-        for (let x = pos[0] - WORMS_RADIUS; x < pos[0] + WORMS_RADIUS; x += 1 / WORM_DENSITY) {
-            for (let y = pos[1] - WORMS_RADIUS; y < pos[1] + WORMS_RADIUS; y += 1 / WORM_DENSITY) {
-                this.worms.push(new Worm(gl, WORM_HISTORY, x, y))
-            }
-        }
+    placeWorm (gl: WebGLRenderingContext, pos: vec3): void {
+        this.worms.push(new Worm(gl, WORM_HISTORY, pos[0], pos[1]))
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
