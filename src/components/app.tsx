@@ -51,18 +51,10 @@ const App: FC = () => {
                 </div>
                 <div>
                     <p>click mode</p>
-                    <a onClick={(): void => setClickMode('rotate')}>
-                        rotate
-                    </a>
-                    <a onClick={(): void => setClickMode('pan')}>
-                        pan
-                    </a>
-                    <a onClick={(): void => setClickMode('mark')}>
-                        mark
-                    </a>
-                    <a onClick={(): void => setClickMode('worm')}>
-                        worm
-                    </a>
+                    <a onClick={(): void => setClickMode('rotate')}> rotate </a>
+                    <a onClick={(): void => setClickMode('pan')}> pan </a>
+                    <a onClick={(): void => setClickMode('mark')}> mark </a>
+                    <a onClick={(): void => setClickMode('worm')}> worm </a>
                 </div>
                 <Timeline timeRef={timeRef} speedRef={speedRef} />
             </nav>

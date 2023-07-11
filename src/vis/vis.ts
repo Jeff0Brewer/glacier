@@ -121,10 +121,21 @@ class VisRenderer {
                 this.canvas.removeEventListener('mousemove', mousePan)
             }
         }
+        if (mode === 'worm') {
+            const placeWorms = (e: MouseEvent): void => {
+                const x = e.clientX / window.innerWidth * 2 - 1
+                const y = (1 - e.clientY / window.innerHeight) * 2 - 1
+                this.placeWorms(x, y)
+            }
+            this.canvas.addEventListener('mousedown', placeWorms)
+            return (): void => {
+                this.canvas.removeEventListener('mousedown', placeWorms)
+            }
+        }
         return null
     }
 
-    setupEventHandlers (canvas: HTMLCanvasElement, mode: ClickMode): (() => void) {
+    setupEventHandlers (canvas: HTMLCanvasElement): (() => void) {
         const onResize = (): void => {
             this.gl.viewport(0, 0, canvas.width, canvas.height)
 
@@ -147,14 +158,10 @@ class VisRenderer {
         window.addEventListener('resize', onResize)
 
         const removeCameraEvents = this.camera.setupEventHandlers(canvas)
-        const removeModeEvents = this.setClickMode(mode)
 
         return (): void => {
             window.removeEventListener('resize', onResize)
             removeCameraEvents()
-            if (removeModeEvents) {
-                removeModeEvents()
-            }
         }
     }
 
