@@ -83,8 +83,8 @@ const Vis: FC<VisProps> = props => {
         const placeMarker = (e: MouseEvent): void => {
             if (!visRef.current) { return }
             // convert pixel coords to gl clip space
-            const x = e.clientX / window.innerWidth * 2.0 - 1.0
-            const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
+            const x = e.clientX / window.innerWidth * 2 - 1
+            const y = (1 - e.clientY / window.innerHeight) * 2 - 1
 
             const position = visRef.current.unprojectMouse(x, y)
             if (position) {
