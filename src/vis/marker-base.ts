@@ -75,7 +75,13 @@ class MarkerBase {
 
 const DEFAULT_DIRECTION = vec3.fromValues(1.0, 1.0, 0.0)
 const getBaseRotation = (vel: vec3): mat4 => {
-    const angle = vec3.angle(DEFAULT_DIRECTION, [vel[0], -vel[1], 0.0])
+    const vx = vel[0]
+    const vy = -vel[1]
+    const dx = DEFAULT_DIRECTION[0]
+    const dy = DEFAULT_DIRECTION[1]
+    const dot = vx * dx + vy * dy
+    const det = vx * dy - vy * dx
+    const angle = Math.atan2(det, dot)
     return mat4.fromZRotation(mat4.create(), angle)
 }
 
