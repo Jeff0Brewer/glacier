@@ -5,6 +5,7 @@ import { WIDTH, HEIGHT } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker } from '../vis/markers'
+import type { ClickMode } from '../components/app'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import FlowLines from '../vis/flow'
@@ -21,6 +22,7 @@ const FAR = 50
 
 class VisRenderer {
     gl: WebGLRenderingContext
+    canvas: HTMLCanvasElement
     model: mat4
     view: mat4
     proj: mat4
@@ -36,6 +38,7 @@ class VisRenderer {
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+        this.canvas = canvas
 
         this.model = mat4.create()
 
@@ -99,7 +102,29 @@ class VisRenderer {
         )
     }
 
-    setupEventHandlers (canvas: HTMLCanvasElement): (() => void) {
+    setClickMode (mode: ClickMode): (() => void) | null {
+        if (mode === 'rotate') {
+            const mouseRotate = (e: MouseEvent): void => {
+                this.camera.mouseRotate(e.movementX, e.movementY)
+            }
+            this.canvas.addEventListener('mousemove', mouseRotate)
+            return (): void => {
+                this.canvas.removeEventListener('mousemove', mouseRotate)
+            }
+        }
+        if (mode === 'pan') {
+            const mousePan = (e: MouseEvent): void => {
+                this.camera.mousePan(e.movementX, e.movementY)
+            }
+            this.canvas.addEventListener('mousemove', mousePan)
+            return (): void => {
+                this.canvas.removeEventListener('mousemove', mousePan)
+            }
+        }
+        return null
+    }
+
+    setupEventHandlers (canvas: HTMLCanvasElement, mode: ClickMode): (() => void) {
         const onResize = (): void => {
             this.gl.viewport(0, 0, canvas.width, canvas.height)
 
@@ -119,13 +144,17 @@ class VisRenderer {
             this.gl.useProgram(this.worms.program)
             this.worms.setProjMatrix(this.proj)
         }
-
         window.addEventListener('resize', onResize)
+
         const removeCameraEvents = this.camera.setupEventHandlers(canvas)
+        const removeModeEvents = this.setClickMode(mode)
 
         return (): void => {
             window.removeEventListener('resize', onResize)
             removeCameraEvents()
+            if (removeModeEvents) {
+                removeModeEvents()
+            }
         }
     }
 

@@ -3,6 +3,7 @@ import type { MutableRefObject } from 'react'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker } from '../vis/markers'
+import type { ClickMode } from '../components/app'
 import { markerColors } from '../vis/markers'
 import VisRenderer from '../vis/vis'
 import MarkerPlots from '../components/charts'
@@ -11,6 +12,7 @@ import styles from '../styles/vis.module.css'
 type VisProps = {
     data: ModelData,
     options: FlowOptions,
+    clickMode: ClickMode,
     surface: HTMLImageElement,
     texture: HTMLImageElement,
     timeRef: MutableRefObject<number>,
@@ -63,38 +65,47 @@ const Vis: FC<VisProps> = props => {
         }
     }, [props.data, props.options])
 
-    // handle mouse interaction
+    // set click mode
     useEffect(() => {
-        const canvas = canvasRef.current
-        if (!canvas) { return }
-
-        const mouseDown = (e: MouseEvent): void => {
-            if (!visRef.current) { return }
-            const x = e.clientX / window.innerWidth * 2.0 - 1.0
-            const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
-            if (e.shiftKey) {
-                // convert pixel coords to gl clip space
-                const position = visRef.current.unprojectMouse(x, y)
-                if (position) {
-                    const marker: Marker = {
-                        x: position[0],
-                        y: position[1],
-                        z: position[2],
-                        color: markerColors[markers.length % markerColors.length]
-                    }
-                    setMarkers([...markers, marker])
-                    setCurrMarker(markers.length)
-                }
-            } else if (e.altKey) {
-                visRef.current.placeWorms(x, y)
+        if (!visRef.current) { return }
+        const removeHandlers = visRef.current.setClickMode(props.clickMode)
+        return () => {
+            if (removeHandlers) {
+                removeHandlers()
             }
         }
-        canvas.addEventListener('mousedown', mouseDown)
+    }, [props.clickMode])
 
-        return (): void => {
-            canvas.removeEventListener('mousedown', mouseDown)
+    // add handler for marker placement mode
+    useEffect(() => {
+        if (props.clickMode !== 'mark' || !canvasRef.current) { return }
+
+        const placeMarker = (e: MouseEvent): void => {
+            if (!visRef.current) { return }
+            // convert pixel coords to gl clip space
+            const x = e.clientX / window.innerWidth * 2.0 - 1.0
+            const y = (1.0 - e.clientY / window.innerHeight) * 2.0 - 1.0
+
+            const position = visRef.current.unprojectMouse(x, y)
+            if (position) {
+                const marker: Marker = {
+                    x: position[0],
+                    y: position[1],
+                    z: position[2],
+                    color: markerColors[markers.length % markerColors.length]
+                }
+                setMarkers([...markers, marker])
+                setCurrMarker(markers.length)
+            }
         }
-    }, [markers])
+
+        const canvas = canvasRef.current
+        canvas.addEventListener('mousedown', placeMarker)
+
+        return () => {
+            canvas.removeEventListener('mousedown', placeMarker)
+        }
+    }, [markers, props.clickMode])
 
     // setup draw loop
     useEffect(() => {

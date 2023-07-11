@@ -11,6 +11,8 @@ const DATA_DIR = './data/model/'
 const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
 const TEXTURE_SRC = './data/surface-texture.png'
 
+type ClickMode = 'rotate' | 'pan' | 'mark' | 'worm'
+
 const App: FC = () => {
     const [data, setData] = useState<ModelData | null>(null)
     const [surface, setSurface] = useState<HTMLImageElement | null>(null)
@@ -18,6 +20,7 @@ const App: FC = () => {
     const [options, setOptions] = useState<FlowOptions>({
         vel: true, p1: true, p2: true, p3: true
     })
+    const [clickMode, setClickMode] = useState<ClickMode>('rotate')
     const timeRef = useRef<number>(0)
     const speedRef = useRef<number>(1)
 
@@ -46,12 +49,28 @@ const App: FC = () => {
                     <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
                     <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
                 </div>
+                <div>
+                    <p>click mode</p>
+                    <a onClick={(): void => setClickMode('rotate')}>
+                        rotate
+                    </a>
+                    <a onClick={(): void => setClickMode('pan')}>
+                        pan
+                    </a>
+                    <a onClick={(): void => setClickMode('mark')}>
+                        mark
+                    </a>
+                    <a onClick={(): void => setClickMode('worm')}>
+                        worm
+                    </a>
+                </div>
                 <Timeline timeRef={timeRef} speedRef={speedRef} />
             </nav>
             { data && surface && texture &&
                 <Vis
                     data={data}
                     options={options}
+                    clickMode={clickMode}
                     surface={surface}
                     texture={texture}
                     timeRef={timeRef}
@@ -63,3 +82,7 @@ const App: FC = () => {
 }
 
 export default App
+
+export type {
+    ClickMode
+}
