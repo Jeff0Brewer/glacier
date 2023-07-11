@@ -122,21 +122,36 @@ class VisRenderer {
             }
         }
         if (mode === 'worm') {
-            const WORM_DELAY = 200
+            const pending: Array<[number, number]> = []
+
+            const WORM_DELAY = 50
             let lastT = Date.now()
-            const placeWorm = (e: MouseEvent): void => {
+            const traceWorms = (e: MouseEvent): void => {
+                if (!this.camera.dragging) { return }
                 const thisT = Date.now()
                 const elapsed = thisT - lastT
-                if (this.camera.dragging && elapsed > WORM_DELAY) {
+                if (elapsed > WORM_DELAY) {
                     const x = e.clientX / window.innerWidth * 2 - 1
                     const y = (1 - e.clientY / window.innerHeight) * 2 - 1
-                    this.placeWorm(x, y)
+                    pending.push([x, y])
                     lastT = thisT
                 }
             }
-            this.canvas.addEventListener('mousemove', placeWorm)
+
+            const addWorms = (): void => {
+                let pos = pending.pop()
+                while (pos) {
+                    const [x, y] = pos
+                    this.placeWorm(x, y)
+                    pos = pending.pop()
+                }
+            }
+
+            this.canvas.addEventListener('mousemove', traceWorms)
+            this.canvas.addEventListener('mouseup', addWorms)
             return (): void => {
-                this.canvas.removeEventListener('mousemove', placeWorm)
+                this.canvas.removeEventListener('mousemove', traceWorms)
+                this.canvas.removeEventListener('mouseup', addWorms)
             }
         }
         return null
