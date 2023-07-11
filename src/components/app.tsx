@@ -43,21 +43,22 @@ const App: FC = () => {
         <section>
             <nav className={styles.menu}>
                 <img className={styles.contextImage} src='./ctx-img.jpg' />
-                <div>
-                    <p>calc options</p>
+                <div className={styles.interactions}>
+                    <p className={styles.interactionLabel}>flow components</p>
                     <div className={styles.toggles}>
                         <OptionToggle field={'vel'} options={options} setOptions={setOptions} />
                         <OptionToggle field={'p1'} options={options} setOptions={setOptions} />
                         <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
                         <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
                     </div>
-                    <p>click mode</p>
+                    <p className={styles.interactionLabel}>click mode</p>
                     <div className={styles.toggles}>
                         <a onClick={(): void => setClickMode('rotate')}> rotate </a>
                         <a onClick={(): void => setClickMode('pan')}> pan </a>
                         <a onClick={(): void => setClickMode('mark')}> mark </a>
                         <a onClick={(): void => setClickMode('worm')}> worm </a>
                     </div>
+                    <p className={styles.interactionLabel}>timeline</p>
                     <Timeline timeRef={timeRef} speedRef={speedRef} />
                 </div>
             </nav>

@@ -7,6 +7,17 @@
     font-size: 12px;
     display: flex;
     background-color: #fff;
+    border-radius: 0 0 10px 0;
+}
+
+.interactions {
+    padding: 0 10px;
+}
+
+.interactionLabel {
+    color: #000;
+    text-transform: uppercase;
+    margin: 5px;
 }
 
 .toggles {
@@ -14,25 +25,19 @@
 }
 
 .toggles > * {
-    width: 20%;
-    margin: 0 5%;
-}
-
-.menu p {
-    color: #000;
-    text-transform: uppercase;
-}
-
-.menu button {
-    font: inherit;
-    border: 0;
-    background-color: transparent;
+    width: 25%;
+    margin: 0 3px;
+    padding: 8px 0;
+    background-color: #c8c8c8;
+    display: grid;
+    place-content: center;
+    border-radius: 5px;
 }
 
 .contextImage {
     position: relative;
-    width: 170px;
-    height: 170px;
+    width: 160px;
+    height: 160px;
     object-fit: cover;
 }
 

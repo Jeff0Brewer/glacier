@@ -1,6 +1,5 @@
 import { FC } from 'react'
 import type { FlowOptions, FlowOptionField } from '../lib/flow-calc'
-import styles from '../styles/app.module.css'
 
 type OptionToggleProps = {
     field: FlowOptionField,
@@ -10,13 +9,11 @@ type OptionToggleProps = {
 
 const OptionToggle: FC<OptionToggleProps> = ({ field, options, setOptions }) => {
     return (
-        <button
-            className={options[field] ? styles.active : styles.inactive}
-            onClick={(): void => {
-                options[field] = !options[field]
-                setOptions({ ...options })
-            }}
-        > {field} </button>
+        <a onClick={(): void => {
+            options[field] = !options[field]
+            setOptions({ ...options })
+        }}
+        > {field} </a>
     )
 }
 

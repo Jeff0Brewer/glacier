@@ -1,5 +1,6 @@
 .wrap {
     display: flex;
+    padding: 0 5px;
 }
 
 .barWrap {
@@ -12,6 +13,9 @@
 
 .speedWrap {
     display: flex;
+    height: 20px;
+    display: flex;
+    align-items: center;
 }
 
 .speedWrap > input {
@@ -28,22 +32,27 @@
     z-index: 20;
     display: flex;
     width: 100%;
+    height: 20px;
+    align-items: center;
     justify-content: space-between;
     pointer-events: none;
+    padding: 0 5px;
 }
 
 .timeline {
     position: absolute;
     left: 0;
     right: 0;
-    height: 15px;
-    background-color: #ddd;
+    height: 20px;
+    background-color: #c8c8c8;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 .timelineBar {
     position: relative;
     margin: 0;
-    background-color: #ddf;
+    background-color: #c8d8ff;
     height: 100%;
     display: flex;
     justify-content: right;
