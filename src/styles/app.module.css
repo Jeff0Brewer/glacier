@@ -24,7 +24,7 @@
     display: flex;
 }
 
-.toggles > * {
+.toggles > a {
     width: 25%;
     margin: 0 3px;
     padding: 8px 0;
@@ -34,17 +34,17 @@
     border-radius: 5px;
 }
 
+.toggles > a[data-active="false"] {
+    opacity: 0.5;
+}
+
+.toggles > a:hover {
+    background-color: #bbb;
+}
+
 .contextImage {
     position: relative;
     width: 160px;
     height: 160px;
     object-fit: cover;
-}
-
-.active {
-    color: #444;
-}
-
-.inactive {
-    color: #aaa;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, FC } from 'react'
 import { loadDataset, loadImageAsync } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
-import type { FlowOptions } from '../lib/flow-calc'
+import type { FlowOptions, FlowOptionField } from '../lib/flow-calc'
 import OptionToggle from '../components/option-toggle'
 import Timeline from '../components/timeline'
 import Vis from '../components/vis'
@@ -35,6 +35,11 @@ const App: FC = () => {
         setTexture(texture)
     }
 
+    const toggleOption = (field: FlowOptionField): void => {
+        options[field] = !options[field]
+        setOptions({ ...options })
+    }
+
     useEffect(() => {
         getData()
     }, [])
@@ -46,17 +51,41 @@ const App: FC = () => {
                 <div className={styles.interactions}>
                     <p className={styles.interactionLabel}>flow components</p>
                     <div className={styles.toggles}>
-                        <OptionToggle field={'vel'} options={options} setOptions={setOptions} />
-                        <OptionToggle field={'p1'} options={options} setOptions={setOptions} />
-                        <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
-                        <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
+                        <a
+                            onClick={(): void => toggleOption('vel')}
+                            data-active={options.vel}
+                        >vel</a>
+                        <a
+                            onClick={(): void => toggleOption('p1')}
+                            data-active={options.p1}
+                        >p1</a>
+                        <a
+                            onClick={(): void => toggleOption('p2')}
+                            data-active={options.p2}
+                        >p2</a>
+                        <a
+                            onClick={(): void => toggleOption('p3')}
+                            data-active={options.p3}
+                        >p3</a>
                     </div>
                     <p className={styles.interactionLabel}>click mode</p>
                     <div className={styles.toggles}>
-                        <a onClick={(): void => setClickMode('rotate')}> rotate </a>
-                        <a onClick={(): void => setClickMode('pan')}> pan </a>
-                        <a onClick={(): void => setClickMode('mark')}> mark </a>
-                        <a onClick={(): void => setClickMode('worm')}> worm </a>
+                        <a
+                            onClick={(): void => setClickMode('rotate')}
+                            data-active={clickMode === 'rotate'}
+                        > rotate </a>
+                        <a
+                            onClick={(): void => setClickMode('pan')}
+                            data-active={clickMode === 'pan'}
+                        > pan </a>
+                        <a
+                            onClick={(): void => setClickMode('mark')}
+                            data-active={clickMode === 'mark'}
+                        > mark </a>
+                        <a
+                            onClick={(): void => setClickMode('worm')}
+                            data-active={clickMode === 'worm'}
+                        > worm </a>
                     </div>
                     <p className={styles.interactionLabel}>timeline</p>
                     <Timeline timeRef={timeRef} speedRef={speedRef} />
