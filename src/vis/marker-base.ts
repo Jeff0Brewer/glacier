@@ -79,8 +79,8 @@ const getBaseRotation = (vel: vec3): mat4 => {
     const vy = -vel[1]
     const dx = DEFAULT_DIRECTION[0]
     const dy = DEFAULT_DIRECTION[1]
-    const dot = vx * dx + vy * dy
-    const det = vx * dy - vy * dx
+    const dot = dx * vx + dy * vy
+    const det = dx * vy - dy * vx
     const angle = Math.atan2(det, dot)
     return mat4.fromZRotation(mat4.create(), angle)
 }
