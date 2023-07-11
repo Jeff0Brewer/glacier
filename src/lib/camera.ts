@@ -25,11 +25,6 @@ class Camera {
     setupEventHandlers (element: HTMLElement): (() => void) {
         const dragTrue = (): void => { this.dragging = true }
         const dragFalse = (): void => { this.dragging = false }
-        const mouseMove = (e: MouseEvent): void => {
-            if (this.dragging) {
-                this.mousePan(e.movementX, e.movementY)
-            }
-        }
         const mouseWheel = (e: WheelEvent): void => {
             e.preventDefault()
             this.scrollZoom(e.deltaY)
@@ -37,33 +32,37 @@ class Camera {
         element.addEventListener('mousedown', dragTrue)
         element.addEventListener('mouseup', dragFalse)
         element.addEventListener('mouseleave', dragFalse)
-        element.addEventListener('mousemove', mouseMove)
         element.addEventListener('wheel', mouseWheel)
 
         return (): void => {
             element.removeEventListener('mousedown', dragTrue)
             element.removeEventListener('mouseup', dragFalse)
             element.removeEventListener('mouseleave', dragFalse)
-            element.removeEventListener('mousemove', mouseMove)
             element.removeEventListener('wheel', mouseWheel)
         }
     }
 
     mouseRotate (dx: number, dy: number): void {
+        if (!this.dragging) { return }
+
         const rotationX = dy * ROTATE_SPEED
         const rotationZ = dx * ROTATE_SPEED
-        mat4.rotateZ(this.matrix, this.matrix, rotationZ)
-        // transform by opposite of z rotation to get axis for vertical rotations
-        vec3.transformMat4(
-            this.axis,
-            this.axis,
-            mat4.fromZRotation(mat4.create(), -rotationZ)
-        )
-        vec3.normalize(this.axis, this.axis)
-        mat4.rotate(this.matrix, this.matrix, rotationX, this.axis)
+
+        // rotate axis opposite of z rotation to get axis for vertical rotations
+        const negRotationZ = mat4.fromZRotation(mat4.create(), -rotationZ)
+        vec3.transformMat4(this.axis, this.axis, negRotationZ)
+
+        const mat = mat4.create()
+        mat4.translate(mat, mat, vec3.scale(vec3.create(), this.center, -1))
+        mat4.rotateZ(mat, mat, rotationZ)
+        mat4.rotate(mat, mat, rotationX, this.axis)
+        mat4.translate(mat, mat, this.center)
+
+        mat4.multiply(this.matrix, this.matrix, mat)
     }
 
     mousePan (dx: number, dy: number): void {
+        if (!this.dragging) { return }
         const axisY = vec3.cross(vec3.create(), this.axis, [0, 0, 1])
         const speed = PAN_SPEED / this.scale
 
