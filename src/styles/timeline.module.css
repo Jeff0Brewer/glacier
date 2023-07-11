@@ -1,9 +1,17 @@
+.wrap {
+    display: flex;
+}
+
 .barWrap {
     position: relative;
     width: 200px;
     color: #000;
     display: flex;
     flex-direction: column;
+}
+
+.speedWrap {
+    display: flex;
 }
 
 .speedWrap > input {

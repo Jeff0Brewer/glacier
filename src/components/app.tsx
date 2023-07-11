@@ -42,21 +42,24 @@ const App: FC = () => {
     return (
         <section>
             <nav className={styles.menu}>
+                <img className={styles.contextImage} src='./ctx-img.jpg' />
                 <div>
                     <p>calc options</p>
-                    <OptionToggle field={'vel'} options={options} setOptions={setOptions} />
-                    <OptionToggle field={'p1'} options={options} setOptions={setOptions} />
-                    <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
-                    <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
-                </div>
-                <div>
+                    <div className={styles.toggles}>
+                        <OptionToggle field={'vel'} options={options} setOptions={setOptions} />
+                        <OptionToggle field={'p1'} options={options} setOptions={setOptions} />
+                        <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
+                        <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
+                    </div>
                     <p>click mode</p>
-                    <a onClick={(): void => setClickMode('rotate')}> rotate </a>
-                    <a onClick={(): void => setClickMode('pan')}> pan </a>
-                    <a onClick={(): void => setClickMode('mark')}> mark </a>
-                    <a onClick={(): void => setClickMode('worm')}> worm </a>
+                    <div className={styles.toggles}>
+                        <a onClick={(): void => setClickMode('rotate')}> rotate </a>
+                        <a onClick={(): void => setClickMode('pan')}> pan </a>
+                        <a onClick={(): void => setClickMode('mark')}> mark </a>
+                        <a onClick={(): void => setClickMode('worm')}> worm </a>
+                    </div>
+                    <Timeline timeRef={timeRef} speedRef={speedRef} />
                 </div>
-                <Timeline timeRef={timeRef} speedRef={speedRef} />
             </nav>
             { data && surface && texture &&
                 <Vis

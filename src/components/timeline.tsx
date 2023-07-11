@@ -53,7 +53,7 @@ const Timeline: FC<TimelineProps> = props => {
     }
 
     return (
-        <div>
+        <div className={styles.wrap}>
             <div className={styles.barWrap}>
                 <div className={styles.timeline} ref={timelineRef}>
                     <div className={styles.timelineBar} ref={barRef}></div>

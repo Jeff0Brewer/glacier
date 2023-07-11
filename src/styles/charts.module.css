@@ -2,7 +2,8 @@
     position: absolute;
     left: 0;
     bottom: 0;
-    background-color: #eee;
+    background-color: #fff;
+    z-index: 25;
 }
 
 .markerSelect {
