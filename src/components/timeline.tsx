@@ -50,7 +50,10 @@ const Timeline: FC<TimelineProps> = props => {
     }, [props.timeRef, maxPeriod])
 
     const inputSpeed = (e: ChangeEvent<HTMLInputElement>): void => {
-        props.speedRef.current = parseFloat(e.target.value)
+        const speed = parseFloat(e.target.value)
+        if (!Number.isNaN(speed) && speed > 0) {
+            props.speedRef.current = speed
+        }
     }
 
     return (
