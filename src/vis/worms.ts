@@ -12,7 +12,7 @@ const WORM_LIFESPAN = 800
 const WORM_HISTORY = 300
 
 // floats per vertex for attribs
-const POS_FPV = 3
+const POS_FPV = 2
 const SEG_FPV = 1
 const PRP_FPV = 2
 const ALL_FPV = POS_FPV + SEG_FPV + PRP_FPV
@@ -49,7 +49,6 @@ class RingSubBuffer {
 class Worm {
     x: number
     y: number
-    z: number
     lifespan: number
     startX: number
     startY: number
@@ -68,7 +67,6 @@ class Worm {
         this.history = history
         this.x = x
         this.y = y
-        this.z = 0
         this.lifespan = 0
         this.startX = x
         this.startY = y
@@ -99,10 +97,8 @@ class Worm {
 
         const lastX = this.x
         const lastY = this.y
-        const lastZ = this.z
         this.x += velocity[0] * deltaTime * WORM_SPEED
         this.y += velocity[1] * deltaTime * WORM_SPEED
-        this.z += velocity[2] * deltaTime * WORM_SPEED
 
         const perp = vec3.cross(vec3.create(), velocity, [0, 0, 1])
         vec3.normalize(perp, perp)
@@ -110,22 +106,22 @@ class Worm {
         const lastSegment = this.currSegment
         this.currSegment += 1
         const verts = new Float32Array([
-            lastX, lastY, lastZ,
+            lastX, lastY,
             lastSegment,
             -perp[0], -perp[1],
-            lastX, lastY, lastZ,
+            lastX, lastY,
             lastSegment,
             perp[0], perp[1],
-            this.x, this.y, this.z,
+            this.x, this.y,
             this.currSegment,
             perp[0], perp[1],
-            lastX, lastY, lastZ,
+            lastX, lastY,
             lastSegment,
             -perp[0], -perp[1],
-            this.x, this.y, this.z,
+            this.x, this.y,
             this.currSegment,
             perp[0], perp[1],
-            this.x, this.y, this.z,
+            this.x, this.y,
             this.currSegment,
             -perp[0], -perp[1]
         ])
