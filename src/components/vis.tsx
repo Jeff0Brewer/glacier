@@ -3,11 +3,12 @@ import type { MutableRefObject } from 'react'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker } from '../vis/markers'
-import type { ClickMode } from '../components/app'
 import { markerColors } from '../vis/markers'
 import VisRenderer from '../vis/vis'
 import MarkerPlots from '../components/charts'
 import styles from '../styles/vis.module.css'
+
+type ClickMode = 'rotate' | 'pan' | 'mark' | 'worm'
 
 type VisProps = {
     data: ModelData,
@@ -154,3 +155,7 @@ const Vis: FC<VisProps> = props => {
 }
 
 export default Vis
+
+export type {
+    ClickMode
+}

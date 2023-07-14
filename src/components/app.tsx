@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, FC } from 'react'
 import { loadDataset, loadImageAsync } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
-import type { FlowOptions, FlowOptionField } from '../lib/flow-calc'
+import type { FlowOptions } from '../lib/flow-calc'
+import type { ClickMode } from '../components/vis'
+import { ModeToggle, OptionToggle } from '../components/toggles'
 import Timeline from '../components/timeline'
 import Vis from '../components/vis'
 import styles from '../styles/app.module.css'
@@ -9,8 +11,6 @@ import styles from '../styles/app.module.css'
 const DATA_DIR = './data/model/'
 const SURFACE_SRC = './data/bedmap2_surface_rutford_5px.png'
 const TEXTURE_SRC = './data/surface-texture.png'
-
-type ClickMode = 'rotate' | 'pan' | 'mark' | 'worm'
 
 const App: FC = () => {
     const [data, setData] = useState<ModelData | null>(null)
@@ -38,11 +38,6 @@ const App: FC = () => {
         getData()
     }, [])
 
-    const toggleOption = (field: FlowOptionField): void => {
-        options[field] = !options[field]
-        setOptions({ ...options })
-    }
-
     return (
         <section>
             <nav className={styles.menu}>
@@ -50,41 +45,17 @@ const App: FC = () => {
                 <div className={styles.interactions}>
                     <p className={styles.interactionLabel}>flow components</p>
                     <div className={styles.toggles}>
-                        <a
-                            onClick={(): void => toggleOption('vel')}
-                            data-active={options.vel}
-                        >vel</a>
-                        <a
-                            onClick={(): void => toggleOption('p1')}
-                            data-active={options.p1}
-                        >p1</a>
-                        <a
-                            onClick={(): void => toggleOption('p2')}
-                            data-active={options.p2}
-                        >p2</a>
-                        <a
-                            onClick={(): void => toggleOption('p3')}
-                            data-active={options.p3}
-                        >p3</a>
+                        <OptionToggle field={'vel'} options={options} setOptions={setOptions} />
+                        <OptionToggle field={'p1'} options={options} setOptions={setOptions} />
+                        <OptionToggle field={'p2'} options={options} setOptions={setOptions} />
+                        <OptionToggle field={'p3'} options={options} setOptions={setOptions} />
                     </div>
                     <p className={styles.interactionLabel}>click mode</p>
                     <div className={styles.toggles}>
-                        <a
-                            onClick={(): void => setClickMode('rotate')}
-                            data-active={clickMode === 'rotate'}
-                        > rotate </a>
-                        <a
-                            onClick={(): void => setClickMode('pan')}
-                            data-active={clickMode === 'pan'}
-                        > pan </a>
-                        <a
-                            onClick={(): void => setClickMode('mark')}
-                            data-active={clickMode === 'mark'}
-                        > mark </a>
-                        <a
-                            onClick={(): void => setClickMode('worm')}
-                            data-active={clickMode === 'worm'}
-                        > worm </a>
+                        <ModeToggle mode={'rotate'} clickMode={clickMode} setClickMode={setClickMode} />
+                        <ModeToggle mode={'pan'} clickMode={clickMode} setClickMode={setClickMode} />
+                        <ModeToggle mode={'mark'} clickMode={clickMode} setClickMode={setClickMode} />
+                        <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={setClickMode} />
                     </div>
                     <p className={styles.interactionLabel}>timeline</p>
                     <Timeline timeRef={timeRef} speedRef={speedRef} />
