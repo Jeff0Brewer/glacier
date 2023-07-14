@@ -6,7 +6,7 @@ import type { ModelData } from '../lib/data-load'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
-const WORM_SPEED = 40
+const WORM_SPEED = 1
 const MIN_WORM_SPEED = 0.2
 const WORM_LIFESPAN = 800
 const WORM_HISTORY = 300
@@ -52,7 +52,6 @@ class Worm {
     lifespan: number
     startX: number
     startY: number
-    time: number
     currSegment: number
     history: number
     numVertex: number
@@ -70,19 +69,12 @@ class Worm {
         this.lifespan = 0
         this.startX = x
         this.startY = y
-        this.time = 0
         this.currSegment = 0
         this.numVertex = history * 6
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * ALL_FPV)
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
-        const deltaTime = time - this.time
-        this.time = time
-
-        // prevent updates after freezes
-        if (deltaTime > 1) { return }
-
         const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
         vec3.multiply(velocity, velocity, [1, -1, 1])
         let speed = vec3.length(velocity)
@@ -97,8 +89,8 @@ class Worm {
 
         const lastX = this.x
         const lastY = this.y
-        this.x += velocity[0] * deltaTime * WORM_SPEED
-        this.y += velocity[1] * deltaTime * WORM_SPEED
+        this.x += velocity[0] * WORM_SPEED
+        this.y += velocity[1] * WORM_SPEED
 
         const perp = vec3.cross(vec3.create(), velocity, [0, 0, 1])
         vec3.normalize(perp, perp)
