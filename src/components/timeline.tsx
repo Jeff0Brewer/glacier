@@ -23,6 +23,7 @@ const Timeline: FC<TimelineProps> = props => {
     useEffect(() => {
         const timeline = timelineRef.current
         if (!timeline || !barRef.current) { return }
+
         const onClick = (e: MouseEvent): void => {
             const rect = timeline.getBoundingClientRect()
             const xPercentage = (e.clientX - rect.left) / rect.width

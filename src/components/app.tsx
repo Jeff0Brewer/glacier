@@ -34,14 +34,14 @@ const App: FC = () => {
         setTexture(texture)
     }
 
+    useEffect(() => {
+        getData()
+    }, [])
+
     const toggleOption = (field: FlowOptionField): void => {
         options[field] = !options[field]
         setOptions({ ...options })
     }
-
-    useEffect(() => {
-        getData()
-    }, [])
 
     return (
         <section>

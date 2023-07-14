@@ -63,6 +63,7 @@ class Camera {
 
     mousePan (dx: number, dy: number): void {
         if (!this.dragging) { return }
+
         const axisY = vec3.cross(vec3.create(), this.axis, [0, 0, 1])
         const speed = PAN_SPEED / this.scale
 

@@ -10,8 +10,6 @@ const WORM_SPEED = 40
 const MIN_WORM_SPEED = 0.2
 const WORM_LIFESPAN = 800
 const WORM_HISTORY = 300
-const WORM_DENSITY = 0.2
-const WORMS_RADIUS = 20.0
 
 // floats per vertex for attribs
 const POS_FPV = 3

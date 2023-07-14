@@ -111,15 +111,17 @@ const Vis: FC<VisProps> = props => {
     useEffect(() => {
         let lastT = 0
         const draw = (time: number): void => {
+            if (!visRef.current) { return }
+
             time /= 1000
             const elapsed = time - lastT
             lastT = time
+            // prevent large time updates after freeze / pause
             if (elapsed < 1) {
                 props.timeRef.current += elapsed * props.speedRef.current
             }
-            if (visRef.current) {
-                visRef.current.draw(props.data, props.options, props.timeRef.current, markers)
-            }
+
+            visRef.current.draw(props.data, props.options, props.timeRef.current, markers)
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
