@@ -11,18 +11,8 @@ import styles from '../styles/charts.module.css'
 
 Chart.register(LineElement, PointElement, CategoryScale, LinearScale, Title)
 
-type MarkerPlotsProps = {
-    markers: Array<Marker>,
-    currMarker: number,
-    setCurrMarker: (ind: number) => void,
-    deleteMarker: (ind: number) => void,
-    data: ModelData,
-    options: FlowOptions
-}
-
 const CHART_LEN = Math.max(PERIOD_1, PERIOD_2, PERIOD_3)
 const CHART_TIMESTEP = 1
-
 const CHART_COLOR0 = 'rgb(0, 0, 0)'
 const CHART_COLOR1 = 'rgb(200, 200, 200)'
 
@@ -88,6 +78,19 @@ const getChartData = (labels: Array<number>, data: Array<number>): ChartData<'li
     }
 }
 
+const colorVec3ToRGB = (color: vec3): string => {
+    return `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`
+}
+
+type MarkerPlotsProps = {
+    markers: Array<Marker>,
+    currMarker: number,
+    setCurrMarker: (ind: number) => void,
+    deleteMarker: (ind: number) => void,
+    data: ModelData,
+    options: FlowOptions
+}
+
 const MarkerPlots: FC<MarkerPlotsProps> = props => {
     const [east, setEast] = useState<ChartData<'line'>>({ datasets: [] })
     const [north, setNorth] = useState<ChartData<'line'>>({ datasets: [] })
@@ -121,23 +124,16 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>{
                 props.markers.map((marker: Marker, i: number) => {
-                    if (props.currMarker !== i) {
-                        return (
-                            <a
-                                className={styles.unselected}
-                                style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
-                                onClick={(): void => props.setCurrMarker(i)}
-                                key={i}
-                            ></a>
-                        )
-                    }
+                    const isCurrent = props.currMarker === i
                     return (
                         <a
-                            className={styles.tab}
-                            style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
-                            onClick={(): void => props.deleteMarker(i)}
                             key={i}
-                        > x </a>
+                            style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
+                            className={isCurrent ? styles.tab : styles.unselected}
+                            onClick={isCurrent
+                                ? (): void => props.deleteMarker(i)
+                                : (): void => props.setCurrMarker(i)}
+                        >{ isCurrent ? 'x' : ''}</a>
                     )
                 })
             }</nav>
@@ -154,10 +150,6 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
             </div>
         </section>
     )
-}
-
-const colorVec3ToRGB = (color: vec3): string => {
-    return `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`
 }
 
 export default MarkerPlots
