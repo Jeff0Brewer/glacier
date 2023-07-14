@@ -142,15 +142,11 @@ class Worm {
 
     draw (
         gl: WebGLRenderingContext,
-        bindPosition: () => void,
-        bindSegment: () => void,
-        bindPerp: () => void,
+        bindAttrib: () => void,
         setCurrSegment: (ind: number) => void
     ): void {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.ringBuffer.buffer)
-        bindPosition()
-        bindSegment()
-        bindPerp()
+        bindAttrib()
         setCurrSegment(this.currSegment)
         gl.drawArrays(gl.TRIANGLES, 0, this.numVertex)
     }
@@ -160,9 +156,7 @@ class Worms {
     worms: Array<Worm>
     program: WebGLProgram
     texture: WebGLTexture
-    bindPosition: () => void
-    bindSegment: () => void
-    bindPerp: () => void
+    bindAttrib: () => void
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
@@ -189,31 +183,36 @@ class Worms {
             surface
         )
 
-        this.bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
-        this.bindSegment = initAttribute(gl, this.program, 'segment', SEG_FPV, ALL_FPV, POS_FPV)
-        this.bindPerp = initAttribute(gl, this.program, 'perp', PRP_FPV, ALL_FPV, POS_FPV + SEG_FPV)
-
-        const uCurrSegment = gl.getUniformLocation(this.program, 'currSegment')
-        this.setCurrSegment = (scale: number): void => { gl.uniform1f(uCurrSegment, scale) }
+        const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
+        const bindSegment = initAttribute(gl, this.program, 'segment', SEG_FPV, ALL_FPV, POS_FPV)
+        const bindPerp = initAttribute(gl, this.program, 'perp', PRP_FPV, ALL_FPV, POS_FPV + SEG_FPV)
+        this.bindAttrib = (): void => {
+            bindPosition()
+            bindSegment()
+            bindPerp()
+        }
 
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
-        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
-        this.setModelMatrix(model)
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
-        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
-        this.setViewMatrix(view)
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
-        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
-        this.setProjMatrix(proj)
-
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
-        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        const uCurrSegment = gl.getUniformLocation(this.program, 'currSegment')
         const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
-        gl.uniform2f(uDimensions, surface.width, surface.height)
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
-        gl.uniform1f(uHeightScale, heightScale)
         const uHistory = gl.getUniformLocation(this.program, 'history')
+
+        gl.uniformMatrix4fv(uModelMatrix, false, model)
+        gl.uniformMatrix4fv(uViewMatrix, false, view)
+        gl.uniformMatrix4fv(uProjMatrix, false, proj)
+        gl.uniformMatrix4fv(uScaleMatrix, false, scale)
+        gl.uniform2f(uDimensions, surface.width, surface.height)
+        gl.uniform1f(uHeightScale, heightScale)
         gl.uniform1f(uHistory, WORM_HISTORY)
+
+        this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
+        this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
+        this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
+        this.setCurrSegment = (scale: number): void => { gl.uniform1f(uCurrSegment, scale) }
     }
 
     placeWorm (gl: WebGLRenderingContext, pos: vec3): void {
@@ -222,14 +221,16 @@ class Worms {
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         for (let i = 0; i < this.worms.length; i++) {
-            if (this.worms[i].lifespan > WORM_LIFESPAN) {
-                this.worms[i].fadeOut(this.setCurrSegment)
-                if (this.worms[i].lifespan > WORM_LIFESPAN + WORM_HISTORY) {
-                    this.worms.splice(i, 1)
-                    i--
-                }
-            } else {
+            if (this.worms[i].lifespan < WORM_LIFESPAN) {
+                // update if still in lifespan
                 this.worms[i].update(gl, data, options, time)
+            } else if (this.worms[i].lifespan > WORM_LIFESPAN + WORM_HISTORY) {
+                // remove if past lifespan and fully faded out
+                this.worms.splice(i, 1)
+                i--
+            } else {
+                // fade out if past lifespan but still visible
+                this.worms[i].fadeOut(this.setCurrSegment)
             }
         }
     }
@@ -239,7 +240,7 @@ class Worms {
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.setModelMatrix(modelMatrix)
         for (const worm of this.worms) {
-            worm.draw(gl, this.bindPosition, this.bindSegment, this.bindPerp, this.setCurrSegment)
+            worm.draw(gl, this.bindAttrib, this.setCurrSegment)
         }
     }
 }
