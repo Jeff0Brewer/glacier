@@ -3,7 +3,6 @@ import type { ModelData } from '../lib/data-load'
 import { Float32Array2D } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import { calcFlowVelocity } from '../lib/flow-calc'
-import { ALL_FPV } from '../vis/flow'
 
 const MAX_CALC = 200
 const TIMESTEP = 0.2
@@ -11,6 +10,7 @@ const FLOW_SPEED = 6
 const MIN_LINE_LENGTH = 1
 const LINE_WIDTH = 0.5
 const VERT_PER_POSITION = 2 // since drawing as triangle strip with left / right sides
+const ALL_FPV = 4 // copied from src/vis/flow.ts to prevent circular deps
 
 // get path of single particle's translation through vector field
 // returns triangle strip vertices

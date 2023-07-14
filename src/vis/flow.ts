@@ -2,7 +2,6 @@ import { mat4 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ModelData } from '../lib/data-load'
-import FlowWorkerURL from '../workers/flow-verts?worker&url'
 import vertSource from '../shaders/flow-vert.glsl?raw'
 import fragSource from '../shaders/flow-frag.glsl?raw'
 
@@ -87,7 +86,10 @@ class FlowLines {
         this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
 
         // setup flow field calculation worker
-        this.worker = new Worker(FlowWorkerURL, { type: 'module' })
+        this.worker = new Worker(
+            new URL('../workers/flow-verts.ts', import.meta.url),
+            { type: 'module' }
+        )
         this.worker.onmessage = (e: MessageEvent<Float32Array>): void => {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
             gl.bufferData(gl.ARRAY_BUFFER, e.data, gl.STATIC_DRAW)
