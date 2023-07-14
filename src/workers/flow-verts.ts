@@ -54,7 +54,14 @@ const calcFlowLine = (
         const right = vec3.subtract(vec3.create(), lastPos, perp)
 
         // set verts at current offset
-        verts.set([...left, i, avgSpeed, ...right, i, avgSpeed], i * ALL_FPV * VERT_PER_POSITION)
+        verts.set([
+            left[0], left[1],
+            i,
+            avgSpeed,
+            right[0], right[1],
+            i,
+            avgSpeed
+        ], i * ALL_FPV * VERT_PER_POSITION)
 
         // early return if particle isn't moving fast enough
         if (calcInd === MAX_CALC) {
@@ -100,29 +107,27 @@ const calcFlow = (
     let bufInd = 0
 
     // set 2 transparent vertices in triangle strip at given position
-    const setTransparentStrip = (x: number, y: number, z: number): void => {
+    const setTransparentStrip = (x: number, y: number): void => {
         verts[bufInd++] = x
         verts[bufInd++] = y
-        verts[bufInd++] = z
         verts[bufInd++] = -1
         verts[bufInd++] = 0
 
         verts[bufInd++] = x
         verts[bufInd++] = y
-        verts[bufInd++] = z
         verts[bufInd++] = -1
         verts[bufInd++] = 0
     }
 
     // fill buffer with each line wrapped in transparent verts
     for (const line of lines) {
-        setTransparentStrip(line[0], line[1], line[2])
+        setTransparentStrip(line[0], line[1])
 
         verts.set(line, bufInd)
         bufInd += line.length
 
         const lastInd = line.length - ALL_FPV
-        setTransparentStrip(line[lastInd], line[lastInd + 1], line[lastInd + 2])
+        setTransparentStrip(line[lastInd], line[lastInd + 1])
     }
     return verts
 }

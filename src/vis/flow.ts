@@ -7,7 +7,7 @@ import vertSource from '../shaders/flow-vert.glsl?raw'
 import fragSource from '../shaders/flow-frag.glsl?raw'
 
 // floats per vertex for each attribute
-const POS_FPV = 3
+const POS_FPV = 2
 const IND_FPV = 1
 const SPD_FPV = 1
 const ALL_FPV = POS_FPV + IND_FPV + SPD_FPV

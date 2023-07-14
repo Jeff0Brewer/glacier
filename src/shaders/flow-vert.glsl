@@ -1,4 +1,4 @@
-attribute vec3 position;
+attribute vec2 position;
 attribute float ind;
 attribute float speed;
 
@@ -22,9 +22,9 @@ float heightMap(sampler2D map, vec2 texCoord, float scale) {
 }
 
 void main() {
-    vec2 texCoord = position.xy / dimensions;
+    vec2 texCoord = position / dimensions;
     float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
-    vec3 pos = vec3(position.xy, height);
+    vec3 pos = vec3(position, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 
     float brightness = 1.0 - clamp(speed, 0.0, 1.0);
