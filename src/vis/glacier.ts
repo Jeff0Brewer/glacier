@@ -101,7 +101,10 @@ class Glacier {
 }
 
 // from width and height, create plane triangle strip with position and tex coordinate attributes
-const getSurfaceVerts = (img: HTMLImageElement, heightScale: number): {pos: Float32Array, nrm: Float32Array } => {
+const getSurfaceVerts = (
+    img: HTMLImageElement,
+    heightScale: number
+): {pos: Float32Array, nrm: Float32Array } => {
     const imgReader = new ImageReader(img)
 
     // scale down dimensions, don't need a vertex at every image pixel
@@ -134,6 +137,9 @@ const getSurfaceVerts = (img: HTMLImageElement, heightScale: number): {pos: Floa
         // cross perp vecs to get norm
         const norm = vec3.cross(vec3.create(), xVec, yVec)
         vec3.normalize(norm, norm)
+        if (Number.isNaN(norm[0])) {
+            vec3.copy(norm, [0, 0, 1])
+        }
         return norm
     }
 
