@@ -63,10 +63,13 @@ class MarkerBase {
         }
     }
 
-    draw (gl: WebGLRenderingContext, marker: Marker, vel: vec3): void {
+    bind (gl: WebGLRenderingContext): void {
         gl.useProgram(this.program)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindAttrib()
+    }
+
+    draw (gl: WebGLRenderingContext, marker: Marker, vel: vec3): void {
         this.setMarkerPos(marker.x, marker.y, marker.z)
         this.setBaseRotation(getBaseRotation(vel))
         gl.drawArrays(gl.TRIANGLES, 0, this.numVertex)

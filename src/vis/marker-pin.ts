@@ -74,12 +74,14 @@ class MarkerPin {
         }
     }
 
-    draw (gl: WebGLRenderingContext, marker: Marker, vel: vec3): void {
-        const height = (clamp(vel[2], -VEL_BOUNDS, VEL_BOUNDS) + VEL_BOUNDS) * 0.1 * PIN_HEIGHT
-
+    bind (gl: WebGLRenderingContext): void {
         gl.useProgram(this.program)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindAttrib()
+    }
+
+    draw (gl: WebGLRenderingContext, marker: Marker, vel: vec3): void {
+        const height = (clamp(vel[2], -VEL_BOUNDS, VEL_BOUNDS) + VEL_BOUNDS) * 0.1 * PIN_HEIGHT
         this.setHeight(height)
         this.setMarkerPos(marker.x, marker.y, marker.z)
         this.setAccent(marker.color)
