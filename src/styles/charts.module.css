@@ -17,9 +17,9 @@
     justify-content: center;
     width: 50px;
     height: 25px;
-    font-size: 12px;
-    user-select: none;
+    font-size: 14px;
     color: #000;
+    user-select: none;
     border-radius: 0 10px 0 0;
 }
 
@@ -34,7 +34,11 @@
 }
 
 .unselected {
-    filter: brightness(2) saturate(40%);
+    filter: brightness(3) saturate(50%);
+}
+
+.unselected:hover {
+    filter: brightness(3);
 }
 
 .charts {

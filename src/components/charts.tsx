@@ -1,5 +1,6 @@
 import { useState, useEffect, FC } from 'react'
 import { vec3 } from 'gl-matrix'
+import { IoMdClose } from 'react-icons/io'
 import { Chart, LineElement, CategoryScale, LinearScale, PointElement, Title } from 'chart.js'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { Line } from 'react-chartjs-2'
@@ -136,7 +137,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
                             onClick={isCurrent
                                 ? (): void => props.deleteMarker(i)
                                 : (): void => props.setCurrMarker(i)}
-                        >{ isCurrent ? 'x' : ''}</a>
+                        >{ isCurrent ? <IoMdClose /> : ''}</a>
                     )
                 })}
             </nav>
