@@ -6,9 +6,9 @@ import MarkerPin from '../vis/marker-pin'
 import MarkerBase from '../vis/marker-base'
 
 const markerColors = [
-    vec3.fromValues(1.0, 0.0, 0.0),
-    vec3.fromValues(0.97, 0.86, 0.36),
-    vec3.fromValues(0.1, 0.2, 0.5)
+    vec3.fromValues(1, 0, 0),
+    vec3.fromValues(0, 1, 0),
+    vec3.fromValues(0, 0, 1)
 ]
 
 type Marker = {

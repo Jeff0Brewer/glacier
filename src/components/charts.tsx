@@ -122,21 +122,24 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
 
     return (
         <section className={styles.markerInterface}>
-            <nav className={styles.markerSelect}>{
-                props.markers.map((marker: Marker, i: number) => {
+            <nav className={styles.markerSelect}>
+                { props.markers.map((marker: Marker, i: number) => {
                     const isCurrent = props.currMarker === i
                     return (
                         <a
                             key={i}
-                            style={{ backgroundColor: colorVec3ToRGB(marker.color) }}
+                            style={{
+                                backgroundColor: colorVec3ToRGB(marker.color),
+                                zIndex: 100 - i
+                            }}
                             className={isCurrent ? styles.tab : styles.unselected}
                             onClick={isCurrent
                                 ? (): void => props.deleteMarker(i)
                                 : (): void => props.setCurrMarker(i)}
                         >{ isCurrent ? 'x' : ''}</a>
                     )
-                })
-            }</nav>
+                })}
+            </nav>
             <div className={styles.charts}>
                 <div>
                     <Line data={east} options={getChartOptions('East')} />

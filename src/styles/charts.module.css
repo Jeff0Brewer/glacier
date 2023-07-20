@@ -2,12 +2,12 @@
     position: absolute;
     left: 0;
     bottom: 0;
-    background-color: #fff;
     z-index: 25;
 }
 
 .markerSelect {
     display: flex;
+    background-color: rgba(255, 255, 255, 0.6);
 }
 
 .tab, .unselected {
@@ -16,20 +16,32 @@
     align-items: center;
     justify-content: center;
     width: 50px;
-    height: 20px;
+    height: 25px;
     font-size: 12px;
     user-select: none;
     color: #000;
+    border-radius: 0 10px 0 0;
+}
+
+.tab::before, .unselected::before {
+    content: '';
+    background-color: inherit;
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 10px;
+    height: 100%;
 }
 
 .unselected {
-    opacity: 0.5;
+    filter: brightness(2) saturate(40%);
 }
 
 .charts {
     display: flex;
     width: 100vw;
     height: 150px;
+    background-color: #fff;
 }
 
 .charts > div {
