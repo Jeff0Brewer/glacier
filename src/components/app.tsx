@@ -20,6 +20,7 @@ const App: FC = () => {
         vel: true, p1: true, p2: true, p3: true
     })
     const [clickMode, setClickMode] = useState<ClickMode>('rotate')
+    const lastSelectedClickModeRef = useRef<ClickMode>(clickMode)
     const timeRef = useRef<number>(0)
     const speedRef = useRef<number>(1)
 
@@ -38,6 +39,43 @@ const App: FC = () => {
         getData()
     }, [])
 
+    // set click mode with modifier keys
+    useEffect(() => {
+        const keyDown = (e: KeyboardEvent): void => {
+            switch (e.key) {
+                case ' ':
+                    setClickMode('pan')
+                    break
+                case 'Shift':
+                    setClickMode('rotate')
+                    break
+                case 'q':
+                    setClickMode('mark')
+                    break
+                case 'w':
+                    setClickMode('worm')
+            }
+        }
+        const keyUp = (e: KeyboardEvent): void => {
+            if ([' ', 'Shift', 'q', 'w'].includes(e.key)) {
+                setClickMode(lastSelectedClickModeRef.current)
+            }
+        }
+        window.addEventListener('keydown', keyDown)
+        window.addEventListener('keyup', keyUp)
+        return (): void => {
+            window.removeEventListener('keydown', keyDown)
+            window.removeEventListener('keyup', keyUp)
+        }
+    }, [])
+
+    // store last click mode selected from interface to revert
+    // back to on modifier key release
+    const selectClickMode = (mode: ClickMode): void => {
+        lastSelectedClickModeRef.current = mode
+        setClickMode(mode)
+    }
+
     return (
         <section>
             <nav className={styles.menu}>
@@ -52,10 +90,10 @@ const App: FC = () => {
                     </div>
                     <p className={styles.interactionLabel}>click mode</p>
                     <div className={styles.toggles}>
-                        <ModeToggle mode={'rotate'} clickMode={clickMode} setClickMode={setClickMode} />
-                        <ModeToggle mode={'pan'} clickMode={clickMode} setClickMode={setClickMode} />
-                        <ModeToggle mode={'mark'} clickMode={clickMode} setClickMode={setClickMode} />
-                        <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={setClickMode} />
+                        <ModeToggle mode={'rotate'} clickMode={clickMode} setClickMode={selectClickMode} />
+                        <ModeToggle mode={'pan'} clickMode={clickMode} setClickMode={selectClickMode} />
+                        <ModeToggle mode={'mark'} clickMode={clickMode} setClickMode={selectClickMode} />
+                        <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={selectClickMode} />
                     </div>
                     <p className={styles.interactionLabel}>timeline</p>
                     <Timeline timeRef={timeRef} speedRef={speedRef} />
