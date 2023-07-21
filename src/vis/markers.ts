@@ -11,7 +11,7 @@ const getColor = (mode: ColorMode, i: number): vec3 => {
     if (mode === 'random') {
         return vec3.fromValues(Math.random(), Math.random(), Math.random())
     }
-    const brightness = (0.05 * i) % 0.8 + 0.2
+    const brightness = (0.05 * i) % 0.7 + 0.2
     return vec3.fromValues(brightness, brightness, brightness)
 }
 
