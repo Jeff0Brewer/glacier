@@ -2,8 +2,8 @@ import { useState, useRef, useEffect, FC } from 'react'
 import type { MutableRefObject } from 'react'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
-import type { Marker } from '../vis/markers'
-import { markerColors } from '../vis/markers'
+import type { Marker, ColorMode } from '../vis/markers'
+import { getColor } from '../vis/markers'
 import VisRenderer from '../vis/vis'
 import MarkerPlots from '../components/charts'
 import styles from '../styles/vis.module.css'
@@ -25,6 +25,7 @@ const Vis: FC<VisProps> = props => {
     const [height, setHeight] = useState<number>(window.innerHeight)
     const [markers, setMarkers] = useState<Array<Marker>>([])
     const [currMarker, setCurrMarker] = useState<number>(-1)
+    const [colorMode, setColorMode] = useState<ColorMode>('gray')
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
@@ -93,7 +94,7 @@ const Vis: FC<VisProps> = props => {
                     x: position[0],
                     y: position[1],
                     z: position[2],
-                    color: markerColors[markers.length % markerColors.length]
+                    color: getColor(colorMode, markers.length)
                 }
                 setMarkers([...markers, marker])
                 setCurrMarker(markers.length)
@@ -106,7 +107,18 @@ const Vis: FC<VisProps> = props => {
         return () => {
             canvas.removeEventListener('mousedown', placeMarker)
         }
-    }, [markers, props.clickMode])
+    }, [markers, props.clickMode, colorMode])
+
+    useEffect(() => {
+        for (let i = 0; i < markers.length; i++) {
+            markers[i].color = getColor(colorMode, i)
+        }
+        setMarkers([...markers])
+
+        // disable exhaustive deps to exclude markers state
+        // including markers would cause infinite loop
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [colorMode])
 
     // setup draw loop
     useEffect(() => {
@@ -149,6 +161,8 @@ const Vis: FC<VisProps> = props => {
                     deleteMarker={deleteMarker}
                     data={props.data}
                     options={props.options}
+                    colorMode={colorMode}
+                    setColorMode={setColorMode}
                 /> }
         </section>
     )

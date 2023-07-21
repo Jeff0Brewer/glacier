@@ -2,9 +2,9 @@ import { useState, useEffect, FC } from 'react'
 import { vec3 } from 'gl-matrix'
 import { IoMdClose } from 'react-icons/io'
 import { Chart, LineElement, CategoryScale, LinearScale, PointElement, Title } from 'chart.js'
-import type { ChartData, ChartOptions } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import type { Marker } from '../vis/markers'
+import type { ChartData, ChartOptions } from 'chart.js'
+import type { Marker, ColorMode } from '../vis/markers'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import { calcFlowVelocity, PERIOD_1, PERIOD_2, PERIOD_3 } from '../lib/flow-calc'
@@ -89,7 +89,9 @@ type MarkerPlotsProps = {
     setCurrMarker: (ind: number) => void,
     deleteMarker: (ind: number) => void,
     data: ModelData,
-    options: FlowOptions
+    options: FlowOptions,
+    colorMode: ColorMode,
+    setColorMode: (mode: ColorMode) => void
 }
 
 const MarkerPlots: FC<MarkerPlotsProps> = props => {
@@ -121,25 +123,41 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         setUp(getChartData(labels, up))
     }, [props.markers, props.currMarker, props.data, props.options])
 
+    const toggleColorMode = (): void => {
+        props.setColorMode(
+            props.colorMode === 'gray'
+                ? 'random'
+                : 'gray'
+        )
+    }
+
     return (
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>
-                { props.markers.map((marker: Marker, i: number) => {
-                    const isCurrent = props.currMarker === i
-                    return (
-                        <a
-                            key={i}
-                            style={{
-                                backgroundColor: colorVec3ToRGB(marker.color),
-                                zIndex: 100 - i
-                            }}
-                            className={isCurrent ? styles.tab : styles.unselected}
-                            onClick={isCurrent
-                                ? (): void => props.deleteMarker(i)
-                                : (): void => props.setCurrMarker(i)}
-                        >{ isCurrent ? <IoMdClose /> : ''}</a>
-                    )
-                })}
+                <div className={styles.tabWrap}>
+                    { props.markers.map((marker: Marker, i: number) => {
+                        const isCurrent = props.currMarker === i
+                        return (
+                            <a
+                                key={i}
+                                style={{
+                                    backgroundColor: colorVec3ToRGB(marker.color),
+                                    zIndex: 100 - i
+                                }}
+                                className={isCurrent ? styles.tab : styles.unselected}
+                                onClick={isCurrent
+                                    ? (): void => props.deleteMarker(i)
+                                    : (): void => props.setCurrMarker(i)}
+                            >{ isCurrent ? <IoMdClose /> : ''}</a>
+                        )
+                    })}
+                </div>
+                <a
+                    className={styles.colorToggle}
+                    onClick={toggleColorMode}
+                >
+                    COLORS: {props.colorMode}
+                </a>
             </nav>
             <div className={styles.charts}>
                 <div>

@@ -5,11 +5,15 @@ import type { ModelData } from '../lib/data-load'
 import MarkerPin from '../vis/marker-pin'
 import MarkerBase from '../vis/marker-base'
 
-const markerColors = [
-    vec3.fromValues(1, 0, 0),
-    vec3.fromValues(0, 1, 0),
-    vec3.fromValues(0, 0, 1)
-]
+type ColorMode = 'gray' | 'random'
+
+const getColor = (mode: ColorMode, i: number): vec3 => {
+    if (mode === 'random') {
+        return vec3.fromValues(Math.random(), Math.random(), Math.random())
+    }
+    const brightness = (0.05 * i) % 0.8 + 0.2
+    return vec3.fromValues(brightness, brightness, brightness)
+}
 
 type Marker = {
     x: number,
@@ -83,9 +87,10 @@ class Markers {
 export default Markers
 
 export {
-    markerColors
+    getColor
 }
 
 export type {
-    Marker
+    Marker,
+    ColorMode
 }
