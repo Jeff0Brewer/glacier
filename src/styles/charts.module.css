@@ -28,8 +28,9 @@
     height: 100%;
     font-size: 14px;
     color: #000;
-    user-select: none;
     border-radius: 0 10px 0 0;
+    cursor: pointer;
+    user-select: none;
 }
 
 .tab::before, .unselected::before {
@@ -70,6 +71,8 @@
     font-size: 12px;
     background-color: #fff;
     border-radius: 10px 0 0 0;
+    cursor: pointer;
+    user-select: none;
 }
 
 .colorToggle:hover {

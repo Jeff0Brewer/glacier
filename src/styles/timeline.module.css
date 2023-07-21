@@ -47,6 +47,7 @@
     background-color: #c8c8c8;
     border-radius: 5px;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .timelineBar {
