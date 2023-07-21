@@ -42,12 +42,8 @@
     height: 100%;
 }
 
-.unselected {
-    filter: brightness(3) saturate(50%);
-}
-
 .unselected:hover {
-    filter: brightness(3);
+    filter: brightness(0.8);
 }
 
 .charts {
@@ -74,4 +70,8 @@
     font-size: 12px;
     background-color: #fff;
     border-radius: 10px 0 0 0;
+}
+
+.colorToggle:hover {
+    color: #666;
 }
