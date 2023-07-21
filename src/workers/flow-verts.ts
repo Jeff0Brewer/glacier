@@ -8,7 +8,7 @@ const MAX_CALC = 200
 const TIMESTEP = 0.2
 const FLOW_SPEED = 6
 const MIN_LINE_LENGTH = 1
-const LINE_WIDTH = 0.5
+const LINE_WIDTH = 0.3
 const VERT_PER_POSITION = 2 // since drawing as triangle strip with left / right sides
 const ALL_FPV = 4 // copied from src/vis/flow.ts to prevent circular deps
 
