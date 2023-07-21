@@ -117,6 +117,7 @@ const Vis: FC<VisProps> = props => {
 
         // disable exhaustive deps to exclude markers state
         // including markers would cause infinite loop
+        // and colors to be reset on any marker addition / deletion
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [colorMode])
 
