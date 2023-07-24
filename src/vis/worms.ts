@@ -246,9 +246,11 @@ class Worms {
         gl.useProgram(this.program)
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         this.setModelMatrix(modelMatrix)
+        gl.depthMask(false)
         for (const worm of this.worms) {
             worm.draw(gl, this.bindAttrib, this.setCurrSegment)
         }
+        gl.depthMask(true)
     }
 }
 
