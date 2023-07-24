@@ -76,6 +76,43 @@ const Vis: FC<VisProps> = ({
         }
     }, [clickMode])
 
+    // set click mode with modifier keys
+    useEffect(() => {
+        const keyDown = (e: KeyboardEvent): void => {
+            switch (e.key) {
+                case ' ':
+                    setClickMode('pan')
+                    break
+                case 'Shift':
+                    setClickMode('rotate')
+                    break
+                case 'q':
+                    setClickMode('mark')
+                    break
+                case 'w':
+                    setClickMode('worm')
+            }
+        }
+        const keyUp = (e: KeyboardEvent): void => {
+            if ([' ', 'Shift', 'q', 'w'].includes(e.key)) {
+                setClickMode(lastSelectedClickModeRef.current)
+            }
+        }
+        window.addEventListener('keydown', keyDown)
+        window.addEventListener('keyup', keyUp)
+        return (): void => {
+            window.removeEventListener('keydown', keyDown)
+            window.removeEventListener('keyup', keyUp)
+        }
+    }, [])
+
+    // store last click mode selected from interface to revert
+    // back to on modifier key release
+    const selectClickMode = (mode: ClickMode): void => {
+        lastSelectedClickModeRef.current = mode
+        setClickMode(mode)
+    }
+
     // add handler for marker placement mode
     useEffect(() => {
         if (clickMode !== 'mark' || !canvasRef.current) { return }
@@ -142,43 +179,6 @@ const Vis: FC<VisProps> = ({
             window.cancelAnimationFrame(frameIdRef.current)
         }
     }, [data, options, timeRef, speedRef, markers])
-
-    // set click mode with modifier keys
-    useEffect(() => {
-        const keyDown = (e: KeyboardEvent): void => {
-            switch (e.key) {
-                case ' ':
-                    setClickMode('pan')
-                    break
-                case 'Shift':
-                    setClickMode('rotate')
-                    break
-                case 'q':
-                    setClickMode('mark')
-                    break
-                case 'w':
-                    setClickMode('worm')
-            }
-        }
-        const keyUp = (e: KeyboardEvent): void => {
-            if ([' ', 'Shift', 'q', 'w'].includes(e.key)) {
-                setClickMode(lastSelectedClickModeRef.current)
-            }
-        }
-        window.addEventListener('keydown', keyDown)
-        window.addEventListener('keyup', keyUp)
-        return (): void => {
-            window.removeEventListener('keydown', keyDown)
-            window.removeEventListener('keyup', keyUp)
-        }
-    }, [])
-
-    // store last click mode selected from interface to revert
-    // back to on modifier key release
-    const selectClickMode = (mode: ClickMode): void => {
-        lastSelectedClickModeRef.current = mode
-        setClickMode(mode)
-    }
 
     return (
         <section>
