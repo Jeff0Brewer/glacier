@@ -32,8 +32,10 @@ class VisRenderer {
     flow: FlowLines
     markers: Markers
     worms: Worms
+    time: number
 
     constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement, texture: HTMLImageElement) {
+        this.time = 0
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.BLEND)
@@ -196,7 +198,7 @@ class VisRenderer {
     placeWorm (x: number, y: number): void {
         const pos = this.unprojectMouse(x, y)
         if (pos) {
-            this.worms.placeWorm(this.gl, pos)
+            this.worms.placeWorm(this.gl, pos, this.time)
         }
     }
 
@@ -212,6 +214,7 @@ class VisRenderer {
     }
 
     draw (data: ModelData, options: FlowOptions, time: number, markers: Array<Marker>): void {
+        this.time = time
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
         this.flow.draw(this.gl, this.model)

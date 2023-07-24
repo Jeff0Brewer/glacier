@@ -8,7 +8,7 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 
 const WORM_SPEED = 1
 const MIN_WORM_SPEED = 0.2
-const WORM_LIFESPAN = 800
+const WORM_LIFESPAN = 30
 const WORM_HISTORY = 300
 
 // floats per vertex for attribs
@@ -50,6 +50,7 @@ class Worm {
     x: number
     y: number
     lifespan: number
+    time: number
     startX: number
     startY: number
     currSegment: number
@@ -61,12 +62,14 @@ class Worm {
         gl: WebGLRenderingContext,
         history: number,
         x: number,
-        y: number
+        y: number,
+        time: number
     ) {
         this.history = history
         this.x = x
         this.y = y
         this.lifespan = 0
+        this.time = time
         this.startX = x
         this.startY = y
         this.currSegment = 0
@@ -119,7 +122,9 @@ class Worm {
         ])
         this.ringBuffer.set(gl, verts)
 
-        this.lifespan += Math.pow(speed, 0.25)
+        const elapsed = time - this.time
+        this.time = time
+        this.lifespan += elapsed
     }
 
     fadeOut (setCurrSegment: (ind: number) => void): void {
@@ -203,8 +208,8 @@ class Worms {
         this.setCurrSegment = (scale: number): void => { gl.uniform1f(uCurrSegment, scale) }
     }
 
-    placeWorm (gl: WebGLRenderingContext, pos: vec3): void {
-        this.worms.push(new Worm(gl, WORM_HISTORY, pos[0], pos[1]))
+    placeWorm (gl: WebGLRenderingContext, pos: vec3, time: number): void {
+        this.worms.push(new Worm(gl, WORM_HISTORY, pos[0], pos[1], time))
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
