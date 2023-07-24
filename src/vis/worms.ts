@@ -3,12 +3,13 @@ import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-w
 import { calcFlowVelocity } from '../lib/flow-calc'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ModelData } from '../lib/data-load'
+import type { WormMode } from '../components/vis'
 import vertSource from '../shaders/worms-vert.glsl?raw'
 import fragSource from '../shaders/worms-frag.glsl?raw'
 
 const WORM_SPEED = 1
 const MIN_WORM_SPEED = 0.2
-const WORM_LIFESPAN = 30
+const WORM_LIFESPAN = 10
 const WORM_HISTORY = 300
 
 // floats per vertex for attribs
@@ -53,6 +54,7 @@ class Worm {
     time: number
     startX: number
     startY: number
+    mode: WormMode
     currSegment: number
     history: number
     numVertex: number
@@ -63,7 +65,8 @@ class Worm {
         history: number,
         x: number,
         y: number,
-        time: number
+        time: number,
+        mode: WormMode
     ) {
         this.history = history
         this.x = x
@@ -72,6 +75,7 @@ class Worm {
         this.time = time
         this.startX = x
         this.startY = y
+        this.mode = mode
         this.currSegment = 0
         this.numVertex = history * 6
         this.ringBuffer = new RingSubBuffer(gl, this.numVertex * ALL_FPV)
@@ -125,6 +129,12 @@ class Worm {
         const elapsed = time - this.time
         this.time = time
         this.lifespan += elapsed
+
+        if (this.lifespan >= WORM_LIFESPAN && this.mode === 'persist') {
+            this.x = this.startX
+            this.y = this.startY
+            this.lifespan = 0
+        }
     }
 
     fadeOut (setCurrSegment: (ind: number) => void): void {
@@ -208,8 +218,8 @@ class Worms {
         this.setCurrSegment = (scale: number): void => { gl.uniform1f(uCurrSegment, scale) }
     }
 
-    placeWorm (gl: WebGLRenderingContext, pos: vec3, time: number): void {
-        this.worms.push(new Worm(gl, WORM_HISTORY, pos[0], pos[1], time))
+    placeWorm (gl: WebGLRenderingContext, pos: vec3, time: number, mode: WormMode): void {
+        this.worms.push(new Worm(gl, WORM_HISTORY, pos[0], pos[1], time, mode))
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {

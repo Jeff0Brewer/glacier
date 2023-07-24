@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, FC, MutableRefObject } from 'react'
 import { FaCaretRight, FaCaretLeft } from 'react-icons/fa'
 import type { FlowOptions } from '../lib/flow-calc'
-import type { ClickMode } from '../components/vis'
+import type { ClickMode, WormMode } from '../components/vis'
 import { OptionToggle, ModeToggle } from '../components/toggles'
 import Timeline from '../components/timeline'
 import styles from '../styles/menu.module.css'
@@ -9,13 +9,17 @@ import styles from '../styles/menu.module.css'
 type MenuProps = {
     options: FlowOptions,
     clickMode: ClickMode,
-    setOptions: (options: FlowOptions) => void,
     setClickMode: (clickMode: ClickMode) => void,
+    wormMode: WormMode,
+    setWormMode: (mode: WormMode) => void,
+    setOptions: (options: FlowOptions) => void,
     timeRef: MutableRefObject<number>,
     speedRef: MutableRefObject<number>,
 }
 
-const Menu: FC<MenuProps> = ({ options, clickMode, setOptions, setClickMode, timeRef, speedRef }) => {
+const Menu: FC<MenuProps> = ({
+    options, clickMode, setOptions, setClickMode, timeRef, speedRef, wormMode, setWormMode
+}) => {
     return (
         <nav className={styles.menu}>
             <img className={styles.contextImage} src='./ctx-img.jpg' />
@@ -33,7 +37,7 @@ const Menu: FC<MenuProps> = ({ options, clickMode, setOptions, setClickMode, tim
                     <ModeToggle mode={'pan'} clickMode={clickMode} setClickMode={setClickMode} />
                     <ModeToggle mode={'mark'} clickMode={clickMode} setClickMode={setClickMode} />
                     <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={setClickMode}>
-                        <WormMenu />
+                        <WormMenu wormMode={wormMode} setWormMode={setWormMode} />
                     </ModeToggle>
                 </div>
                 <p className={styles.interactionLabel}>timeline</p>
@@ -43,7 +47,12 @@ const Menu: FC<MenuProps> = ({ options, clickMode, setOptions, setClickMode, tim
     )
 }
 
-const WormMenu: FC = () => {
+type WormMenuProps = {
+    wormMode: WormMode,
+    setWormMode: (mode: WormMode) => void
+}
+
+const WormMenu: FC<WormMenuProps> = ({ wormMode, setWormMode }) => {
     const [open, setOpen] = useState<boolean>(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -62,6 +71,14 @@ const WormMenu: FC = () => {
         }
     }, [])
 
+    const toggleWormMode = (): void => {
+        setWormMode(
+            wormMode === 'persist'
+                ? 'single'
+                : 'persist'
+        )
+    }
+
     return (
         <div className={styles.wormMenu}>
             <a className={styles.wormArrow} onClick={(): void => setOpen(!open)}>
@@ -71,7 +88,7 @@ const WormMenu: FC = () => {
             </a>
             { open &&
                 <div className={styles.wormDropdown} ref={dropdownRef}>
-                    <a>persist</a>
+                    <a onClick={toggleWormMode}>{wormMode}</a>
                     <a>on markers</a>
                     <a>clear all</a>
                 </div>

@@ -5,7 +5,7 @@ import { WIDTH, HEIGHT } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker } from '../vis/markers'
-import type { ClickMode } from '../components/app'
+import type { ClickMode, WormMode } from '../components/vis'
 import Camera from '../lib/camera'
 import Glacier from '../vis/glacier'
 import FlowLines from '../vis/flow'
@@ -104,7 +104,7 @@ class VisRenderer {
         )
     }
 
-    setClickMode (mode: ClickMode): (() => void) | null {
+    setClickMode (mode: ClickMode, wormMode: WormMode): (() => void) | null {
         if (mode === 'rotate') {
             const mouseRotate = (e: MouseEvent): void => {
                 this.camera.mouseRotate(e.movementX, e.movementY)
@@ -144,7 +144,7 @@ class VisRenderer {
                 let pos = pending.pop()
                 while (pos) {
                     const [x, y] = pos
-                    this.placeWorm(x, y)
+                    this.placeWorm(x, y, wormMode)
                     pos = pending.pop()
                 }
             }
@@ -195,10 +195,10 @@ class VisRenderer {
         return this.glacier.hitTest(origin, direction)
     }
 
-    placeWorm (x: number, y: number): void {
+    placeWorm (x: number, y: number, mode: WormMode): void {
         const pos = this.unprojectMouse(x, y)
         if (pos) {
-            this.worms.placeWorm(this.gl, pos, this.time)
+            this.worms.placeWorm(this.gl, pos, this.time, mode)
         }
     }
 

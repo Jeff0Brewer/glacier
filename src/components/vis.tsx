@@ -9,6 +9,7 @@ import VisRenderer from '../vis/vis'
 import styles from '../styles/vis.module.css'
 
 type ClickMode = 'rotate' | 'pan' | 'mark' | 'worm'
+type WormMode = 'persist' | 'single'
 
 type VisProps = {
     data: ModelData,
@@ -30,6 +31,7 @@ const Vis: FC<VisProps> = ({
 }) => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
+    const [wormMode, setWormMode] = useState<WormMode>('single')
     const [clickMode, setClickMode] = useState<ClickMode>('rotate')
     const lastSelectedClickModeRef = useRef<ClickMode>(clickMode)
     const visRef = useRef<VisRenderer | null>(null)
@@ -68,13 +70,13 @@ const Vis: FC<VisProps> = ({
     // set click mode
     useEffect(() => {
         if (!visRef.current) { return }
-        const removeHandlers = visRef.current.setClickMode(clickMode)
+        const removeHandlers = visRef.current.setClickMode(clickMode, wormMode)
         return () => {
             if (removeHandlers) {
                 removeHandlers()
             }
         }
-    }, [clickMode])
+    }, [clickMode, wormMode])
 
     // set click mode with modifier keys
     useEffect(() => {
@@ -187,6 +189,8 @@ const Vis: FC<VisProps> = ({
                 clickMode={clickMode}
                 setOptions={setOptions}
                 setClickMode={selectClickMode}
+                wormMode={wormMode}
+                setWormMode={setWormMode}
                 timeRef={timeRef}
                 speedRef={speedRef}
             />
@@ -204,5 +208,6 @@ const Vis: FC<VisProps> = ({
 export default Vis
 
 export type {
-    ClickMode
+    ClickMode,
+    WormMode
 }
