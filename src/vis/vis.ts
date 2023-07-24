@@ -13,8 +13,8 @@ import Markers from '../vis/markers'
 import Worms from '../vis/worms'
 
 const HEIGHT_SCALE = 50
-const FLOW_DENSITY = 0.08
-const FLOW_HISTORY = 200
+const FLOW_DENSITY = 0.07
+const FLOW_HISTORY = 180
 
 const FOV = 1
 const NEAR = 0.1
