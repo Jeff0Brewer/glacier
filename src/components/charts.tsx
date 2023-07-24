@@ -83,6 +83,8 @@ const colorVec3ToRGB = (color: vec3): string => {
     return `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`
 }
 
+const ALL_MARKER_IND = -5 // curr marker index to plot all markers
+
 type MarkerPlotsProps = {
     markers: Array<Marker>,
     currMarker: number,
@@ -100,6 +102,9 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
     const [up, setUp] = useState<ChartData<'line'>>({ datasets: [] })
 
     useEffect(() => {
+        if (props.currMarker === ALL_MARKER_IND) {
+            return
+        }
         const labels = []
         const east = []
         const north = []
@@ -135,6 +140,12 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>
                 <div className={styles.tabWrap}>
+                    <a
+                        className={`${styles.tab} ${styles.allTab}`}
+                        onClick={(): void => props.setCurrMarker(ALL_MARKER_IND)}
+                    >
+                        ALL
+                    </a>
                     { props.markers.map((marker: Marker, i: number) => {
                         const isCurrent = props.currMarker === i
                         return (
@@ -152,10 +163,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
                         )
                     })}
                 </div>
-                <a
-                    className={styles.colorToggle}
-                    onClick={toggleColorMode}
-                >
+                <a className={styles.colorToggle} onClick={toggleColorMode}>
                     COLORS: {props.colorMode}
                 </a>
             </nav>
@@ -175,3 +183,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
 }
 
 export default MarkerPlots
+
+export {
+    ALL_MARKER_IND
+}

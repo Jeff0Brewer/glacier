@@ -4,8 +4,8 @@ import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker, ColorMode } from '../vis/markers'
 import { getColor } from '../vis/markers'
+import MarkerPlots, { ALL_MARKER_IND } from '../components/charts'
 import VisRenderer from '../vis/vis'
-import MarkerPlots from '../components/charts'
 import styles from '../styles/vis.module.css'
 
 type ClickMode = 'rotate' | 'pan' | 'mark' | 'worm'
@@ -154,7 +154,7 @@ const Vis: FC<VisProps> = props => {
                 height={height * window.devicePixelRatio}
                 style={{ width: `${width}px`, height: `${height}px` }}
             />
-            { markers[currMarker] &&
+            { (markers[currMarker] || currMarker === ALL_MARKER_IND) &&
                 <MarkerPlots
                     markers={markers}
                     currMarker={currMarker}
