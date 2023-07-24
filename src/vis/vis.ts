@@ -144,7 +144,7 @@ class VisRenderer {
                 let pos = pending.pop()
                 while (pos) {
                     const [x, y] = pos
-                    this.placeWorm(x, y, wormMode)
+                    this.placeWormMouse(x, y, wormMode)
                     pos = pending.pop()
                 }
             }
@@ -195,11 +195,19 @@ class VisRenderer {
         return this.glacier.hitTest(origin, direction)
     }
 
-    placeWorm (x: number, y: number, mode: WormMode): void {
+    clearWorms (): void {
+        this.worms.clearWorms()
+    }
+
+    placeWormMouse (x: number, y: number, mode: WormMode): void {
         const pos = this.unprojectMouse(x, y)
         if (pos) {
             this.worms.placeWorm(this.gl, pos, this.time, mode)
         }
+    }
+
+    placeWorm (x: number, y: number, mode: WormMode): void {
+        this.worms.placeWorm(this.gl, [x, y, 0], this.time, mode)
     }
 
     calcFlow (data: ModelData, options: FlowOptions): void {

@@ -12,13 +12,16 @@ type MenuProps = {
     setClickMode: (clickMode: ClickMode) => void,
     wormMode: WormMode,
     setWormMode: (mode: WormMode) => void,
+    clearWorms: () => void,
+    placeMarkerWorms: () => void,
     setOptions: (options: FlowOptions) => void,
     timeRef: MutableRefObject<number>,
     speedRef: MutableRefObject<number>,
 }
 
 const Menu: FC<MenuProps> = ({
-    options, clickMode, setOptions, setClickMode, timeRef, speedRef, wormMode, setWormMode
+    options, clickMode, setOptions, setClickMode, timeRef,
+    speedRef, wormMode, setWormMode, clearWorms, placeMarkerWorms
 }) => {
     return (
         <nav className={styles.menu}>
@@ -37,7 +40,12 @@ const Menu: FC<MenuProps> = ({
                     <ModeToggle mode={'pan'} clickMode={clickMode} setClickMode={setClickMode} />
                     <ModeToggle mode={'mark'} clickMode={clickMode} setClickMode={setClickMode} />
                     <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={setClickMode}>
-                        <WormMenu wormMode={wormMode} setWormMode={setWormMode} />
+                        <WormMenu
+                            wormMode={wormMode}
+                            setWormMode={setWormMode}
+                            clearWorms={clearWorms}
+                            placeMarkerWorms={placeMarkerWorms}
+                        />
                     </ModeToggle>
                 </div>
                 <p className={styles.interactionLabel}>timeline</p>
@@ -49,10 +57,12 @@ const Menu: FC<MenuProps> = ({
 
 type WormMenuProps = {
     wormMode: WormMode,
-    setWormMode: (mode: WormMode) => void
+    setWormMode: (mode: WormMode) => void,
+    clearWorms: () => void,
+    placeMarkerWorms: () => void
 }
 
-const WormMenu: FC<WormMenuProps> = ({ wormMode, setWormMode }) => {
+const WormMenu: FC<WormMenuProps> = ({ wormMode, setWormMode, clearWorms, placeMarkerWorms }) => {
     const [open, setOpen] = useState<boolean>(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -89,8 +99,8 @@ const WormMenu: FC<WormMenuProps> = ({ wormMode, setWormMode }) => {
             { open &&
                 <div className={styles.wormDropdown} ref={dropdownRef}>
                     <a onClick={toggleWormMode}>{wormMode}</a>
-                    <a>on markers</a>
-                    <a>clear all</a>
+                    <a onClick={placeMarkerWorms}>on markers</a>
+                    <a onClick={clearWorms}>clear all</a>
                 </div>
             }
         </div>

@@ -9,8 +9,8 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 
 const WORM_SPEED = 1
 const MIN_WORM_SPEED = 0.2
-const WORM_LIFESPAN = 10
-const WORM_HISTORY = 300
+const WORM_LIFESPAN = 5
+const WORM_HISTORY = 600
 
 // floats per vertex for attribs
 const POS_FPV = 2
@@ -216,6 +216,10 @@ class Worms {
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
         this.setCurrSegment = (scale: number): void => { gl.uniform1f(uCurrSegment, scale) }
+    }
+
+    clearWorms (): void {
+        this.worms = []
     }
 
     placeWorm (gl: WebGLRenderingContext, pos: vec3, time: number, mode: WormMode): void {

@@ -38,6 +38,27 @@ const Vis: FC<VisProps> = ({
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
 
+    // store last click mode selected from interface to revert
+    // back to on modifier key release
+    const selectClickMode = (mode: ClickMode): void => {
+        lastSelectedClickModeRef.current = mode
+        setClickMode(mode)
+    }
+
+    const clearWorms = (): void => {
+        if (visRef.current) {
+            visRef.current.clearWorms()
+        }
+    }
+
+    const placeMarkerWorms = (): void => {
+        if (visRef.current) {
+            for (const marker of markers) {
+                visRef.current.placeWorm(marker.x, marker.y, wormMode)
+            }
+        }
+    }
+
     // setup resize handler
     useEffect(() => {
         const onResize = (): void => {
@@ -107,13 +128,6 @@ const Vis: FC<VisProps> = ({
             window.removeEventListener('keyup', keyUp)
         }
     }, [])
-
-    // store last click mode selected from interface to revert
-    // back to on modifier key release
-    const selectClickMode = (mode: ClickMode): void => {
-        lastSelectedClickModeRef.current = mode
-        setClickMode(mode)
-    }
 
     // add handler for marker placement mode
     useEffect(() => {
@@ -191,6 +205,8 @@ const Vis: FC<VisProps> = ({
                 setClickMode={selectClickMode}
                 wormMode={wormMode}
                 setWormMode={setWormMode}
+                clearWorms={clearWorms}
+                placeMarkerWorms={placeMarkerWorms}
                 timeRef={timeRef}
                 speedRef={speedRef}
             />
