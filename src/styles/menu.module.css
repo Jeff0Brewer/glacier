@@ -24,23 +24,25 @@
     display: flex;
 }
 
-.toggles > a {
+.toggles > button {
+    position: relative;
     width: 25%;
     margin: 0 3px;
     padding: 8px 0;
     background-color: #c8c8c8;
-    display: grid;
-    place-content: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 5px;
     cursor: pointer;
     user-select: none;
 }
 
-.toggles > a[data-active="false"] {
+.toggles > button[data-active="false"] {
     opacity: 0.5;
 }
 
-.toggles > a:hover {
+.toggles > button:hover {
     background-color: #bbb;
 }
 
@@ -49,4 +51,32 @@
     width: 160px;
     height: 160px;
     object-fit: cover;
+}
+
+.wormMenu {
+    display: flex;
+    align-items: center;
+}
+
+.wormArrow {
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+}
+
+.wormDropdown {
+    position: absolute;
+    top: 0;
+    right: -205px;
+    width: 200px;
+    height: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.wormDropdown > a:hover {
+    opacity: 0.5;
 }

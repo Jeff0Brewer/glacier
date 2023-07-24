@@ -1,22 +1,24 @@
-import { FC } from 'react'
+import { FC, ReactElement } from 'react'
 import { ClickMode } from '../components/vis'
 import { FlowOptions, FlowOptionField } from '../lib/flow-calc'
 
 type ModeToggleProps = {
     mode: ClickMode,
     clickMode: ClickMode,
-    setClickMode: (mode: ClickMode) => void
+    setClickMode: (mode: ClickMode) => void,
+    children?: ReactElement
 }
 
-const ModeToggle: FC<ModeToggleProps> = ({ mode, clickMode, setClickMode }) => {
+const ModeToggle: FC<ModeToggleProps> = ({ mode, clickMode, setClickMode, children }) => {
     const setMode = (): void => {
         setClickMode(mode)
     }
 
     return (
-        <a onClick={setMode} data-active={clickMode === mode}>
+        <button onClick={setMode} data-active={clickMode === mode}>
             {mode}
-        </a>
+            {children}
+        </button>
     )
 }
 
@@ -33,9 +35,9 @@ const OptionToggle: FC<OptionToggleProps> = ({ options, setOptions, field }) => 
     }
 
     return (
-        <a onClick={toggleOption} data-active={options[field]}>
+        <button onClick={toggleOption} data-active={options[field]}>
             {field}
-        </a>
+        </button>
     )
 }
 

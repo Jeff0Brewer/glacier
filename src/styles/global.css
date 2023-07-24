@@ -10,3 +10,8 @@ html, body {
     color: #000;
     font-family: Arial, Helvetica, sans-serif;
 }
+
+button {
+    border: none;
+    font: inherit;
+}

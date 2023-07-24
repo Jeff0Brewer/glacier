@@ -1,4 +1,5 @@
-import { FC, MutableRefObject } from 'react'
+import { useState, useEffect, useRef, FC, MutableRefObject } from 'react'
+import { FaCaretRight, FaCaretLeft } from 'react-icons/fa'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ClickMode } from '../components/vis'
 import { OptionToggle, ModeToggle } from '../components/toggles'
@@ -31,12 +32,51 @@ const Menu: FC<MenuProps> = ({ options, clickMode, setOptions, setClickMode, tim
                     <ModeToggle mode={'rotate'} clickMode={clickMode} setClickMode={setClickMode} />
                     <ModeToggle mode={'pan'} clickMode={clickMode} setClickMode={setClickMode} />
                     <ModeToggle mode={'mark'} clickMode={clickMode} setClickMode={setClickMode} />
-                    <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={setClickMode} />
+                    <ModeToggle mode={'worm'} clickMode={clickMode} setClickMode={setClickMode}>
+                        <WormMenu />
+                    </ModeToggle>
                 </div>
                 <p className={styles.interactionLabel}>timeline</p>
                 <Timeline timeRef={timeRef} speedRef={speedRef} />
             </div>
         </nav>
+    )
+}
+
+const WormMenu: FC = () => {
+    const [open, setOpen] = useState<boolean>(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const close = (e: MouseEvent): void => {
+            if (!dropdownRef.current || !(e.target instanceof Element)) {
+                return
+            }
+            if (!dropdownRef.current.contains(e.target)) {
+                setOpen(false)
+            }
+        }
+        window.addEventListener('mousedown', close)
+        return (): void => {
+            window.removeEventListener('mousedown', close)
+        }
+    }, [])
+
+    return (
+        <div className={styles.wormMenu}>
+            <a className={styles.wormArrow} onClick={(): void => setOpen(!open)}>
+                { open
+                    ? <FaCaretLeft />
+                    : <FaCaretRight /> }
+            </a>
+            { open &&
+                <div className={styles.wormDropdown} ref={dropdownRef}>
+                    <a>persist</a>
+                    <a>on markers</a>
+                    <a>clear all</a>
+                </div>
+            }
+        </div>
     )
 }
 
