@@ -3,7 +3,9 @@ import { loadDataset, loadImageAsync } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ClickMode } from '../components/vis'
+import type { Marker, ColorMode } from '../vis/markers'
 import Menu from '../components/menu'
+import MarkerPlots, { ALL_MARKER_IND } from '../components/charts'
 import Vis from '../components/vis'
 
 const DATA_DIR = './data/model/'
@@ -17,10 +19,23 @@ const App: FC = () => {
     const [options, setOptions] = useState<FlowOptions>({
         vel: true, p1: true, p2: true, p3: true
     })
-    const [clickMode, setClickMode] = useState<ClickMode>('rotate')
-    const lastSelectedClickModeRef = useRef<ClickMode>(clickMode)
+    const [markers, setMarkers] = useState<Array<Marker>>([])
+    const [currMarker, setCurrMarker] = useState<number>(-1)
+    const [colorMode, setColorMode] = useState<ColorMode>('gray')
+
     const timeRef = useRef<number>(0)
     const speedRef = useRef<number>(1)
+
+    const [clickMode, setClickMode] = useState<ClickMode>('rotate')
+    const lastSelectedClickModeRef = useRef<ClickMode>(clickMode)
+
+    const deleteMarker = (ind: number): void => {
+        markers.splice(ind, 1)
+        setMarkers([...markers])
+        if (ind === markers.length) {
+            setCurrMarker(ind - 1)
+        }
+    }
 
     const getData = async (): Promise<void> => {
         const [data, surface, texture] = await Promise.all([
@@ -74,23 +89,34 @@ const App: FC = () => {
         setClickMode(mode)
     }
 
+    if (!data) { return <></> }
     return (
         <section>
-            <Menu
-                options={options}
-                clickMode={clickMode}
-                setOptions={setOptions}
-                setClickMode={selectClickMode}
-                timeRef={timeRef}
-                speedRef={speedRef}
-            />
-            { data && surface && texture &&
-                <Vis
+            { (markers[currMarker] || currMarker === ALL_MARKER_IND) &&
+                <MarkerPlots
+                    markers={markers}
+                    currMarker={currMarker}
+                    setCurrMarker={setCurrMarker}
+                    deleteMarker={deleteMarker}
                     data={data}
                     options={options}
-                    clickMode={clickMode}
+                    colorMode={colorMode}
+                    setColorMode={setColorMode}
+                />
+            }
+            { surface && texture &&
+                <Vis
+                    data={data}
                     surface={surface}
                     texture={texture}
+                    options={options}
+                    markers={markers}
+                    setMarkers={setMarkers}
+                    setCurrMarker={setCurrMarker}
+                    setClickMode={selectClickMode}
+                    setOptions={setOptions}
+                    clickMode={clickMode}
+                    colorMode={colorMode}
                     timeRef={timeRef}
                     speedRef={speedRef}
                 />

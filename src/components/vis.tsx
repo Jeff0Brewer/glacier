@@ -4,7 +4,7 @@ import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker, ColorMode } from '../vis/markers'
 import { getColor } from '../vis/markers'
-import MarkerPlots, { ALL_MARKER_IND } from '../components/charts'
+import Menu from '../components/menu'
 import VisRenderer from '../vis/vis'
 import styles from '../styles/vis.module.css'
 
@@ -12,31 +12,29 @@ type ClickMode = 'rotate' | 'pan' | 'mark' | 'worm'
 
 type VisProps = {
     data: ModelData,
-    options: FlowOptions,
-    clickMode: ClickMode,
     surface: HTMLImageElement,
     texture: HTMLImageElement,
+    options: FlowOptions,
+    markers: Array<Marker>,
+    setMarkers: (markers: Array<Marker>) => void,
+    setCurrMarker: (ind: number) => void,
+    setClickMode: (mode: ClickMode) => void,
+    setOptions: (options: FlowOptions) => void,
+    clickMode: ClickMode,
+    colorMode: ColorMode,
     timeRef: MutableRefObject<number>,
     speedRef: MutableRefObject<number>
 }
 
-const Vis: FC<VisProps> = props => {
+const Vis: FC<VisProps> = ({
+    data, surface, texture, options, markers, setMarkers, setCurrMarker,
+    setClickMode, setOptions, clickMode, colorMode, timeRef, speedRef
+}) => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
-    const [markers, setMarkers] = useState<Array<Marker>>([])
-    const [currMarker, setCurrMarker] = useState<number>(-1)
-    const [colorMode, setColorMode] = useState<ColorMode>('gray')
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
-
-    const deleteMarker = (ind: number): void => {
-        markers.splice(ind, 1)
-        setMarkers([...markers])
-        if (ind === markers.length) {
-            setCurrMarker(ind - 1)
-        }
-    }
 
     // setup resize handler
     useEffect(() => {
@@ -53,34 +51,34 @@ const Vis: FC<VisProps> = props => {
     // init vis renderer
     useEffect(() => {
         if (canvasRef.current) {
-            visRef.current = new VisRenderer(canvasRef.current, props.surface, props.texture)
+            visRef.current = new VisRenderer(canvasRef.current, surface, texture)
             // setup handlers returns closure to cleanup handlers
             // return to useEffect to prevent accumulating excess handlers
             return visRef.current.setupEventHandlers(canvasRef.current)
         }
-    }, [props.surface, props.texture])
+    }, [surface, texture])
 
     // recalculate flow on data / option changes
     useEffect(() => {
         if (visRef.current) {
-            visRef.current.calcFlow(props.data, props.options)
+            visRef.current.calcFlow(data, options)
         }
-    }, [props.data, props.options])
+    }, [data, options])
 
     // set click mode
     useEffect(() => {
         if (!visRef.current) { return }
-        const removeHandlers = visRef.current.setClickMode(props.clickMode)
+        const removeHandlers = visRef.current.setClickMode(clickMode)
         return () => {
             if (removeHandlers) {
                 removeHandlers()
             }
         }
-    }, [props.clickMode])
+    }, [clickMode])
 
     // add handler for marker placement mode
     useEffect(() => {
-        if (props.clickMode !== 'mark' || !canvasRef.current) { return }
+        if (clickMode !== 'mark' || !canvasRef.current) { return }
 
         const placeMarker = (e: MouseEvent): void => {
             if (!visRef.current) { return }
@@ -107,7 +105,7 @@ const Vis: FC<VisProps> = props => {
         return () => {
             canvas.removeEventListener('mousedown', placeMarker)
         }
-    }, [markers, props.clickMode, colorMode])
+    }, [markers, clickMode, colorMode, setCurrMarker, setMarkers])
 
     useEffect(() => {
         for (let i = 0; i < markers.length; i++) {
@@ -132,10 +130,10 @@ const Vis: FC<VisProps> = props => {
             lastT = time
             // prevent large time updates after freeze / pause
             if (elapsed < 1) {
-                props.timeRef.current += elapsed * props.speedRef.current
+                timeRef.current += elapsed * speedRef.current
             }
 
-            visRef.current.draw(props.data, props.options, props.timeRef.current, markers)
+            visRef.current.draw(data, options, timeRef.current, markers)
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
         frameIdRef.current = window.requestAnimationFrame(draw)
@@ -143,10 +141,18 @@ const Vis: FC<VisProps> = props => {
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
-    }, [props.data, props.options, props.timeRef, props.speedRef, markers])
+    }, [data, options, timeRef, speedRef, markers])
 
     return (
         <section>
+            <Menu
+                options={options}
+                clickMode={clickMode}
+                setOptions={setOptions}
+                setClickMode={setClickMode}
+                timeRef={timeRef}
+                speedRef={speedRef}
+            />
             <canvas
                 className={styles.canvas}
                 ref={canvasRef}
@@ -154,17 +160,6 @@ const Vis: FC<VisProps> = props => {
                 height={height * window.devicePixelRatio}
                 style={{ width: `${width}px`, height: `${height}px` }}
             />
-            { (markers[currMarker] || currMarker === ALL_MARKER_IND) &&
-                <MarkerPlots
-                    markers={markers}
-                    currMarker={currMarker}
-                    setCurrMarker={setCurrMarker}
-                    deleteMarker={deleteMarker}
-                    data={props.data}
-                    options={props.options}
-                    colorMode={colorMode}
-                    setColorMode={setColorMode}
-                /> }
         </section>
     )
 }
