@@ -9,7 +9,8 @@ import fragSource from '../shaders/worms-frag.glsl?raw'
 
 const WORM_SPEED = 1
 const MIN_WORM_SPEED = 0.2
-const WORM_LIFESPAN = 5
+const WORM_LIFESPAN = 30
+const WORM_PERSIST_LIFESPAN = 5
 const WORM_HISTORY = 600
 
 // floats per vertex for attribs
@@ -130,7 +131,7 @@ class Worm {
         this.time = time
         this.lifespan += elapsed
 
-        if (this.lifespan >= WORM_LIFESPAN && this.mode === 'persist') {
+        if (this.lifespan >= WORM_PERSIST_LIFESPAN && this.mode === 'persist') {
             this.x = this.startX
             this.y = this.startY
             this.lifespan = 0
