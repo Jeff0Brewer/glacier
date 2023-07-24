@@ -18,20 +18,20 @@ type VisProps = {
     markers: Array<Marker>,
     setMarkers: (markers: Array<Marker>) => void,
     setCurrMarker: (ind: number) => void,
-    setClickMode: (mode: ClickMode) => void,
     setOptions: (options: FlowOptions) => void,
-    clickMode: ClickMode,
     colorMode: ColorMode,
     timeRef: MutableRefObject<number>,
     speedRef: MutableRefObject<number>
 }
 
 const Vis: FC<VisProps> = ({
-    data, surface, texture, options, markers, setMarkers, setCurrMarker,
-    setClickMode, setOptions, clickMode, colorMode, timeRef, speedRef
+    data, surface, texture, options, markers, setMarkers,
+    setCurrMarker, setOptions, colorMode, timeRef, speedRef
 }) => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
+    const [clickMode, setClickMode] = useState<ClickMode>('rotate')
+    const lastSelectedClickModeRef = useRef<ClickMode>(clickMode)
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
@@ -143,13 +143,50 @@ const Vis: FC<VisProps> = ({
         }
     }, [data, options, timeRef, speedRef, markers])
 
+    // set click mode with modifier keys
+    useEffect(() => {
+        const keyDown = (e: KeyboardEvent): void => {
+            switch (e.key) {
+                case ' ':
+                    setClickMode('pan')
+                    break
+                case 'Shift':
+                    setClickMode('rotate')
+                    break
+                case 'q':
+                    setClickMode('mark')
+                    break
+                case 'w':
+                    setClickMode('worm')
+            }
+        }
+        const keyUp = (e: KeyboardEvent): void => {
+            if ([' ', 'Shift', 'q', 'w'].includes(e.key)) {
+                setClickMode(lastSelectedClickModeRef.current)
+            }
+        }
+        window.addEventListener('keydown', keyDown)
+        window.addEventListener('keyup', keyUp)
+        return (): void => {
+            window.removeEventListener('keydown', keyDown)
+            window.removeEventListener('keyup', keyUp)
+        }
+    }, [])
+
+    // store last click mode selected from interface to revert
+    // back to on modifier key release
+    const selectClickMode = (mode: ClickMode): void => {
+        lastSelectedClickModeRef.current = mode
+        setClickMode(mode)
+    }
+
     return (
         <section>
             <Menu
                 options={options}
                 clickMode={clickMode}
                 setOptions={setOptions}
-                setClickMode={setClickMode}
+                setClickMode={selectClickMode}
                 timeRef={timeRef}
                 speedRef={speedRef}
             />
