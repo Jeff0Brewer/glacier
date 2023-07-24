@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, FC } from 'react'
 import { loadDataset, loadImageAsync } from '../lib/data-load'
 import type { ModelData } from '../lib/data-load'
 import type { FlowOptions } from '../lib/flow-calc'
-import type { ClickMode } from '../components/vis'
 import type { Marker, ColorMode } from '../vis/markers'
 import MarkerPlots, { ALL_MARKER_IND } from '../components/charts'
 import Vis from '../components/vis'
@@ -24,14 +23,6 @@ const App: FC = () => {
     const timeRef = useRef<number>(0)
     const speedRef = useRef<number>(1)
 
-    const deleteMarker = (ind: number): void => {
-        markers.splice(ind, 1)
-        setMarkers([...markers])
-        if (ind === markers.length) {
-            setCurrMarker(ind - 1)
-        }
-    }
-
     const getData = async (): Promise<void> => {
         const [data, surface, texture] = await Promise.all([
             loadDataset(DATA_DIR),
@@ -41,6 +32,14 @@ const App: FC = () => {
         setData(data)
         setSurface(surface)
         setTexture(texture)
+    }
+
+    const deleteMarker = (ind: number): void => {
+        markers.splice(ind, 1)
+        setMarkers([...markers])
+        if (ind === markers.length) {
+            setCurrMarker(ind - 1)
+        }
     }
 
     useEffect(() => {
@@ -82,7 +81,3 @@ const App: FC = () => {
 }
 
 export default App
-
-export type {
-    ClickMode
-}
