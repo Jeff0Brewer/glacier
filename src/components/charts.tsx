@@ -1,4 +1,4 @@
-import { useState, useEffect, FC } from 'react'
+import { useState, useEffect, useCallback, FC } from 'react'
 import { vec3 } from 'gl-matrix'
 import { IoMdClose } from 'react-icons/io'
 import { Chart, LineElement, CategoryScale, LinearScale, PointElement, Title } from 'chart.js'
@@ -124,37 +124,37 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         )
     }
 
-    useEffect(() => {
-        if (props.currMarker === ALL_MARKER_IND) {
-            const labels = Array.from({ length: CHART_LEN }, (_, i) => i * CHART_TIMESTEP)
-            const easts = []
-            const norths = []
-            const ups = []
-            for (const marker of props.markers) {
-                const thisEast = []
-                const thisNorth = []
-                const thisUp = []
-                for (let i = 0; i < CHART_LEN; i++) {
-                    const vel = calcFlowVelocity(
-                        props.data,
-                        props.options,
-                        marker.y,
-                        marker.x,
-                        i * CHART_TIMESTEP
-                    )
-                    thisEast.push(vel[0])
-                    thisNorth.push(vel[1])
-                    thisUp.push(vel[2])
-                }
-                easts.push(thisEast)
-                norths.push(thisNorth)
-                ups.push(thisUp)
+    const getMultiCharts = useCallback((): void => {
+        const labels = Array.from({ length: CHART_LEN }, (_, i) => i * CHART_TIMESTEP)
+        const easts = []
+        const norths = []
+        const ups = []
+        for (const marker of props.markers) {
+            const thisEast = []
+            const thisNorth = []
+            const thisUp = []
+            for (let i = 0; i < CHART_LEN; i++) {
+                const vel = calcFlowVelocity(
+                    props.data,
+                    props.options,
+                    marker.y,
+                    marker.x,
+                    i * CHART_TIMESTEP
+                )
+                thisEast.push(vel[0])
+                thisNorth.push(vel[1])
+                thisUp.push(vel[2])
             }
-            setEast(getChartMultiData(labels, easts, props.markers))
-            setNorth(getChartMultiData(labels, norths, props.markers))
-            setUp(getChartMultiData(labels, ups, props.markers))
-            return
+            easts.push(thisEast)
+            norths.push(thisNorth)
+            ups.push(thisUp)
         }
+        setEast(getChartMultiData(labels, easts, props.markers))
+        setNorth(getChartMultiData(labels, norths, props.markers))
+        setUp(getChartMultiData(labels, ups, props.markers))
+    }, [props.markers, props.data, props.options])
+
+    const getSingleCharts = useCallback((): void => {
         const labels = []
         const east = []
         const north = []
@@ -178,12 +178,20 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         setUp(getChartSingleData(labels, up))
     }, [props.markers, props.currMarker, props.data, props.options])
 
+    useEffect(() => {
+        if (props.currMarker === ALL_MARKER_IND) {
+            getMultiCharts()
+        } else {
+            getSingleCharts()
+        }
+    }, [getMultiCharts, getSingleCharts, props.currMarker])
+
     return (
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>
                 <div className={styles.tabWrap}>
                     <a
-                        className={`${styles.tab} ${styles.allTab}`}
+                        className={`${styles.allTab} ${props.currMarker === ALL_MARKER_IND ? styles.tab : styles.unselected}`}
                         onClick={(): void => props.setCurrMarker(ALL_MARKER_IND)}
                     > ALL </a>
                     { props.markers.map((marker: Marker, i: number) => {
