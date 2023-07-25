@@ -19,6 +19,7 @@ void main() {
     pos.z += notBottom * height;
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
     vNormal = normal;
+    // use color as flag to check if accent color should be used
     if (color.x == 1.0 && color.y == 0.0 && color.z == 1.0) {
         vColor = accent;
     } else {
