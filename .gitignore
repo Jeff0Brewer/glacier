@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
+README.md
 notes.md
 public/data
