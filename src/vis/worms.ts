@@ -85,14 +85,13 @@ class Worm {
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
         const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
         vec3.multiply(velocity, velocity, [1, -1, 1])
-        let speed = vec3.length(velocity)
+        const speed = vec3.length(velocity)
         if (speed < MIN_WORM_SPEED) {
             vec3.scale(
                 velocity,
                 vec3.normalize(velocity, velocity),
                 MIN_WORM_SPEED
             )
-            speed = MIN_WORM_SPEED // for lifespan tracking
         }
 
         const lastX = this.x
@@ -187,6 +186,7 @@ class Worms {
             surface
         )
 
+        // get closure to bind vertex attribs
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindSegment = initAttribute(gl, this.program, 'segment', SEG_FPV, ALL_FPV, POS_FPV)
         const bindPerp = initAttribute(gl, this.program, 'perp', PRP_FPV, ALL_FPV, POS_FPV + SEG_FPV)
@@ -196,6 +196,7 @@ class Worms {
             bindPerp()
         }
 
+        // get uniform locations
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
@@ -205,6 +206,7 @@ class Worms {
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
         const uHistory = gl.getUniformLocation(this.program, 'history')
 
+        // init uniforms
         gl.uniformMatrix4fv(uModelMatrix, false, model)
         gl.uniformMatrix4fv(uViewMatrix, false, view)
         gl.uniformMatrix4fv(uProjMatrix, false, proj)
@@ -213,6 +215,7 @@ class Worms {
         gl.uniform1f(uHeightScale, heightScale)
         gl.uniform1f(uHistory, WORM_HISTORY)
 
+        // get closures to set uniforms
         this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
