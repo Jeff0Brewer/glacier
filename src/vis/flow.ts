@@ -127,5 +127,3 @@ class FlowLines {
 }
 
 export default FlowLines
-
-export { ALL_FPV }
