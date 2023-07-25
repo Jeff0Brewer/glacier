@@ -16,6 +16,7 @@ const CHART_LEN = Math.ceil(Math.max(PERIOD_1, PERIOD_2, PERIOD_3))
 const CHART_TIMESTEP = 1
 const CHART_COLOR0 = 'rgb(0, 0, 0)'
 const CHART_COLOR1 = 'rgb(200, 200, 200)'
+const ALL_MARKER_IND = -5 // curr marker index to plot all markers
 
 const getChartOptions = (title: string): ChartOptions<'line'> => {
     return {
@@ -23,29 +24,17 @@ const getChartOptions = (title: string): ChartOptions<'line'> => {
         maintainAspectRatio: false,
         backgroundColor: 'transparent',
         elements: {
-            point: {
-                radius: 0
-            },
-            line: {
-                borderWidth: 1
-            }
+            point: { radius: 0 },
+            line: { borderWidth: 1 }
         },
         scales: {
             x: {
-                border: {
-                    color: CHART_COLOR0
-                },
-                ticks: {
-                    display: false
-                },
-                grid: {
-                    display: false
-                }
+                border: { color: CHART_COLOR0 },
+                ticks: { display: false },
+                grid: { display: false }
             },
             y: {
-                border: {
-                    color: CHART_COLOR0
-                },
+                border: { color: CHART_COLOR0 },
                 ticks: {
                     color: CHART_COLOR0,
                     maxTicksLimit: 6
@@ -73,7 +62,10 @@ const colorVec3ToRGB = (color: vec3): string => {
     return `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`
 }
 
-const getChartSingleData = (labels: Array<number>, data: Array<number>): ChartData<'line'> => {
+const getChartSingleData = (
+    labels: Array<number>,
+    data: Array<number>
+): ChartData<'line'> => {
     return {
         labels,
         datasets: [{
@@ -98,8 +90,6 @@ const getChartMultiData = (
     return { labels, datasets }
 }
 
-const ALL_MARKER_IND = -5 // curr marker index to plot all markers
-
 type MarkerPlotsProps = {
     markers: Array<Marker>,
     currMarker: number,
@@ -111,17 +101,16 @@ type MarkerPlotsProps = {
     setColorMode: (mode: ColorMode) => void
 }
 
-const MarkerPlots: FC<MarkerPlotsProps> = props => {
+const MarkerPlots: FC<MarkerPlotsProps> = ({
+    markers, currMarker, setCurrMarker, deleteMarker,
+    data, options, colorMode, setColorMode
+}) => {
     const [east, setEast] = useState<ChartData<'line'>>({ datasets: [] })
     const [north, setNorth] = useState<ChartData<'line'>>({ datasets: [] })
     const [up, setUp] = useState<ChartData<'line'>>({ datasets: [] })
 
     const toggleColorMode = (): void => {
-        props.setColorMode(
-            props.colorMode === 'gray'
-                ? 'random'
-                : 'gray'
-        )
+        setColorMode(colorMode === 'gray' ? 'random' : 'gray')
     }
 
     const getMultiCharts = useCallback((): void => {
@@ -129,14 +118,14 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         const easts = []
         const norths = []
         const ups = []
-        for (const marker of props.markers) {
+        for (const marker of markers) {
             const thisEast = []
             const thisNorth = []
             const thisUp = []
             for (let i = 0; i < CHART_LEN; i++) {
                 const vel = calcFlowVelocity(
-                    props.data,
-                    props.options,
+                    data,
+                    options,
                     marker.y,
                     marker.x,
                     i * CHART_TIMESTEP
@@ -149,10 +138,10 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
             norths.push(thisNorth)
             ups.push(thisUp)
         }
-        setEast(getChartMultiData(labels, easts, props.markers))
-        setNorth(getChartMultiData(labels, norths, props.markers))
-        setUp(getChartMultiData(labels, ups, props.markers))
-    }, [props.markers, props.data, props.options])
+        setEast(getChartMultiData(labels, easts, markers))
+        setNorth(getChartMultiData(labels, norths, markers))
+        setUp(getChartMultiData(labels, ups, markers))
+    }, [markers, data, options])
 
     const getSingleCharts = useCallback((): void => {
         const labels = []
@@ -161,10 +150,10 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
         const up = []
         for (let i = 0; i < CHART_LEN; i++) {
             const vel = calcFlowVelocity(
-                props.data,
-                props.options,
-                props.markers[props.currMarker].y,
-                props.markers[props.currMarker].x,
+                data,
+                options,
+                markers[currMarker].y,
+                markers[currMarker].x,
                 i * CHART_TIMESTEP
             )
             labels.push(i * CHART_TIMESTEP)
@@ -172,30 +161,29 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
             north.push(vel[1])
             up.push(vel[2])
         }
-
         setEast(getChartSingleData(labels, east))
         setNorth(getChartSingleData(labels, north))
         setUp(getChartSingleData(labels, up))
-    }, [props.markers, props.currMarker, props.data, props.options])
+    }, [markers, currMarker, data, options])
 
     useEffect(() => {
-        if (props.currMarker === ALL_MARKER_IND) {
+        if (currMarker === ALL_MARKER_IND) {
             getMultiCharts()
         } else {
             getSingleCharts()
         }
-    }, [getMultiCharts, getSingleCharts, props.currMarker])
+    }, [getMultiCharts, getSingleCharts, currMarker])
 
     return (
         <section className={styles.markerInterface}>
             <nav className={styles.markerSelect}>
                 <div className={styles.tabWrap}>
                     <a
-                        className={`${styles.allTab} ${props.currMarker === ALL_MARKER_IND ? styles.tab : styles.unselected}`}
-                        onClick={(): void => props.setCurrMarker(ALL_MARKER_IND)}
+                        className={`${styles.allTab} ${currMarker === ALL_MARKER_IND ? styles.tab : styles.unselected}`}
+                        onClick={(): void => setCurrMarker(ALL_MARKER_IND)}
                     > ALL </a>
-                    { props.markers.map((marker: Marker, i: number) => {
-                        const isCurrent = props.currMarker === i
+                    { markers.map((marker: Marker, i: number) => {
+                        const isCurrent = currMarker === i
                         return (
                             <a
                                 key={i}
@@ -205,14 +193,14 @@ const MarkerPlots: FC<MarkerPlotsProps> = props => {
                                 }}
                                 className={isCurrent ? styles.tab : styles.unselected}
                                 onClick={isCurrent
-                                    ? (): void => props.deleteMarker(i)
-                                    : (): void => props.setCurrMarker(i)}
+                                    ? (): void => deleteMarker(i)
+                                    : (): void => setCurrMarker(i)}
                             >{ isCurrent ? <IoMdClose /> : ''}</a>
                         )
                     })}
                 </div>
                 <a className={styles.colorToggle} onClick={toggleColorMode}>
-                    COLORS: {props.colorMode}
+                    COLORS: {colorMode}
                 </a>
             </nav>
             <div className={styles.charts}>
