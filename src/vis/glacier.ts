@@ -70,6 +70,7 @@ class Glacier {
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
     }
 
+    // test intersection between ray and glacier surface
     hitTest (origin: vec3, direction: vec3): vec3 | null {
         for (let i = 0; i < this.posVerts.length; i += POS_FPV) {
             // get triangle points
@@ -81,6 +82,11 @@ class Glacier {
             const intersect = triangleRayIntersect(origin, direction, t0, t1, t2)
 
             // early return if intersection found
+            // may result in incorrect depth position if multiple triangles
+            // intersect same ray, but improves performance and works for
+            // mostly flat glacier surface
+            // can fix easily by checking all triangles and comparing depth of
+            // all intersections relative to ray origin
             if (intersect) {
                 return intersect
             }
@@ -100,7 +106,8 @@ class Glacier {
     }
 }
 
-// from width and height, create plane triangle strip with position and tex coordinate attributes
+// from width and height, create height mapped surface triangle strip
+// with position and normal attributes
 const getSurfaceVerts = (
     img: HTMLImageElement,
     heightScale: number
@@ -137,6 +144,8 @@ const getSurfaceVerts = (
         // cross perp vecs to get norm
         const norm = vec3.cross(vec3.create(), xVec, yVec)
         vec3.normalize(norm, norm)
+
+        // prevent NaN values at edges of surface
         if (Number.isNaN(norm[0])) {
             vec3.copy(norm, [0, 0, 1])
         }
