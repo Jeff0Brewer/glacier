@@ -3,18 +3,18 @@ import type { ChangeEvent, MutableRefObject } from 'react'
 import { PERIOD_1, PERIOD_2, PERIOD_3 } from '../lib/flow-calc'
 import styles from '../styles/timeline.module.css'
 
-type TimelineProps = {
-    timeRef: MutableRefObject<number>,
-    speedRef: MutableRefObject<number>
-}
-
 const updateBarWidth = (bar: HTMLDivElement | null, time: number, maxTime: number): void => {
     if (!bar) { return }
     const modTime = time % maxTime
     bar.style.width = `${modTime / maxTime * 100}%`
 }
 
-const Timeline: FC<TimelineProps> = props => {
+type TimelineProps = {
+    timeRef: MutableRefObject<number>,
+    speedRef: MutableRefObject<number>
+}
+
+const Timeline: FC<TimelineProps> = ({ timeRef, speedRef }) => {
     const barRef = useRef<HTMLDivElement>(null)
     const timelineRef = useRef<HTMLDivElement>(null)
     const timeoutIdRef = useRef<number>(-1)
@@ -27,32 +27,33 @@ const Timeline: FC<TimelineProps> = props => {
         const onClick = (e: MouseEvent): void => {
             const rect = timeline.getBoundingClientRect()
             const xPercentage = (e.clientX - rect.left) / rect.width
-            props.timeRef.current = maxPeriod * xPercentage
-            updateBarWidth(barRef.current, props.timeRef.current, maxPeriod)
+            timeRef.current = maxPeriod * xPercentage
+            updateBarWidth(barRef.current, timeRef.current, maxPeriod)
         }
         timeline.addEventListener('mousedown', onClick)
 
         return () => {
             timeline.removeEventListener('mousedown', onClick)
         }
-    }, [props.timeRef, maxPeriod])
+    }, [timeRef, maxPeriod])
 
     useEffect(() => {
+        // update bar width in timeout to get value
+        // from ref instead of constant state updates
         const update = (): void => {
-            updateBarWidth(barRef.current, props.timeRef.current, maxPeriod)
+            updateBarWidth(barRef.current, timeRef.current, maxPeriod)
             timeoutIdRef.current = window.setTimeout(update, 1000)
         }
         update()
-
         return () => {
             window.clearTimeout(timeoutIdRef.current)
         }
-    }, [props.timeRef, maxPeriod])
+    }, [timeRef, maxPeriod])
 
     const inputSpeed = (e: ChangeEvent<HTMLInputElement>): void => {
         const speed = parseFloat(e.target.value)
         if (!Number.isNaN(speed) && speed > 0) {
-            props.speedRef.current = speed
+            speedRef.current = speed
         }
     }
 

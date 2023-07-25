@@ -16,18 +16,18 @@ type VisProps = {
     surface: HTMLImageElement,
     texture: HTMLImageElement,
     options: FlowOptions,
+    setOptions: (options: FlowOptions) => void,
     markers: Array<Marker>,
     setMarkers: (markers: Array<Marker>) => void,
     setCurrMarker: (ind: number) => void,
-    setOptions: (options: FlowOptions) => void,
     colorMode: ColorMode,
     timeRef: MutableRefObject<number>,
     speedRef: MutableRefObject<number>
 }
 
 const Vis: FC<VisProps> = ({
-    data, surface, texture, options, markers, setMarkers,
-    setCurrMarker, setOptions, colorMode, timeRef, speedRef
+    data, surface, texture, options, setOptions, markers,
+    setMarkers, setCurrMarker, colorMode, timeRef, speedRef
 }) => {
     const [width, setWidth] = useState<number>(window.innerWidth)
     const [height, setHeight] = useState<number>(window.innerHeight)
@@ -88,16 +88,48 @@ const Vis: FC<VisProps> = ({
         }
     }, [data, options])
 
-    // set click mode
+    // set modes in vis renderer on state changes
     useEffect(() => {
         if (!visRef.current) { return }
         const removeHandlers = visRef.current.setClickMode(clickMode, wormMode)
         return () => {
+            // vis renderer setClickMode returns null on marker mode
+            // since markers handled seperately
             if (removeHandlers) {
                 removeHandlers()
             }
         }
     }, [clickMode, wormMode])
+
+    // add handler for marker placement mode
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (clickMode !== 'mark' || !canvas) { return }
+
+        const placeMarker = (e: MouseEvent): void => {
+            if (!visRef.current) { return }
+            // convert pixel coords to gl clip space
+            const x = e.clientX / window.innerWidth * 2 - 1
+            const y = (1 - e.clientY / window.innerHeight) * 2 - 1
+
+            const position = visRef.current.unprojectMouse(x, y)
+            if (position) {
+                const marker: Marker = {
+                    x: position[0],
+                    y: position[1],
+                    z: position[2],
+                    color: getColor(colorMode, markers.length)
+                }
+                setMarkers([...markers, marker])
+                setCurrMarker(markers.length)
+            }
+        }
+
+        canvas.addEventListener('mousedown', placeMarker)
+        return () => {
+            canvas.removeEventListener('mousedown', placeMarker)
+        }
+    }, [markers, clickMode, colorMode, setCurrMarker, setMarkers])
 
     // set click mode with modifier keys
     useEffect(() => {
@@ -121,6 +153,7 @@ const Vis: FC<VisProps> = ({
                 setClickMode(lastSelectedClickModeRef.current)
             }
         }
+
         window.addEventListener('keydown', keyDown)
         window.addEventListener('keyup', keyUp)
         return (): void => {
@@ -129,37 +162,7 @@ const Vis: FC<VisProps> = ({
         }
     }, [])
 
-    // add handler for marker placement mode
-    useEffect(() => {
-        if (clickMode !== 'mark' || !canvasRef.current) { return }
-
-        const placeMarker = (e: MouseEvent): void => {
-            if (!visRef.current) { return }
-            // convert pixel coords to gl clip space
-            const x = e.clientX / window.innerWidth * 2 - 1
-            const y = (1 - e.clientY / window.innerHeight) * 2 - 1
-
-            const position = visRef.current.unprojectMouse(x, y)
-            if (position) {
-                const marker: Marker = {
-                    x: position[0],
-                    y: position[1],
-                    z: position[2],
-                    color: getColor(colorMode, markers.length)
-                }
-                setMarkers([...markers, marker])
-                setCurrMarker(markers.length)
-            }
-        }
-
-        const canvas = canvasRef.current
-        canvas.addEventListener('mousedown', placeMarker)
-
-        return () => {
-            canvas.removeEventListener('mousedown', placeMarker)
-        }
-    }, [markers, clickMode, colorMode, setCurrMarker, setMarkers])
-
+    // update marker colors on color mode toggle
     useEffect(() => {
         for (let i = 0; i < markers.length; i++) {
             markers[i].color = getColor(colorMode, i)
@@ -168,7 +171,8 @@ const Vis: FC<VisProps> = ({
 
         // disable exhaustive deps to exclude markers state
         // including markers would cause infinite loop
-        // and colors to be reset on any marker addition / deletion
+        // and colors to be reset on any marker state change
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [colorMode])
 
@@ -189,8 +193,8 @@ const Vis: FC<VisProps> = ({
             visRef.current.draw(data, options, timeRef.current, markers)
             frameIdRef.current = window.requestAnimationFrame(draw)
         }
-        frameIdRef.current = window.requestAnimationFrame(draw)
 
+        frameIdRef.current = window.requestAnimationFrame(draw)
         return (): void => {
             window.cancelAnimationFrame(frameIdRef.current)
         }
