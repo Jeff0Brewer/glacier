@@ -42,6 +42,7 @@ class MarkerPin {
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
         this.numVertex = verts.length / ALL_FPV
 
+        // get closure to bind vertex attribs
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindNormal = initAttribute(gl, this.program, 'normal', NRM_FPV, ALL_FPV, POS_FPV)
         const bindColor = initAttribute(gl, this.program, 'color', COL_FPV, ALL_FPV, POS_FPV + NRM_FPV)
@@ -51,6 +52,7 @@ class MarkerPin {
             bindColor()
         }
 
+        // get uniform locations
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
@@ -59,11 +61,13 @@ class MarkerPin {
         const uAccent = gl.getUniformLocation(this.program, 'accent')
         const uMarkerPos = gl.getUniformLocation(this.program, 'markerPos')
 
+        // init uniforms
         gl.uniformMatrix4fv(uModelMatrix, false, model)
         gl.uniformMatrix4fv(uViewMatrix, false, view)
         gl.uniformMatrix4fv(uProjMatrix, false, proj)
         gl.uniformMatrix4fv(uScaleMatrix, false, scale)
 
+        // get closures to set uniforms which may change
         this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
@@ -93,6 +97,8 @@ const clamp = (val: number, min: number, max: number): number => {
     return Math.min(Math.max(val, min), max)
 }
 
+// balloon width as a function of vertical position
+// used for warping icosphere into balloon shape
 const ballonWidth = (z: number): number => {
     return (4 - Math.pow((Math.pow((1 - z) * 64, 0.3333) - 2), 2)) * 0.25
 }
@@ -119,6 +125,7 @@ const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHe
         vert[ind++] = cb
     }
 
+    // add pin vertices as cylinder
     const angleInc = 2 * Math.PI / (detail - 1)
     for (let angle = 0; angle <= 2 * Math.PI; angle += angleInc) {
         const ax = Math.cos(angle)
@@ -137,6 +144,7 @@ const getPinVerts = (detail: number, pinWidth: number, headWidth: number, headHe
         setVert(nx, ny, topZ, anx, any, 0, 0, 0, 0)
     }
 
+    // add balloon vertices from warping icosphere
     const headZ = topZ - BALLOON_HEIGHT * 0.5
     for (let ti = 0; ti < ico.triangles.length; ti++) {
         for (let vi = 0; vi < 3; vi++) {

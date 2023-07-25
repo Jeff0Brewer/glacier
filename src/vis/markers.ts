@@ -73,6 +73,7 @@ class Markers {
         const vels: Array<vec3> = markers.map(m =>
             calcFlowVelocity(data, options, m.y, m.x, time)
         )
+        // draw bases and pins seperately to prevent excess gl bind operations
         this.base.bind(gl)
         for (let i = 0; i < markers.length; i++) {
             this.base.draw(gl, markers[i], vels[i])

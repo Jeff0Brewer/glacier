@@ -35,6 +35,7 @@ class MarkerBase {
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW)
         this.numVertex = verts.length / ALL_FPV
 
+        // get closure to bind vertex attribs
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
         const bindNormal = initAttribute(gl, this.program, 'normal', NRM_FPV, ALL_FPV, POS_FPV)
         this.bindAttrib = (): void => {
@@ -42,6 +43,7 @@ class MarkerBase {
             bindNormal()
         }
 
+        // get uniform locations
         const uModelMatrix = gl.getUniformLocation(this.program, 'modelMatrix')
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
@@ -49,11 +51,13 @@ class MarkerBase {
         const uMarkerPos = gl.getUniformLocation(this.program, 'markerPos')
         const uBaseRotation = gl.getUniformLocation(this.program, 'baseRotation')
 
+        // init uniforms
         gl.uniformMatrix4fv(uModelMatrix, false, model)
         gl.uniformMatrix4fv(uViewMatrix, false, view)
         gl.uniformMatrix4fv(uProjMatrix, false, proj)
         gl.uniformMatrix4fv(uScaleMatrix, false, scale)
 
+        // get closures to easily set uniforms that may change
         this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
@@ -115,18 +119,12 @@ const getBaseVerts = (radius: number): Float32Array => {
     for (let ti = 0; ti < ico.triangles.length; ti++) {
         for (let vi = 0; vi < 3; vi++) {
             let [x, y, z] = ico.vertices[ico.triangles[ti][vi]]
+            // warp icosphere to create arrow in + x/y
             if (x > 0 && y > 0) {
                 x = 1
                 y = 1
             }
-            setVert(
-                x * radius,
-                y * radius,
-                Math.max(z, 0) * radius,
-                x,
-                y,
-                z
-            )
+            setVert(x * radius, y * radius, Math.max(z, 0) * radius, x, y, z)
         }
     }
 
