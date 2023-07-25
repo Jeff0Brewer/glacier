@@ -36,6 +36,7 @@ class VisRenderer {
 
     constructor (canvas: HTMLCanvasElement, surface: HTMLImageElement, texture: HTMLImageElement) {
         this.time = 0
+
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.BLEND)
@@ -52,6 +53,7 @@ class VisRenderer {
         const aspect = canvas.width / canvas.height
         this.proj = mat4.perspective(mat4.create(), FOV, aspect, NEAR, FAR)
 
+        // scale matrix converting texture / dataset pixel coords into gl coords
         const scaleValue = 1 / ((WIDTH + HEIGHT) / 2)
         this.scale = mat4.translate(
             mat4.create(),
@@ -195,10 +197,6 @@ class VisRenderer {
         return this.glacier.hitTest(origin, direction)
     }
 
-    clearWorms (): void {
-        this.worms.clearWorms()
-    }
-
     placeWormMouse (x: number, y: number, mode: WormMode): void {
         const pos = this.unprojectMouse(x, y)
         if (pos) {
@@ -208,6 +206,10 @@ class VisRenderer {
 
     placeWorm (x: number, y: number, mode: WormMode): void {
         this.worms.placeWorm(this.gl, [x, y, 0], this.time, mode)
+    }
+
+    clearWorms (): void {
+        this.worms.clearWorms()
     }
 
     calcFlow (data: ModelData, options: FlowOptions): void {
