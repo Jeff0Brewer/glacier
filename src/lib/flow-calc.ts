@@ -1,11 +1,6 @@
 import { vec3 } from 'gl-matrix'
 import type { ModelData } from '../lib/data-load'
 
-// values from legacy code, investigate source
-const PERIOD_1 = 12.42
-const PERIOD_2 = 25.82
-const PERIOD_3 = 354.48
-
 type FlowOptions = {
     vel: boolean,
     p1: boolean,
@@ -13,6 +8,11 @@ type FlowOptions = {
     p3: boolean
 }
 type FlowOptionField = 'vel' | 'p1' | 'p2' | 'p3'
+
+// values from legacy code, investigate source
+const PERIOD_1 = 12.42
+const PERIOD_2 = 25.82
+const PERIOD_3 = 354.48
 
 const calcSinComp = (amp: number, phase: number, period: number, t: number): number => {
     return amp * Math.sin((Math.PI * 2 / period) * t + phase)
@@ -24,7 +24,7 @@ const calcFlowVelocity = (data: ModelData, options: FlowOptions, x: number, y: n
     let n = 0 // north
     let u = 0 // up
 
-    // round coords to whole values for 2D array indexing
+    // round coords to integer values for 2D array indexing
     x = Math.round(x)
     y = Math.round(y)
 
