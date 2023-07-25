@@ -99,10 +99,7 @@ const calcFlow = (
         }
     }
 
-    // wrapping each flow line with transparent vertices
-    // affords single triangle strip draw call with disconnected flow lines
     length += lines.length * VERT_PER_POSITION * ALL_FPV * 2
-
     const verts = new Float32Array(length)
     let bufInd = 0
 
@@ -119,7 +116,8 @@ const calcFlow = (
         verts[bufInd++] = 0
     }
 
-    // fill buffer with each line wrapped in transparent verts
+    // fill buffer with each flow line wrapped in transparent verts
+    // affords single triangle strip draw call with disconnected flow lines
     for (const line of lines) {
         setTransparentStrip(line[0], line[1])
 
