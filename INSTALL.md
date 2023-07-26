@@ -1,5 +1,5 @@
 # Installation
-- unzip dataset (public/data.zip)
+- unzip dataset (`public/data.zip`)
     - ensure that `public/data/*.png` and `public/data/model/*.utm` files exist
 - `npm install` to install dependencies
 - `npm run dev` to start a development server
