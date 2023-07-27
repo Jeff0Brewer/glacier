@@ -126,6 +126,18 @@
     background-color: #fff;
     z-index: 999;
     font-size: 12px;
-    border-radius: 0 4px 0 0;
+    border-radius: 0 0 0 0;
     width: 60px;
+}
+
+.allTab.tab {
+    background-color: #fff;
+}
+
+.allTab.unselected {
+    background-color: rgba(255,255,255,.1);
+}
+
+.allTab span {
+    top: 6px;
 }

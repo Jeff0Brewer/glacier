@@ -190,7 +190,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                                 style={{
                                     zIndex: 100 - i,
                                 }}
-                                className={isCurrent ? styles.tab : styles.unselected}
+                                className={isCurrent || currMarker === ALL_MARKER_IND ? styles.tab : styles.unselected}
                                 onClick={isCurrent
                                     ? (): void => deleteMarker(i)
                                     : (): void => setCurrMarker(i)}
