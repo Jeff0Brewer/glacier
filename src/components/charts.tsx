@@ -195,7 +195,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                                     ? (): void => deleteMarker(i)
                                     : (): void => setCurrMarker(i)}
                             >
-                            <span className={'makerTabSample'} style={{ color: colorVec3ToRGB(marker.color) }}
+                            <span className='markerTabSample' style={{ color: colorVec3ToRGB(marker.color) }}
                                 >{'◉'}</span>
                             { isCurrent ? <IoMdClose size={9} style={{ background: "rgba(255,255,255,0.8)", color: "black" }}/> : ''}</a>
                         )
