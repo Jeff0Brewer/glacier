@@ -181,7 +181,7 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                     <a
                         className={`${styles.allTab} ${currMarker === ALL_MARKER_IND ? styles.tab : styles.unselected}`}
                         onClick={(): void => setCurrMarker(ALL_MARKER_IND)}
-                    > ALL </a>
+                    > <span>ALL</span> </a>
                     { markers.map((marker: Marker, i: number) => {
                         const isCurrent = currMarker === i
                         return (
@@ -189,18 +189,21 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                                 key={i}
                                 style={{
                                     backgroundColor: colorVec3ToRGB(marker.color),
-                                    zIndex: 100 - i
+                                    zIndex: 100 - i,
+                                    borderTop:   (isCurrent || currMarker === ALL_MARKER_IND)?"0px white solid":"1px white solid",
+                                    borderRight: (isCurrent || currMarker === ALL_MARKER_IND)?"0px white solid":"1px white solid"
                                 }}
                                 className={isCurrent ? styles.tab : styles.unselected}
                                 onClick={isCurrent
                                     ? (): void => deleteMarker(i)
                                     : (): void => setCurrMarker(i)}
-                            >{ isCurrent ? <IoMdClose /> : ''}</a>
+                            >{ isCurrent ? <IoMdClose size={9} style={{ background: "rgba(255,255,255,0.8)", color: "black" }}/> : ''}</a>
                         )
                     })}
                 </div>
                 <a className={styles.colorToggle} onClick={toggleColorMode}>
-                    COLORS: {colorMode}
+                    <span className="settingfieldname">COLORS</span>
+                    <em className="settingfieldvalue">{colorMode}</em>
                 </a>
             </nav>
             <div className={styles.charts}>
