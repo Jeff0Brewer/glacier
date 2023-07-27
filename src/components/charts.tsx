@@ -188,16 +188,16 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                             <a
                                 key={i}
                                 style={{
-                                    backgroundColor: colorVec3ToRGB(marker.color),
                                     zIndex: 100 - i,
-                                    borderTop:   (isCurrent || currMarker === ALL_MARKER_IND)?"0px white solid":"1px white solid",
-                                    borderRight: (isCurrent || currMarker === ALL_MARKER_IND)?"0px white solid":"1px white solid"
                                 }}
                                 className={isCurrent ? styles.tab : styles.unselected}
                                 onClick={isCurrent
                                     ? (): void => deleteMarker(i)
                                     : (): void => setCurrMarker(i)}
-                            >{ isCurrent ? <IoMdClose size={9} style={{ background: "rgba(255,255,255,0.8)", color: "black" }}/> : ''}</a>
+                            >
+                            <span className={'makerTabSample'} style={{ color: colorVec3ToRGB(marker.color) }}
+                                >{'◉'}</span>
+                            { isCurrent ? <IoMdClose size={9} style={{ background: "rgba(255,255,255,0.8)", color: "black" }}/> : ''}</a>
                         )
                     })}
                 </div>
