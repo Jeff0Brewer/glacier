@@ -103,10 +103,11 @@ class FlowLines {
         width: number,
         height: number,
         density: number,
-        history: number
+        history: number,
+        lineWidth: number
     ): void {
         this.worker.postMessage({
-            data, options, width, height, density, history
+            data, options, width, height, density, history, lineWidth
         })
     }
 

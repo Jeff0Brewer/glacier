@@ -5,6 +5,7 @@ import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker, ColorMode } from '../vis/markers'
 import { getColor } from '../vis/markers'
 import Menu from '../components/menu'
+import DevMenu from '../components/dev-menu'
 import VisRenderer from '../vis/vis'
 import styles from '../styles/vis.module.css'
 
@@ -37,6 +38,9 @@ const Vis: FC<VisProps> = ({
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
+
+    const [lineWidth, setLineWidth] = useState<number>(0.3)
+    const [density, setDensity] = useState<number>(0.07)
 
     // store last click mode selected from interface to revert
     // back to on modifier key release
@@ -84,9 +88,9 @@ const Vis: FC<VisProps> = ({
     // recalculate flow on data / option changes
     useEffect(() => {
         if (visRef.current) {
-            visRef.current.calcFlow(data, options)
+            visRef.current.calcFlow(data, options, lineWidth, density)
         }
-    }, [data, options])
+    }, [data, options, lineWidth, density])
 
     // set modes in vis renderer on state changes
     useEffect(() => {
@@ -213,6 +217,12 @@ const Vis: FC<VisProps> = ({
                 placeMarkerWorms={placeMarkerWorms}
                 timeRef={timeRef}
                 speedRef={speedRef}
+            />
+            <DevMenu
+                lineWidth={lineWidth}
+                setLineWidth={setLineWidth}
+                density={density}
+                setDensity={setDensity}
             />
             <canvas
                 className={styles.canvas}
