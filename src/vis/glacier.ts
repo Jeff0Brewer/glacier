@@ -70,6 +70,11 @@ class Glacier {
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
     }
 
+    setTexture (gl: WebGLRenderingContext, texture: HTMLImageElement): void {
+        gl.bindTexture(gl.TEXTURE_2D, this.texture)
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture)
+    }
+
     // test intersection between ray and glacier surface
     hitTest (origin: vec3, direction: vec3): vec3 | null {
         for (let i = 0; i < this.posVerts.length; i += POS_FPV) {

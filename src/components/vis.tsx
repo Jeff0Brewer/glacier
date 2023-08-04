@@ -41,6 +41,7 @@ const Vis: FC<VisProps> = ({
 
     const [lineWidth, setLineWidth] = useState<number>(0.3)
     const [density, setDensity] = useState<number>(0.07)
+    const [grayscaleTexture, setGrayscaleTexture] = useState<boolean>(false)
 
     // store last click mode selected from interface to revert
     // back to on modifier key release
@@ -84,6 +85,25 @@ const Vis: FC<VisProps> = ({
             return visRef.current.setupEventHandlers(canvasRef.current)
         }
     }, [surface, texture])
+
+    useEffect(() => {
+        if (!visRef.current) { return }
+        visRef.current.setTexture(
+            grayscaleTexture
+                ? surface
+                : texture
+        )
+        const toggleTexture = (e: KeyboardEvent): void => {
+            if (e.ctrlKey && e.key === 'n') {
+                setGrayscaleTexture(!grayscaleTexture)
+            }
+        }
+
+        window.addEventListener('keypress', toggleTexture)
+        return (): void => {
+            window.removeEventListener('keypress', toggleTexture)
+        }
+    }, [surface, texture, grayscaleTexture])
 
     // recalculate flow on data / option changes
     useEffect(() => {

@@ -106,6 +106,10 @@ class VisRenderer {
         )
     }
 
+    setTexture (texture: HTMLImageElement): void {
+        this.glacier.setTexture(this.gl, texture)
+    }
+
     setClickMode (mode: ClickMode, wormMode: WormMode): (() => void) | null {
         if (mode === 'rotate') {
             const mouseRotate = (e: MouseEvent): void => {
