@@ -1,4 +1,5 @@
-import React, { FC, useState, useEffect, useRef } from 'react'
+import React, { FC, useState, useEffect } from 'react'
+import styles from '../styles/dev-menu.module.css'
 
 type DevMenuProps = {
     lineWidth: number,
@@ -9,8 +10,8 @@ type DevMenuProps = {
 
 const DevMenu: FC<DevMenuProps> = ({ lineWidth, setLineWidth, density, setDensity }) => {
     const [visible, setVisible] = useState<boolean>(false)
-    const widthRef = useRef<number>(lineWidth)
-    const densityRef = useRef<number>(density)
+    const [thisWidth, setThisWidth] = useState<number>(lineWidth)
+    const [thisDensity, setThisDensity] = useState<number>(density)
 
     useEffect(() => {
         const toggleVisible = (e: KeyboardEvent): void => {
@@ -28,7 +29,7 @@ const DevMenu: FC<DevMenuProps> = ({ lineWidth, setLineWidth, density, setDensit
         if (e.target instanceof HTMLInputElement) {
             const value = parseFloat(e.target.value)
             if (value) {
-                widthRef.current = value
+                setThisWidth(value)
             }
         }
     }
@@ -37,24 +38,43 @@ const DevMenu: FC<DevMenuProps> = ({ lineWidth, setLineWidth, density, setDensit
         if (e.target instanceof HTMLInputElement) {
             const value = parseFloat(e.target.value)
             if (value) {
-                densityRef.current = value
+                setThisDensity(value)
             }
         }
     }
 
     const recalc = (): void => {
-        setDensity(densityRef.current)
-        setLineWidth(widthRef.current)
+        setDensity(thisDensity)
+        setLineWidth(thisWidth)
     }
 
     if (!visible) { return <></> }
     return (
-        <div style={{ position: 'absolute', top: '0', right: '0', zIndex: '999' }}>
+        <div className={styles.menu}>
             <p>line width</p>
-            <input type={'text'} defaultValue={lineWidth} onChange={updateLineWidth} />
+            <span>
+                <p>{thisWidth}</p>
+                <input
+                    type={'range'}
+                    defaultValue={lineWidth}
+                    min={0.001}
+                    max={1}
+                    step={0.001}
+                    onChange={updateLineWidth}
+                />
+            </span>
             <p>density</p>
-            <input type={'text'} defaultValue={density} onChange={updateDensity} />
-            <br/>
+            <span>
+                <p>{thisDensity}</p>
+                <input
+                    type={'range'}
+                    defaultValue={density}
+                    min={0.001}
+                    max={0.4}
+                    step={0.001}
+                    onChange={updateDensity}
+                />
+            </span>
             <button onClick={recalc}>update</button>
         </div>
     )
