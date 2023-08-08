@@ -18,11 +18,13 @@
 .menu > span {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 200px;
 }
 
 .menu > span > input {
     width: 150px;
+    font: inherit;
 }
 
 .menu button {
@@ -31,4 +33,9 @@
     margin-top: 5px;
     border-radius: 5px;
     background-color: #bbb;
+}
+
+.menu > span > div {
+    width: 40px;
+    height: 18px;
 }

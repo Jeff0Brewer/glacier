@@ -42,6 +42,8 @@ const Vis: FC<VisProps> = ({
     const [lineWidth, setLineWidth] = useState<number>(0.3)
     const [density, setDensity] = useState<number>(0.07)
     const [grayscaleTexture, setGrayscaleTexture] = useState<boolean>(false)
+    const [flowColor0, setFlowColor0] = useState<string>('66b2e6')
+    const [flowColor1, setFlowColor1] = useState<string>('333333')
 
     // store last click mode selected from interface to revert
     // back to on modifier key release
@@ -86,6 +88,7 @@ const Vis: FC<VisProps> = ({
         }
     }, [surface, texture])
 
+    // setup grayscale texture toggle
     useEffect(() => {
         if (!visRef.current) { return }
         visRef.current.setTexture(
@@ -104,6 +107,13 @@ const Vis: FC<VisProps> = ({
             window.removeEventListener('keypress', toggleTexture)
         }
     }, [surface, texture, grayscaleTexture])
+
+    // pass flow colors into vis renderer on change
+    useEffect(() => {
+        if (visRef.current) {
+            visRef.current.setFlowColors(flowColor0, flowColor1)
+        }
+    }, [flowColor0, flowColor1])
 
     // recalculate flow on data / option changes
     useEffect(() => {
@@ -243,6 +253,10 @@ const Vis: FC<VisProps> = ({
                 setLineWidth={setLineWidth}
                 density={density}
                 setDensity={setDensity}
+                color0={flowColor0}
+                setColor0={setFlowColor0}
+                color1={flowColor1}
+                setColor1={setFlowColor1}
             />
             <canvas
                 className={styles.canvas}

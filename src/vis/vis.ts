@@ -106,6 +106,10 @@ class VisRenderer {
         )
     }
 
+    setFlowColors (color0: string, color1: string): void {
+        this.flow.setColors(this.gl, color0, color1)
+    }
+
     setTexture (texture: HTMLImageElement): void {
         this.glacier.setTexture(this.gl, texture)
     }
