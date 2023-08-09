@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import type { FlowOptions } from '../lib/flow-calc'
 import type { ModelData } from '../lib/data-load'
@@ -22,6 +22,8 @@ class FlowLines {
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
     setCurrInd: (ind: number) => void
+    setColor0: (col: vec3) => void
+    setColor1: (col: vec3) => void
     worker: Worker
 
     constructor (
@@ -68,6 +70,8 @@ class FlowLines {
         const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
         const uMaxInd = gl.getUniformLocation(this.program, 'maxInd')
+        const uColor0 = gl.getUniformLocation(this.program, 'color0')
+        const uColor1 = gl.getUniformLocation(this.program, 'color1')
 
         // initialize uniforms
         gl.uniformMatrix4fv(uModelMatrix, false, model)
@@ -84,6 +88,8 @@ class FlowLines {
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
         this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
+        this.setColor0 = (col: vec3): void => { gl.uniform3fv(uColor0, col) }
+        this.setColor1 = (col: vec3): void => { gl.uniform3fv(uColor1, col) }
 
         // setup flow field calculation worker
         this.worker = new Worker(
@@ -97,16 +103,23 @@ class FlowLines {
         }
     }
 
+    setColors (gl: WebGLRenderingContext, color0: string, color1: string): void {
+        gl.useProgram(this.program)
+        this.setColor0(colorHexToFloat(color0))
+        this.setColor1(colorHexToFloat(color1))
+    }
+
     update (
         data: ModelData,
         options: FlowOptions,
         width: number,
         height: number,
         density: number,
-        history: number
+        history: number,
+        lineWidth: number
     ): void {
         this.worker.postMessage({
-            data, options, width, height, density, history
+            data, options, width, height, density, history, lineWidth
         })
     }
 
@@ -124,6 +137,14 @@ class FlowLines {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertex)
         gl.depthMask(true)
     }
+}
+
+const colorHexToFloat = (hex: string): vec3 => {
+    const color = vec3.create()
+    for (let i = 0; i < 3; i++) {
+        color[i] = parseInt(hex.substr(i * 2, 2), 16) / 255
+    }
+    return color
 }
 
 export default FlowLines

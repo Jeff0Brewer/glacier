@@ -1,0 +1,41 @@
+.menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20;
+    font-size: 12px;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 0 0 0 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu > p {
+    text-transform: uppercase;
+}
+
+.menu > span {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 200px;
+}
+
+.menu > span > input {
+    width: 150px;
+    font: inherit;
+}
+
+.menu button {
+    width: 80px;
+    height: 30px;
+    margin-top: 5px;
+    border-radius: 5px;
+    background-color: #bbb;
+}
+
+.menu > span > div {
+    width: 40px;
+    height: 18px;
+}

@@ -13,8 +13,8 @@ import Markers from '../vis/markers'
 import Worms from '../vis/worms'
 
 const HEIGHT_SCALE = 50
-const FLOW_DENSITY = 0.07
 const FLOW_HISTORY = 180
+// const FLOW_DENSITY = 0.07
 
 const FOV = 1
 const NEAR = 0.1
@@ -104,6 +104,14 @@ class VisRenderer {
             this.scale,
             HEIGHT_SCALE
         )
+    }
+
+    setFlowColors (color0: string, color1: string): void {
+        this.flow.setColors(this.gl, color0, color1)
+    }
+
+    setTexture (texture: HTMLImageElement): void {
+        this.glacier.setTexture(this.gl, texture)
     }
 
     setClickMode (mode: ClickMode, wormMode: WormMode): (() => void) | null {
@@ -212,14 +220,15 @@ class VisRenderer {
         this.worms.clearWorms()
     }
 
-    calcFlow (data: ModelData, options: FlowOptions): void {
+    calcFlow (data: ModelData, options: FlowOptions, lineWidth: number, density: number): void {
         this.flow.update(
             data,
             options,
             WIDTH,
             HEIGHT,
-            FLOW_DENSITY,
-            FLOW_HISTORY
+            density,
+            FLOW_HISTORY,
+            lineWidth
         )
     }
 

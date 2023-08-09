@@ -5,6 +5,7 @@ import type { FlowOptions } from '../lib/flow-calc'
 import type { Marker, ColorMode } from '../vis/markers'
 import { getColor } from '../vis/markers'
 import Menu from '../components/menu'
+import DevMenu from '../components/dev-menu'
 import VisRenderer from '../vis/vis'
 import styles from '../styles/vis.module.css'
 
@@ -37,6 +38,12 @@ const Vis: FC<VisProps> = ({
     const visRef = useRef<VisRenderer | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
+
+    const [lineWidth, setLineWidth] = useState<number>(0.3)
+    const [density, setDensity] = useState<number>(0.07)
+    const [grayscaleTexture, setGrayscaleTexture] = useState<boolean>(false)
+    const [flowColor0, setFlowColor0] = useState<string>('66b2e6')
+    const [flowColor1, setFlowColor1] = useState<string>('333333')
 
     // store last click mode selected from interface to revert
     // back to on modifier key release
@@ -81,12 +88,39 @@ const Vis: FC<VisProps> = ({
         }
     }, [surface, texture])
 
+    // setup grayscale texture toggle
+    useEffect(() => {
+        if (!visRef.current) { return }
+        visRef.current.setTexture(
+            grayscaleTexture
+                ? surface
+                : texture
+        )
+        const toggleTexture = (e: KeyboardEvent): void => {
+            if (e.ctrlKey && e.key === 'n') {
+                setGrayscaleTexture(!grayscaleTexture)
+            }
+        }
+
+        window.addEventListener('keypress', toggleTexture)
+        return (): void => {
+            window.removeEventListener('keypress', toggleTexture)
+        }
+    }, [surface, texture, grayscaleTexture])
+
+    // pass flow colors into vis renderer on change
+    useEffect(() => {
+        if (visRef.current) {
+            visRef.current.setFlowColors(flowColor0, flowColor1)
+        }
+    }, [flowColor0, flowColor1])
+
     // recalculate flow on data / option changes
     useEffect(() => {
         if (visRef.current) {
-            visRef.current.calcFlow(data, options)
+            visRef.current.calcFlow(data, options, lineWidth, density)
         }
-    }, [data, options])
+    }, [data, options, lineWidth, density])
 
     // set modes in vis renderer on state changes
     useEffect(() => {
@@ -213,6 +247,16 @@ const Vis: FC<VisProps> = ({
                 placeMarkerWorms={placeMarkerWorms}
                 timeRef={timeRef}
                 speedRef={speedRef}
+            />
+            <DevMenu
+                lineWidth={lineWidth}
+                setLineWidth={setLineWidth}
+                density={density}
+                setDensity={setDensity}
+                color0={flowColor0}
+                setColor0={setFlowColor0}
+                color1={flowColor1}
+                setColor1={setFlowColor1}
             />
             <canvas
                 className={styles.canvas}

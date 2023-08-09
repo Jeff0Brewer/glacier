@@ -8,9 +8,9 @@ const MAX_CALC = 200
 const TIMESTEP = 0.2
 const FLOW_SPEED = 6
 const MIN_LINE_LENGTH = 1
-const LINE_WIDTH = 0.3
 const VERT_PER_POSITION = 2 // since drawing as triangle strip with left / right sides
 const ALL_FPV = 4 // copied from src/vis/flow.ts to prevent circular deps
+// const LINE_WIDTH = 0.3
 
 // get path of single particle's translation through vector field
 // returns triangle strip vertices
@@ -19,7 +19,8 @@ const calcFlowLine = (
     options: FlowOptions,
     x: number,
     y: number,
-    history: number
+    history: number,
+    lineWidth: number
 ): Float32Array => {
     const verts = new Float32Array(history * ALL_FPV * 2)
     const pos = vec3.fromValues(x, y, 0)
@@ -47,7 +48,7 @@ const calcFlowLine = (
         vec3.subtract(perp, lastPos, pos)
         vec3.cross(perp, perp, [0, 0, 1])
         vec3.normalize(perp, perp)
-        vec3.scale(perp, perp, LINE_WIDTH)
+        vec3.scale(perp, perp, lineWidth)
 
         // get left / right sides of tri strip
         const left = vec3.add(vec3.create(), lastPos, perp)
@@ -79,7 +80,8 @@ const calcFlow = (
     width: number,
     height: number,
     density: number,
-    history: number
+    history: number,
+    lineWidth: number
 ): Float32Array => {
     const lines = []
     let length = 0
@@ -92,7 +94,7 @@ const calcFlow = (
             const initVelocity = calcFlowVelocity(data, options, ry, rx, 0)
             if (vec3.length(initVelocity) !== 0) {
                 // calculate single flow line
-                const line = calcFlowLine(data, options, rx, ry, history)
+                const line = calcFlowLine(data, options, rx, ry, history, lineWidth)
                 lines.push(line)
                 length += line.length
             }
@@ -153,12 +155,13 @@ type CalcMessage = {
     width: number,
     height: number,
     density: number,
-    history: number
+    history: number,
+    lineWidth: number
 }
 
 onmessage = (e: MessageEvent<CalcMessage>): void => {
-    const { options, width, height, density, history } = e.data
+    const { options, width, height, density, history, lineWidth } = e.data
     const data = parseData(e.data.data)
-    const verts = calcFlow(data, options, width, height, density, history)
+    const verts = calcFlow(data, options, width, height, density, history, lineWidth)
     postMessage(verts)
 }
