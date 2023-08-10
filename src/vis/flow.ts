@@ -7,9 +7,12 @@ import fragSource from '../shaders/flow-frag.glsl?raw'
 
 // floats per vertex for each attribute
 const POS_FPV = 2
-const IND_FPV = 1
+const TIM_FPV = 1
 const SPD_FPV = 1
-const ALL_FPV = POS_FPV + IND_FPV + SPD_FPV
+const ALL_FPV = POS_FPV + TIM_FPV + SPD_FPV
+
+const TIME_LEN = 100
+const FLOW_SPEED = 20
 
 class FlowLines {
     numVertex: number
@@ -21,7 +24,7 @@ class FlowLines {
     setModelMatrix: (mat: mat4) => void
     setViewMatrix: (mat: mat4) => void
     setProjMatrix: (mat: mat4) => void
-    setCurrInd: (ind: number) => void
+    setCurrTime: (time: number) => void
     setColor0: (col: vec3) => void
     setColor1: (col: vec3) => void
     worker: Worker
@@ -51,8 +54,8 @@ class FlowLines {
 
         // setup attributes
         const bindPosition = initAttribute(gl, this.program, 'position', POS_FPV, ALL_FPV, 0)
-        const bindInd = initAttribute(gl, this.program, 'ind', IND_FPV, ALL_FPV, POS_FPV)
-        const bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + IND_FPV)
+        const bindInd = initAttribute(gl, this.program, 'time', TIM_FPV, ALL_FPV, POS_FPV)
+        const bindSpeed = initAttribute(gl, this.program, 'speed', SPD_FPV, ALL_FPV, POS_FPV + TIM_FPV)
 
         // get closure to bind all attributes easily
         this.bindAttrib = (): void => {
@@ -66,10 +69,10 @@ class FlowLines {
         const uViewMatrix = gl.getUniformLocation(this.program, 'viewMatrix')
         const uProjMatrix = gl.getUniformLocation(this.program, 'projMatrix')
         const uScaleMatrix = gl.getUniformLocation(this.program, 'scaleMatrix')
-        const uCurrInd = gl.getUniformLocation(this.program, 'currInd')
         const uDimensions = gl.getUniformLocation(this.program, 'dimensions')
         const uHeightScale = gl.getUniformLocation(this.program, 'heightScale')
-        const uMaxInd = gl.getUniformLocation(this.program, 'maxInd')
+        const uCurrTime = gl.getUniformLocation(this.program, 'currTime')
+        const uMaxTime = gl.getUniformLocation(this.program, 'maxTime')
         const uColor0 = gl.getUniformLocation(this.program, 'color0')
         const uColor1 = gl.getUniformLocation(this.program, 'color1')
 
@@ -80,14 +83,13 @@ class FlowLines {
         gl.uniformMatrix4fv(uScaleMatrix, false, scale)
         gl.uniform2f(uDimensions, surface.width, surface.height)
         gl.uniform1f(uHeightScale, heightScale)
-        gl.uniform1f(uMaxInd, 50)
-        gl.uniform1f(uCurrInd, 0)
+        gl.uniform1f(uMaxTime, TIME_LEN)
 
         // get closures to easily set uniforms which may change
         this.setModelMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uModelMatrix, false, mat) }
         this.setViewMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uViewMatrix, false, mat) }
         this.setProjMatrix = (mat: mat4): void => { gl.uniformMatrix4fv(uProjMatrix, false, mat) }
-        this.setCurrInd = (ind: number): void => { gl.uniform1f(uCurrInd, ind) }
+        this.setCurrTime = (time: number): void => { gl.uniform1f(uCurrTime, time) }
         this.setColor0 = (col: vec3): void => { gl.uniform3fv(uColor0, col) }
         this.setColor1 = (col: vec3): void => { gl.uniform3fv(uColor1, col) }
 
@@ -123,14 +125,13 @@ class FlowLines {
         })
     }
 
-    draw (gl: WebGLRenderingContext, modelMatrix: mat4): void {
+    draw (gl: WebGLRenderingContext, modelMatrix: mat4, time: number): void {
         gl.useProgram(this.program)
         gl.bindTexture(gl.TEXTURE_2D, this.texture)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         this.bindAttrib()
-        this.setCurrInd(this.currInd)
+        this.setCurrTime(time * FLOW_SPEED)
         this.setModelMatrix(modelMatrix)
-        this.currInd += 0.5
 
         // disable depth mask so overlapping flow lines will always be drawn fully
         gl.depthMask(false)

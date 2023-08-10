@@ -236,7 +236,7 @@ class VisRenderer {
         this.time = time
         this.gl.clear(this.gl.COLOR_BUFFER_BIT || this.gl.DEPTH_BUFFER_BIT)
         this.glacier.draw(this.gl, this.model)
-        this.flow.draw(this.gl, this.model)
+        this.flow.draw(this.gl, this.model, time)
         this.markers.draw(this.gl, this.model, markers, data, options, time)
 
         this.gl.useProgram(this.worms.program)

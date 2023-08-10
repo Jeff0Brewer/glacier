@@ -1,5 +1,5 @@
 attribute vec2 position;
-attribute float ind;
+attribute float time;
 attribute float speed;
 
 uniform mat4 modelMatrix;
@@ -9,8 +9,8 @@ uniform mat4 scaleMatrix;
 uniform sampler2D surfaceMap;
 uniform vec2 dimensions;
 uniform float heightScale;
-uniform float maxInd;
-uniform float currInd;
+uniform float maxTime;
+uniform float currTime;
 uniform vec3 color0;
 uniform vec3 color1;
 
@@ -31,5 +31,8 @@ void main() {
 
     float brightness = 1.0 - clamp(speed, 0.0, 1.0);
     color = mix(color0, color1, brightness);
-    fade = sign(ind) * mod((ind - currInd), maxInd) / maxInd;
+
+    float timeDiff = mod(time - currTime, maxTime) / maxTime;
+    float headFade = pow(0.1 / timeDiff, 5.0);
+    fade = clamp(sign(time) * max(timeDiff, headFade), 0.0, 1.0);
 }

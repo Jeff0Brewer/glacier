@@ -25,6 +25,7 @@ const calcFlowLine = (
     const verts = new Float32Array(history * ALL_FPV * 2)
     const pos = vec3.fromValues(x, y, 0)
     let time = 0
+    const timeOff = Math.random() * 1000
 
     for (let i = 0; i < history; i++) {
         const lastPos = vec3.clone(pos)
@@ -57,10 +58,10 @@ const calcFlowLine = (
         // set verts at current offset
         verts.set([
             left[0], left[1],
-            i,
+            time + timeOff,
             avgSpeed,
             right[0], right[1],
-            i,
+            time + timeOff,
             avgSpeed
         ], i * ALL_FPV * VERT_PER_POSITION)
 
