@@ -1,4 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix'
+import { Float32Array2D } from '../lib/data-load'
 import { initProgram, initBuffer, initAttribute, initTexture } from '../lib/gl-wrap'
 import { triangleRayIntersect } from '../lib/unproject'
 import vertSource from '../shaders/glacier-vert.glsl?raw'
@@ -38,7 +39,8 @@ class Glacier {
 
         // position and normal as seperate buffers
         // so position verts can be used efficiently for mouse interaction hit tests
-        const { pos, nrm } = getSurfaceVerts(surface, heightScale)
+        const heightMap = getHeightMap(surface, heightScale)
+        const { pos, nrm } = getSurfaceVerts(heightMap)
         this.posBuffer = initBuffer(gl)
         gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW)
         this.nrmBuffer = initBuffer(gl)
@@ -113,22 +115,17 @@ class Glacier {
 
 // from width and height, create height mapped surface triangle strip
 // with position and normal attributes
-const getSurfaceVerts = (
-    img: HTMLImageElement,
-    heightScale: number
-): {pos: Float32Array, nrm: Float32Array } => {
-    const imgReader = new ImageReader(img)
-
+const getSurfaceVerts = (heightMap: Float32Array2D): {pos: Float32Array, nrm: Float32Array } => {
     // scale down dimensions, don't need a vertex at every image pixel
     const DOWNSAMPLE = 4
-    const width = Math.ceil(img.width / DOWNSAMPLE)
-    const height = Math.ceil(img.height / DOWNSAMPLE)
+    const width = Math.ceil(heightMap.width / DOWNSAMPLE)
+    const height = Math.ceil(heightMap.height / DOWNSAMPLE)
 
     // helper to get height mapped position from x, y
     const get3dPos = (x: number, y: number): vec3 => {
         const px = x * DOWNSAMPLE
         const py = y * DOWNSAMPLE
-        const height = vec3.length(imgReader.getRGB(px, py)) / 255 * heightScale
+        const height = heightMap.get(px, py)
         return vec3.fromValues(px, py, height)
     }
 
@@ -194,33 +191,32 @@ const getSurfaceVerts = (
     return { pos, nrm }
 }
 
-class ImageReader {
-    data: Uint8ClampedArray
-    width: number
-    height: number
+const getHeightMap = (img: HTMLImageElement, scale: number): Float32Array2D => {
+    const canvas = document.createElement('canvas')
+    canvas.width = img.width
+    canvas.height = img.height
 
-    constructor (img: HTMLImageElement) {
-        const canvas = document.createElement('canvas')
-        canvas.width = img.width
-        canvas.height = img.height
+    const ctx = canvas.getContext('2d')
+    if (!ctx) { throw new Error('Failed to get offscreen drawing context') }
+    ctx.drawImage(img, 0, 0)
 
-        const ctx = canvas.getContext('2d')
-        if (!ctx) { throw new Error('Failed to get offscreen drawing context') }
-        ctx.drawImage(img, 0, 0)
-
-        this.data = ctx.getImageData(0, 0, img.width, img.height).data
-        this.width = img.width
-        this.height = img.height
+    const data = ctx.getImageData(0, 0, img.width, img.height).data
+    const getPixelMagnitude = (x: number, y: number): number => {
+        const ind = (y * img.width + x) * 4
+        const pixel = vec3.fromValues(data[ind], data[ind + 1], data[ind + 2])
+        return vec3.length(pixel) / 255
     }
 
-    getRGB (x: number, y: number): vec3 {
-        const ind = (y * this.width + x) * 4
-        return vec3.fromValues(
-            this.data[ind],
-            this.data[ind + 1],
-            this.data[ind + 2]
-        )
+    const values = new Float32Array(img.width * img.height)
+    let i = 0
+    for (let y = 0; y < img.height; y++) {
+        for (let x = 0; x < img.width; x++, i++) {
+            const height = getPixelMagnitude(x, y) * scale
+            values[i] = height
+        }
     }
+
+    return new Float32Array2D(values, img.width, img.height)
 }
 
 export default Glacier
