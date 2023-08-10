@@ -25,7 +25,7 @@ float heightMap(sampler2D map, vec2 texCoord, float scale) {
 
 void main() {
     vec2 texCoord = position / dimensions;
-    float height = heightMap(surfaceMap, texCoord, heightScale) + 1.0;
+    float height = heightMap(surfaceMap, texCoord, heightScale) + 0.5;
     vec3 pos = vec3(position, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 
