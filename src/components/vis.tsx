@@ -39,7 +39,7 @@ const Vis: FC<VisProps> = ({
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const frameIdRef = useRef<number>(-1)
 
-    const [lineWidth, setLineWidth] = useState<number>(0.3)
+    const [lineWidth, setLineWidth] = useState<number>(0.2)
     const [density, setDensity] = useState<number>(0.07)
     const [grayscaleTexture, setGrayscaleTexture] = useState<boolean>(false)
     const [flowColor0, setFlowColor0] = useState<string>('66b2e6')
