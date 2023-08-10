@@ -29,7 +29,7 @@ void main() {
     vec3 pos = vec3(position, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 
-    float brightness = 1.0 - clamp(speed, 0.0, 1.0);
+    float brightness = 1.0 - clamp(pow(speed, 0.5), 0.0, 1.0);
     color = mix(color0, color1, brightness);
 
     float timeDiff = 1.0 - mod(abs(time - currTime), maxTime) / maxTime;
