@@ -83,7 +83,7 @@ class Worm {
     }
 
     update (gl: WebGLRenderingContext, data: ModelData, options: FlowOptions, time: number): void {
-        const velocity = calcFlowVelocity(data, options, this.y, this.x, time)
+        const velocity = calcFlowVelocity(data, options, this.x, this.y, time)
         vec3.multiply(velocity, velocity, [1, -1, 1])
         const speed = vec3.length(velocity)
         if (speed < MIN_WORM_SPEED) {

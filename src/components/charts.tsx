@@ -126,8 +126,8 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                 const vel = calcFlowVelocity(
                     data,
                     options,
-                    marker.y,
                     marker.x,
+                    marker.y,
                     i * CHART_TIMESTEP
                 )
                 thisEast.push(vel[0])
@@ -152,8 +152,8 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
             const vel = calcFlowVelocity(
                 data,
                 options,
-                markers[currMarker].y,
                 markers[currMarker].x,
+                markers[currMarker].y,
                 i * CHART_TIMESTEP
             )
             labels.push(i * CHART_TIMESTEP)
@@ -188,16 +188,16 @@ const MarkerPlots: FC<MarkerPlotsProps> = ({
                             <a
                                 key={i}
                                 style={{
-                                    zIndex: 100 - i,
+                                    zIndex: 100 - i
                                 }}
                                 className={isCurrent || currMarker === ALL_MARKER_IND ? styles.tab : styles.unselected}
                                 onClick={isCurrent
                                     ? (): void => deleteMarker(i)
                                     : (): void => setCurrMarker(i)}
                             >
-                            <span className='markerTabSample' style={{ color: colorVec3ToRGB(marker.color) }}
+                                <span className='markerTabSample' style={{ color: colorVec3ToRGB(marker.color) }}
                                 >{'◉'}</span>
-                            { isCurrent ? <IoMdClose size={9} style={{ background: "rgba(255,255,255,0.8)", color: "black" }}/> : ''}</a>
+                                { isCurrent ? <IoMdClose size={9} style={{ background: 'rgba(255,255,255,0.8)', color: 'black' }}/> : ''}</a>
                         )
                     })}
                 </div>

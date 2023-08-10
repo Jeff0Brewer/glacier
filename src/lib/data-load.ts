@@ -10,7 +10,7 @@ class Float32Array2D {
     }
 
     get (i: number, j: number): number {
-        return this.values[i * this.width + j]
+        return this.values[j * this.width + i]
     }
 }
 

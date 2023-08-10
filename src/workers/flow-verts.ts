@@ -35,7 +35,7 @@ const calcFlowLine = (
         // translate particle potentially many times, until distance above threshold
         // allows drawing slow moving particles without too many history vertices
         while (calcInd < MAX_CALC && vec3.distance(pos, lastPos) < MIN_LINE_LENGTH) {
-            const velocity = calcFlowVelocity(data, options, pos[1], pos[0], time)
+            const velocity = calcFlowVelocity(data, options, pos[0], pos[1], time)
             avgSpeed += vec3.length(velocity)
             vec3.scale(velocity, velocity, TIMESTEP * FLOW_SPEED)
             vec3.add(pos, pos, [velocity[0], -velocity[1], velocity[2]])
@@ -92,7 +92,7 @@ const calcFlow = (
             const rx = x + Math.random() * 10 + 5
             const ry = y + Math.random() * 10 + 5
             // exclude lines starting with 0 velocity
-            const initVelocity = calcFlowVelocity(data, options, ry, rx, 0)
+            const initVelocity = calcFlowVelocity(data, options, rx, ry, 0)
             if (vec3.length(initVelocity) !== 0) {
                 // calculate single flow line
                 const line = calcFlowLine(data, options, rx, ry, history, lineWidth)
