@@ -20,7 +20,7 @@ const App: FC = () => {
     const [markers, setMarkers] = useState<Array<Marker>>([])
     const [currMarker, setCurrMarker] = useState<number>(-1)
     const [colorMode, setColorMode] = useState<ColorMode>('gray')
-    const timeRef = useRef<number>(0)
+    const timeRef = useRef<number>(1000)
     const speedRef = useRef<number>(1)
 
     const getData = async (): Promise<void> => {
