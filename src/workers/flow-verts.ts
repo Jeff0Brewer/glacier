@@ -52,8 +52,8 @@ const calcFlowLine = (
         vec3.scale(perp, perp, lineWidth)
 
         // get left / right sides of tri strip
-        const left = vec3.add(vec3.create(), lastPos, perp)
-        const right = vec3.subtract(vec3.create(), lastPos, perp)
+        const left = vec3.add(vec3.create(), pos, perp)
+        const right = vec3.subtract(vec3.create(), pos, perp)
 
         // set verts at current offset
         verts.set([
