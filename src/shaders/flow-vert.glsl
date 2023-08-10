@@ -29,10 +29,10 @@ void main() {
     vec3 pos = vec3(position, height);
     gl_Position = projMatrix * viewMatrix * modelMatrix * scaleMatrix * vec4(pos, 1.0);
 
-    float brightness = 1.0 - clamp(pow(speed, 0.5), 0.0, 1.0);
-    color = mix(color0, color1, brightness);
-
     float timeDiff = 1.0 - mod(abs(time - currTime), maxTime) / maxTime;
     float headFade = pow(0.2 / timeDiff, 5.0);
-    fade = clamp(sign(time) * max(timeDiff, headFade), 0.0, 1.0);
+    fade = clamp(sign(time) * max(timeDiff, headFade), 0.0, 1.0) * 1.5 - 0.5;
+
+    float brightness = 1.0 - clamp(pow(speed, 0.5), 0.0, 1.0);
+    color = mix(mix(color0, color1, brightness), vec3(1.0, 1.0, 1.0), 1.0 - fade);
 }

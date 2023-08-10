@@ -40,7 +40,12 @@ class VisRenderer {
         this.gl = initGl(canvas)
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.BLEND)
-        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+        this.gl.blendFuncSeparate(
+            this.gl.SRC_ALPHA,
+            this.gl.ONE_MINUS_SRC_ALPHA,
+            this.gl.ONE,
+            this.gl.ONE_MINUS_SRC_ALPHA
+        )
         this.canvas = canvas
 
         this.model = mat4.create()
