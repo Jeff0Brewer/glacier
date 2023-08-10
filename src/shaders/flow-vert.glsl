@@ -32,7 +32,7 @@ void main() {
     float brightness = 1.0 - clamp(speed, 0.0, 1.0);
     color = mix(color0, color1, brightness);
 
-    float timeDiff = mod(time - currTime, maxTime) / maxTime;
-    float headFade = pow(0.1 / timeDiff, 5.0);
+    float timeDiff = 1.0 - mod(abs(time - currTime), maxTime) / maxTime;
+    float headFade = pow(0.2 / timeDiff, 5.0);
     fade = clamp(sign(time) * max(timeDiff, headFade), 0.0, 1.0);
 }
